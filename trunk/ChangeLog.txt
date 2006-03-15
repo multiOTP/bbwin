@@ -1,0 +1,18 @@
+ChangeLog file for BBWin
+==============================================================
+
+
+BBWin 0.4 Preview version - 15 March 2006
+-------------------
+
+* first public version of BBWin
+* Msi Installer
+* BBWin : core service
+* BBWinCmd : command line utility
+* Agents :
+	- externals
+	- procs
+	- uptime
+* Externals :
+	- wlbs
+	- cluster
