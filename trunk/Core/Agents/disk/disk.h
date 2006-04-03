@@ -18,17 +18,106 @@
 #ifndef		__DISK_H__
 #define		__DISK_H__
 
+
+#include <list>
+#include <map>
 #include <string>
 #include "IBBWinAgent.h"
 #include "Disk.h"
 
+
+/*
+** Defines
+*/ 
+
+// Somes usefull defines
+#define BUFFER_SIZE 		2046
+#define MAXNAMELEN			512
+#define GB_DIV				(1024 * 1024)
+#define MAX_DRIVE			64
+
+#define DEF_DISK_WARN	"90%"
+#define DEF_DISK_PANIC	"95%"
+
+#define DEFAULT_RULE_NAME		"default"
+
+//
+// simple struct to store disk rules
+// from the config file
+//
+typedef struct		disk_rule_s
+{
+	bool			ignore;
+	__int64			warnSize;
+	DWORD			warnPercent;
+	bool			warnUseSize;
+	__int64			panicSize;
+	DWORD			panicPercent;
+	bool			panicUseSize;
+}					disk_rule_t;
+
+typedef struct		disk_unit_s
+{	
+	char			*name;
+	__int64			size;
+}					disk_unit_t;
+
+typedef struct		disk_type_s
+{
+	char			*name;
+	UINT			type;
+}					disk_type_t;
+
+
+//
+// disk structure filled to get disk information
+//
+typedef struct		disk_s
+{
+	TCHAR			letter[8];
+	TCHAR			fileSystemName[MAXNAMELEN + 1];
+	TCHAR			volumeName[MAXNAMELEN + 1];
+	DWORD			fileSystemFlags;
+	DWORD			maximumComponentLength;
+	DWORD 			volumeSerialNumber;
+	DWORD			type;
+	__int64 		i64FreeBytesToCaller;
+	__int64			i64TotalBytes;
+	__int64			i64FreeBytes;
+	DWORD			color;
+	DWORD			percent;
+	bool			ignore;
+}					disk_t;
+
+enum BBAlarmType { GREEN, YELLOW, RED };
+
 class AgentDisk : public IBBWinAgent
 {
 	private :
-		IBBWinAgentManager 		& m_mgr;
+		IBBWinAgentManager 						& m_mgr;
+		bool									m_checkRemote;
+		bool									m_checkCdrom;
+		bool									m_alwaysgreen; 
+		DWORD									m_pageColor;
+		std::map<std::string, disk_rule_t *>	m_rules;
+		std::list<disk_t *>						m_disks;
+		
+		
+	private :
+		void 		AddRule(const std::string & label, const std::string & warnlevel, 
+								const std::string & paniclevel,	const std::string & ignore);
+		void		BuildRule(disk_rule_t & rule, const std::string & warnlevel, const std::string & paniclevel);
+		void		GenerateSummary(const disk_t & disk, stringstream & summary);
+		bool		GetSizeValue(const std::string & level, __int64 & val);
+		bool		GetDisksData();
+		void		FreeDisksData();
+		void		ApplyRules();
+		DWORD		ApplyRule(disk_t & disk);
+		void		SendStatusReport();
 		
 	public :
 		AgentDisk(IBBWinAgentManager & mgr);
+		~AgentDisk();
 		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();

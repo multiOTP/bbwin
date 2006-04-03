@@ -436,7 +436,7 @@ void				BBWin::LoadAgents() {
 	
 	range = m_configuration.equal_range("load");
 	for ( ; range.first != range.second; ++range.first) {
-		DWORD		timer = GetNbr(m_setting[ "timer" ]);
+		DWORD		timer = GetSeconds(m_setting[ "timer" ]);
 		
 		if (range.first->second["timer"].size() != 0) {
 			timer = GetSeconds(range.first->second["timer"]);

@@ -18,7 +18,7 @@ public:
 
 // Methods
 	int GetCpuUsage();
-	int GetCpuUsage(DWORD dwProcessID);
+	double GetCpuUsage(DWORD dwProcessID);
 
 	BOOL EnablePerformaceCounters(BOOL bEnable = TRUE);
 

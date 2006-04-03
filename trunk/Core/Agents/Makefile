@@ -17,10 +17,13 @@
 
 
 DIRS = \
+    common\~   		\
     externals\~   		\
     uptime\~   		\
     cpu\~   		\
     disk\~   		\
+    memory\~   		\
+    stats\~   		\
     procs\~   		\
     sample\~   		\
 

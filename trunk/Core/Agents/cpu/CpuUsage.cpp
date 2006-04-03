@@ -180,7 +180,7 @@ int CCpuUsage::GetCpuUsage()
 	return CpuUsage;
 }
 
-int CCpuUsage::GetCpuUsage(DWORD dwProcessID)
+double CCpuUsage::GetCpuUsage(DWORD dwProcessID)
 {
 	static PLATFORM Platform = GetPlatform();
 	
@@ -194,7 +194,7 @@ int CCpuUsage::GetCpuUsage(DWORD dwProcessID)
 	DWORD dwObjectIndex = PROCESS_OBJECT_INDEX;
 	DWORD dwCpuUsageIndex = PROCESSOR_TIME_COUNTER_INDEX;
 
-	int				CpuUsage = 0;
+	double				CpuUsage = 0;
 	LONGLONG		lnNewValue = 0;
 	PPERF_DATA_BLOCK pPerfData = NULL;
 	LARGE_INTEGER	NewPerfTime100nSec = {0};
@@ -218,9 +218,9 @@ int CCpuUsage::GetCpuUsage(DWORD dwProcessID)
 
 	double a = (double)lnValueDelta / DeltaPerfTime100nSec;
 
-	CpuUsage = (int) (a*100);
+	CpuUsage = (double) (a*100);
 	if (CpuUsage < 0)
-		return 0;
+		return 0.00;
 	return CpuUsage;
 }
 

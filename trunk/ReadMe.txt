@@ -160,6 +160,50 @@ However, you can specify timer like this :
 
 Minimal timer is 5 seconds.
 
+* Cpu
+-----
+
+Cpu is an agent used to monitor your cpu usage.
+
+Cpu configuration namespace :
+
+<cpu>
+	<!-- If true, the agent  will always report with green status -->
+	<setting name="alwaysgreen" value="false" />
+	<setting name="default" warnlevel="90" paniclevel="95" delay="3" />
+</cpu>
+
+Delay is used as a count value before setting the yellow status 
+and red status. It helps to refine alerts detection.
+
+Default delay is 3
+Default Warning alert is 90%
+Default Panic alert is 95%
+
+
+* Disk
+------
+
+Disk is an agent used to monitor your disk usage.
+
+Disk configuration namespace :
+
+<disk>
+	<!-- If true, this setting will always report with green status -->
+	<setting name="alwaysgreen" value="false" />
+	<!-- Level can be given by % or size unit mb, gb, tb -->
+	<setting name="default" warnlevel="85%" paniclevel="95%" />
+	<setting name="C" warnlevel="70%" paniclevel="400mb" />
+	<setting name="E" ignore="true" />
+	<!-- If true, the agent will check remote drives -->
+	<setting name="remote" value="false" />
+	<!-- If true, the agent will that cd/dvdrom drives are empty -->
+	<setting name="cdrom" value="false" />
+</disk>
+
+Default Warning alert is 90%
+Default Panic alert is 95%
+
 
 * Externals
 -----------
@@ -201,6 +245,29 @@ Note : the current directory for the bbwin service process is the BBWin bin path
 Full paths can be set for externals load command.
 
 
+* Memory
+--------
+
+Memory is an agent use to monitor your memory usage.
+
+Memory configuration namespace :
+
+<memory>
+	<!-- If true, this setting will always report with green status -->
+	<setting name="alwaysgreen" value="false" />
+	<setting name="physical" warnlevel="78" paniclevel="98" />
+	<setting name="page" warnlevel="70" paniclevel="90" />
+	<setting name="virtual" warnlevel="78" paniclevel="90" />
+</memory>
+
+Default physical warning 100%
+Default physical panic 101%
+Default page warning 80%
+Default page panic 90%
+Default virtual warning 90%
+Default virtual panic 99%
+
+
 * Procs
 -------
 
@@ -236,7 +303,14 @@ Test name and Message can be over written via the bbwin.cfg file
 	<setting name="testname" value="newcolumntest" />
 	<setting name="message" value="Hello World !" />
 </sample>
-	
+
+
+* Stats
+-------
+
+Stats is an agent only used for trends purpose. It sends reports like netstat report.
+
+No configuration needed.
 
 
 * Uptime
@@ -279,6 +353,14 @@ Monitor mscs clusters. It checks resources states and current node changes.
 No configuration file used.
 
 
+Fsmon
+-----
+
+Fsmon is used to monitor filesystem entries as directories (be sure that a directory contains 
+less than 10 files for example).
+See the configuration file WLBS.cfg in etc BBWin directory.
+
+
 WLBS.vbs
 --------
 
@@ -286,25 +368,18 @@ Monitor WLBS (NLB) cluster. It checks node status depending the default status.
 See the configuration file WLBS.cfg in etc BBWin directory.
 
 
+Tools
+=====
 
-Performance Counters Issues
-===========================
 
-Some agents as Uptime are using the Performances Counters with 
-the pdh library. On NT 4, you may need to install this library.
+MigrateBBntToBBWin.vbs
+----------------------
 
-Also, counters name are used in English, so these agents may not work
-on foreign Windows servers until you restore english counters names.
+This tool helps you to migrate your current bbnt configuration to the BBWin configuration file format.
 
-You can check counters names in the registry :
-HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Perflib
-You can copy the registry keys from 009 key to your current language.
-Before changing these settings, please backup your registry and
-your counters database via the command : lodctr
+Usage :
 
-Back up :
-LODCTR /S:Backup.txt
-
+cscript MigrateBBntToBBWin.vbs OutPutBBWin.cfg
 
 
 =============
@@ -313,5 +388,5 @@ Project Sourceforge Page :
 http://sourceforge.net/projects/bbwin
 
 Author : Etienne Grignon  (etienne.grignon@gmail.com)
-14 March 2006
+3 April 2006
 

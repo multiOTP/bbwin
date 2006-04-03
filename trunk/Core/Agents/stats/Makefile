@@ -17,29 +17,28 @@
 
 !include <Win32.Mak>
 
-all: uptime.dll
+all: stats.dll
 
 BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
 BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
 
-cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
+cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
 	
-## uptime dependencies
+## stats dependencies
 
-uptime_objs = 	uptime.obj ../common/SystemCounters.obj
+stats_objs = 	stats.obj
 
-uptime.res: uptime.rc
-	$(rc) $(rcflags) $(rcvars) /fo uptime.res uptime.rc
+stats.res: stats.rc
+	$(rc) $(rcflags) $(rcvars) /fo stats.res stats.rc
 	
-uptime.dll: $(uptime_objs) uptime.res
-    $(link) /DLL $(dllldebug) $(uptime_objs) uptime.res -out:uptime.dll $(BOOST_LIB) 
-
-
+stats.dll: $(stats_objs) stats.res
+    $(link) /DLL $(dllldebug) $(stats_objs) stats.res -out:stats.dll $(BOOST_LIB) Psapi.lib pdh.lib
 	
 clean:
-		erase /Q /S uptime.res uptime.obj uptime.dll uptime.exp uptime.lib
+		erase /Q /S stats.res stats.obj stats.dll stats.exp stats.lib $(stats_objs)
+
 

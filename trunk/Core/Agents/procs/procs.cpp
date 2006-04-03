@@ -160,7 +160,7 @@ BBAlarmType				AgentProcs::ExecProcRules(stringstream & reportData) {
 			report << " running" << endl;
 		} else {
 			report << "&" << bbcolors[(*itr)->color] << " " << (*itr)->name << " " << (*itr)->rule << " - " << count << " instance";
-			if (count > 0)
+			if (count > 1)
 				report << "s";
 			report << " running" << endl;
 			if ((*itr)->color > state)
@@ -249,7 +249,7 @@ bool AgentProcs::Init() {
 
 
 //
-// cosntructor 
+// constructor 
 //
 AgentProcs::AgentProcs(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	

@@ -1,6 +1,27 @@
 ChangeLog file for BBWin
 ==============================================================
 
+BBWin 0.5 Preview version - 3 April 2006
+-------------------
+
++ New Features
+* second public version of BBWin
+* Agents:
+	- cpu (experimental)
+	- disk
+	- memory
+	- stats (netstat)
++ Tools:
+	- Migrate configuration from other BB Clients to the BBWin configuration file format
+
++ Updates
+* BBWin : update minor bug with the management of the timer configuration value
+* Agents :
+	- externals : can work with externals reports having lifetime
+	- uptime : updated to use performances counters without pdh library
+
+
+
 
 BBWin 0.4 Preview version - 15 March 2006
 -------------------

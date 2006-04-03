@@ -32,9 +32,9 @@ static const BBWinAgentInfo_t 		extAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
 	1,              					// agentMajVersion;
-	0,              					// agentMinVersion;
+	1,              					// agentMinVersion;
 	"externals",    					// agentName;
-	"externals agent in charge to execute independant bb scripts",        // agentDescription;
+	"externals agent : execute independant big brother hobbit scripts",        // agentDescription;
 };                
 
 const BBWinAgentInfo_t & AgentExternals::About() {
@@ -44,17 +44,32 @@ const BBWinAgentInfo_t & AgentExternals::About() {
 void 			AgentExternals::SendExternalReport(const string & reportName, const string & reportPath) {
 	ifstream 	report(reportPath.c_str());
 	string		res;
+	size_t		pos;
+	string		color;
+	string 		lifeTime;
 	
     if (report) {
 		string 			statusLine; 
 		stringstream 	reportData;	
         
 		getline(report, statusLine );
+		pos = statusLine.find_first_of(" ");
+		reportData << "status";
+		if (pos > 0 && pos < statusLine.length()) {
+			color = statusLine.substr(0, pos);
+			statusLine.erase(0, pos);
+			pos = color.find_first_of("+");
+			if (pos > 0 && pos < statusLine.length()) {
+				lifeTime = color.substr(pos, color.length());
+				color = color.substr(0, pos);
+				reportData << lifeTime;
+			}
+		}
 		// check the validity of the line
-		reportData << "status " << m_mgr.GetSetting("hostname") << "." << reportName << " ";
+		reportData << " " << m_mgr.GetSetting("hostname") << "." << reportName << " ";
+		reportData << color << " ";
 		reportData << statusLine << endl;
         reportData << report.rdbuf();
-        //cout << "Buffer : \n" << reportData.str() << endl;
 		report.close();
 		m_mgr.Message(reportData.str(), res);
     }

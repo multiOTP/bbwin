@@ -19,7 +19,11 @@
 
 all: disk.dll
 
-cflags = $(cflags) /EHsc /I ../..
+BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
+BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
+BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
+
+cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
@@ -32,7 +36,7 @@ disk.res: disk.rc
 	$(rc) $(rcflags) $(rcvars) /fo disk.res disk.rc
 	
 disk.dll: $(disk_objs) disk.res
-    $(link) /DLL $(dllldebug) $(disk_objs) disk.res -out:disk.dll
+    $(link) /DLL $(dllldebug) $(disk_objs) disk.res -out:disk.dll $(BOOST_LIB)
 
 clean:
-		erase /Q /S disk.res $(disk_objs) disk.dll
+		erase /Q /S disk.res $(disk_objs) disk.dll disk.lib disk.exp

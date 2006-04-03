@@ -19,29 +19,105 @@
 #define		__CPU_H__
 
 #include <string>
+#include <map>
+#include <set>
 
 #include "IBBWinAgent.h"
 
 #define	 CPU_DELAY		0
+#define	MAX_TABLE_PROC	512
+
+//
+// Default alerts values
+//
+#define DEF_CPU_WARN	90
+#define DEF_CPU_PANIC	95
+#define DEF_CPU_DELAY	3
+
+enum BBAlarmType { GREEN, YELLOW, RED };
 
 
-#define	MAX_TABLE_PROC	1024
-
-struct proc_s {
-	CCpuUsage 		usage;
-	std::string		name;
+class	CpuRule {
+	private :
+		DWORD		m_delay;
+		DWORD		m_curDelay;
+		DWORD		m_warnPercent;
+		DWORD		m_panicPercent;
+		
+	public :
+		
 };
 
-typedef struct proc_s		proc_t;
+class UsageProc {
+	private :
+		DWORD			m_pid;
+		std::string		m_name;
+		bool			m_exists;
+		CCpuUsage		m_usage;
+		double			m_lastUsage;
+		size_t			m_mem;
+
+	public :
+		UsageProc(DWORD pid);
+		bool	GetExists() const { return m_exists; };
+		void	SetExists(const bool exists) { m_exists = exists; };
+		double	ExecGetUsage();
+		double	GetUsage() const { return m_lastUsage; } ;
+		DWORD	GetPid() const { return m_pid; };
+		void	SetMemUsage(const size_t & mem) { m_mem = mem; };
+		size_t	GetMemUsage() const { return m_mem; };
+		void	SetName(const std::string & name) { m_name = name; };
+		const std::string & GetName() const { return m_name; };
+};
+
+//  
+// Comparative function used for the set container (procs sorted by usage)
+struct cpuusagecomp
+{
+  bool operator()(const UsageProc * p1, const UsageProc * p2) const
+  {
+	return (p1->GetUsage() >= p2->GetUsage());
+  }
+};
+
+// typedefs of the set ( procs sorted by usage)
+typedef set<const UsageProc *, cpuusagecomp>			procs_sorted_t;
+typedef set<const UsageProc *, cpuusagecomp>::iterator	procs_sorted_itr_t;
+
+
+typedef std::map<DWORD, UsageProc *>::iterator 	procs_itr;
 
 class AgentCpu : public IBBWinAgent
 {
 	private :
-		IBBWinAgentManager 		& m_mgr;
-		CCpuUsage 				m_usage;
+		IBBWinAgentManager 				& m_mgr;
+		CCpuUsage						m_usage; // cpu usage used when psmode is off
+		DWORD							m_procCount; // number of processors on the server
+		bool							m_alwaysgreen; // if no status check is done
+		bool							m_firstPass; // to know if it is the first passage
+		bool							m_psMode;
+		DWORD							m_pageColor;
+		std::map<DWORD, UsageProc *>	m_procs;
+		procs_sorted_t					m_procsSorted; // set container with sorted procs
+		double							m_systemWideCpuUsage; //Cpu usage (sum of all proc usages)
 		
+		DWORD							m_warnPercent;
+		DWORD							m_panicPercent;
+		DWORD							m_delay;
+		DWORD							m_curDelay;
+		
+	private :
+		void		GetProcsData();
+		void		GetCpuData();
+		void		DeleteOlderProcs();
+		void		InitProcs();
+
+		//void		ApplyRules();
+		void		SendStatusReport();
+	
 	public :
 		AgentCpu(IBBWinAgentManager & mgr);
+		~AgentCpu();
 		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();

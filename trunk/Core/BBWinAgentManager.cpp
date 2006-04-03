@@ -53,6 +53,9 @@ BBWinAgentManager::BBWinAgentManager(const bbwinhandler_data_t & data) :
 							m_timer (data.timer)
 {
 		m_log = Logging::getInstancePtr();
+		m_logReportFailure = false;
+		if (m_setting["logreportfailure"] == "true")
+			m_logReportFailure = true;	
 }
 
 //
@@ -202,11 +205,13 @@ void 			BBWinAgentManager::Status(const string & testName, const string & color,
 		try {
 			hobNet.Status(testName, color, text, lifeTime);
 		} catch (BBWinNetException ex) {
-			string mes;
-			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			if (m_logReportFailure) {
+				string mes;
+						
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -222,11 +227,13 @@ void		BBWinAgentManager::Notify(const string & testName, const string & text) {
 		try {
 			hobNet.Notify(testName, text);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -242,11 +249,13 @@ void		BBWinAgentManager::Data(const string & dataName, const string & text) {
 		try {
 			hobNet.Data(dataName, text);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -262,11 +271,13 @@ void 		BBWinAgentManager::Disable(const string & testName, const string & durati
 		try {
 			hobNet.Disable(testName, duration, text);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -282,11 +293,13 @@ void		BBWinAgentManager::Enable(const string & testName) {
 		try {
 			hobNet.Enable(testName);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -302,11 +315,13 @@ void		BBWinAgentManager::Drop()  {
 		try {
 			hobNet.Drop();
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -323,11 +338,13 @@ void		BBWinAgentManager::Drop(const string & testName) {
 		try {
 			hobNet.Drop(testName);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -343,11 +360,13 @@ void		BBWinAgentManager::Rename(const string & newHostName) {
 		try {
 			hobNet.Rename(newHostName);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -364,11 +383,13 @@ void		BBWinAgentManager::Rename(const string & oldTestName, const string & newTe
 		try {
 			hobNet.Rename(oldTestName, newTestName);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -383,11 +404,13 @@ void		BBWinAgentManager::Message(const string & message, string & dest) {
 		try {
 			hobNet.Message(message, dest);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -402,11 +425,13 @@ void		BBWinAgentManager::Config(const string & fileName, string & dest) {
 		try {
 			hobNet.Config(fileName, dest);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
@@ -421,11 +446,13 @@ void		BBWinAgentManager::Query(const string & testName, string & dest) {
 		try {
 			hobNet.Query(testName, dest);
 		} catch (BBWinNetException ex) {
-			string mes;
+			if (m_logReportFailure) {
+				string mes;
 			
-			mes = "Sending report to " + (*itr) + " failed.";
-			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+				mes = "Sending report to " + (*itr) + " failed.";
+				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+			}
 			continue ; 
 		}
 	}
