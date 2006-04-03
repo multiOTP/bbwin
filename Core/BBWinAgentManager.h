@@ -36,7 +36,8 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 		setting_t			& m_setting;
 		DWORD				m_timer;
 		BBWinNet			m_net;
-	
+		bool				m_logReportFailure;
+		
 	private :
 		void	LoadFileConfiguration(const std::string & filePath, const std::string & nameSpace, bbwinagentconfig_t & config);
 	

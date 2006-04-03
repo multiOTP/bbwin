@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
-	<Product Name='BBWin 0.4' Id='0713C133-A5CB-4106-8D9A-E500A17093F1'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
-		Language='1033' Codepage='1252' Version='0.4' Manufacturer='GNU'>
+	<Product Name='BBWin 0.5' Id='A8E1F95F-BF9E-47b6-BF01-D058CDAE1239'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
+		Language='1033' Codepage='1252' Version='0.5' Manufacturer='GNU'>
 
-    <Package Id='C9F45A93-B783-4e68-A9E2-5F89249E756D' Keywords='Installer'
-      Description="BBWin 0.4 Installer"
+    <Package Id='3AD9AD90-E964-4ae0-824E-EDE7CE61641A' Keywords='Installer'
+      Description="BBWin 0.5 Installer"
       Comments='BBWin : Big Brother Hobbit Windows Client' Manufacturer='GNU'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
@@ -53,12 +53,28 @@
 					<!--
 					Agents Sections
 					-->
+					<Component Id='CpuC' Guid='1E68A93A-7A2D-407e-AAFD-CB7486DF40C3'>
+						<File Id='cpu.dll' Name="cpu.dll" LongName='cpu.dll' DiskId='1' src='../Core/Agents/Cpu/Cpu.dll' />
+					</Component>
+					
+					<Component Id='DiskC' Guid='9D02AF30-5600-49b7-B1A5-E98549AD28C1'>
+						<File Id='disk.dll' Name="disk.dll" LongName='disk.dll' DiskId='1' src='../Core/Agents/Disk/Disk.dll' />
+					</Component>
+					
 					<Component Id='ExternalsC' Guid='83BA5796-DC8B-42a1-A6E5-797E75AC936A'>
 						<File Id='externals.dll' Name="ext.dll" LongName='externals.dll' DiskId='1' src='../Core/Agents/Externals/Externals.dll' />
 					</Component>
 					
+					<Component Id='MemoryC' Guid='68FA599B-2FC7-42b2-A30E-242EE9FC71C9'>
+						<File Id='memory.dll' Name="mem.dll" LongName='memory.dll' DiskId='1' src='../Core/Agents/Memory/Memory.dll' />
+					</Component>
+					
 					<Component Id='ProcsC' Guid='051FD1F6-DC24-4c3e-8DD6-82DD7DBE92A2'>
 						<File Id='procs.dll' Name="procs.dll" LongName='procs.dll' DiskId='1' src='../Core/Agents/Procs/Procs.dll' />
+					</Component>
+					
+					<Component Id='StatsC' Guid='A459F420-1E1D-45c3-8579-9E5FA1FFEA47'>
+						<File Id='stats.dll' Name="stats.dll" LongName='stats.dll' DiskId='1' src='../Core/Agents/Stats/Stats.dll' />
 					</Component>
 					
 					<Component Id='UptimeC' Guid='83BA5796-DC8B-42a1-A6E5-797E75AC936A'>
@@ -74,6 +90,11 @@
 						<File Id='cluster.exe' Name="clustr.exe" LongName='cluster.exe' DiskId='1' src='../Externals/c/Cluster/cluster.exe' />
 					</Component>
 					
+					<Component Id='FsmonC' Guid='F6088C2A-0E71-4a67-A30D-12C39D9F3432'>
+						<File Id='fsmon.vbs' Name="fsmon.vbs" LongName='fsmon.vbs' DiskId='1' src='../Externals/vbs/fsmon/fsmon.vbs' />
+					</Component>
+					
+					
 					<Component Id='WlbsC' Guid='C90A6F0B-7E5E-43b9-BAA0-33B91A04E04A'>
 						<File Id='wlbs.vbs' Name="wlbs.vbs" LongName='wlbs.vbs' DiskId='1' src='../Externals/vbs/wlbs/wlbs.vbs' />
 					</Component>
@@ -85,6 +106,7 @@
 				<Directory Id='docD' Name="doc" >
 					<Component Id="CommonReadMeTextFilesC" Guid='B7889E96-1BB2-46f2-83FE-52EC721915CA'>
 						<File Id='ReadMe.txt' Name="ReadMe.txt" LongName='ReadMe.txt' DiskId='1' src='../ReadMe.txt' Vital='yes'/>
+						<File Id='BBWin.cfg.example' Name="BBWin.cfg" LongName='BBWin.cfg.example' DiskId='1' src='../Core/BBWin.cfg' Vital='yes'/>
 					</Component>
 				</Directory>
 				
@@ -98,6 +120,10 @@
 						<File Id='wlbs.cfg' Name="wlbs.cfg" LongName='wlbs.cfg' DiskId='1' src='../Externals/vbs/wlbs/wlbs.cfg' />
 					</Component>
 
+					<Component Id="FsmonConfigC" Guid='39CFAA7D-15E7-4679-8DA5-71E55723FD9C' Permanent="yes" NeverOverwrite="yes">
+						<File Id='fsmon.cfg' Name="fsmon.cfg" LongName='fsmon.cfg' DiskId='1' src='../Externals/vbs/fsmon/fsmon.cfg' />
+					</Component>
+					
 				</Directory>
 				
 				<!-- SDK Part like Big Software :) -->
@@ -120,6 +146,12 @@
 					</Directory>
 				</Directory>
 				
+				<Directory Id='toolsD' Name="tools">
+					<Component Id="MigrateBBntC" Guid='085CF654-C714-425e-BFEC-FF4463EDA3AB'>
+						<File Id='MigrateBBntToBBWin.vbs' Name="Migrate.vbs" LongName='MigrateBBntToBBWin.vbs' DiskId='1' src='../Tools/Migrate/MigrateBBntToBBWin.vbs' />
+					</Component>
+				</Directory>
+				
 				<Component Id="CommonTextFilesC" Guid='361CEF4A-BC5C-40df-82DD-5C17434C927C'>
 						<File Id='Licence.txt' Name="Licence.txt" LongName='Licence.txt' DiskId='1' src='../license.txt' Vital='yes'/>
 						<File Id='Credits.txt' Name="Credits.txt" LongName='Credits.txt' DiskId='1' src='../Credits.txt' Vital='yes'/>
@@ -131,7 +163,7 @@
         </Directory>
 	</Directory>
 						
-    <Feature Id='Complete' Title='BBWin 0.4' Description='The complete BBWin package.'
+    <Feature Id='Complete' Title='BBWin 0.5' Description='The complete BBWin package.'
       TypicalDefault='install' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
 		<Feature Id='BBWin' Title='BBWin' Description='The BBWin core service.'
 		TypicalDefault='install' Level='1' Absent='disallow' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR'>
@@ -148,14 +180,29 @@
 		</Feature>
 		<Feature Id='Agents' Title='Agents' Description='BBWin Agents.'
 			TypicalDefault='install' Level='1' ConfigurableDirectory='INSTALLDIR'>
+			<Feature Id='Cpu' Title='Cpu' Description='Monitor cpu.'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='CpuC' />
+			</Feature>
+			<Feature Id='Disk' Title='Disk' Description='Monitor disks.'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='DiskC' />
+			</Feature>
 			<Feature Id='ExternalsAgent' Title='Externals' Description='Used to launch externals Big Brother scripts or executables.'
 			TypicalDefault='install' Level='1'>
 				<ComponentRef Id='ExternalsC' />
 			</Feature>
-			
+			<Feature Id='Memory' Title='Memory' Description='Monitor memory.'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='MemoryC' />
+			</Feature>
 			<Feature Id='Procs' Title='Procs' Description='Monitor running processes.'
 			TypicalDefault='install' Level='1'>
 				<ComponentRef Id='ProcsC' />
+			</Feature>
+			<Feature Id='Stats' Title='Stats' Description='Send some statistics (netstat for example) to hobbit server for trends purpose.'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='StatsC' />
 			</Feature>
 			<Feature Id='Uptime' Title='Uptime' Description='Monitor the uptime. It will warn if a reboot has been done recently.'
 			TypicalDefault='install' Level='1'>
@@ -164,16 +211,28 @@
 		</Feature>	
 		<Feature Id='Externals' Title='Externals' Description='BBWin Externals.'
 			TypicalDefault='install' Level='1' ConfigurableDirectory='INSTALLDIR'>
-			<Feature Id='Cluster' Title='Cluster' Description='Monitor mscs windows clusters. It will warn if the current node changed.'
+			<Feature Id='Cluster' Title='Cluster' Description='Monitor MSCS Windows clusters. It will warn if the current node changed.'
 			TypicalDefault='advertise' Level='1'>
 				<ComponentRef Id='ClusterC' />
 			</Feature>
-			<Feature Id='Wlbs' Title='Wlbs' Description='Monitor wlbs (nlb) windows clusters. It will warn if the node status is not correct.'
+			<Feature Id='Fsmon' Title='Fsmon' Description='Monitor folders and Windows files.'
 			TypicalDefault='advertise' Level='1'>
 				<ComponentRef Id='WlbsC' />
 				<ComponentRef Id='WlbsConfigC' />
 			</Feature>
+			<Feature Id='Wlbs' Title='Wlbs' Description='Monitor WLBS (NLB) Windows clusters. It will warn if the node status is not correct.'
+			TypicalDefault='advertise' Level='1'>
+				<ComponentRef Id='FsmonC' />
+				<ComponentRef Id='FsmonConfigC' />
+			</Feature>
 		</Feature>	
+		<Feature Id='Tools' Title='Tools' Description='Extra BBWin tools' 
+			TypicalDefault='install' Level='1'>
+			<Feature Id='Migration' Title='Migration' Description='Migration tools. Automatic migration from other BB Windows Clients (BBnt).'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='MigrateBBntC' />
+			</Feature>
+		</Feature>
 		<Feature Id='SDK' Title='Agents SDK' Description='BBWin Agents development toolkit.'
 			TypicalDefault='advertise' Level='1'>
 			<ComponentRef Id='SampleC'/>

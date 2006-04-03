@@ -17,8 +17,6 @@
 
 #include <windows.h>
 
-#include <pdh.h>
-
 #include <set>
 #include <list>
 #include <iostream>
@@ -28,22 +26,23 @@
 #include <string>
 using namespace std;
 
+#include "SystemCounters.h"
+
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "boost/format.hpp"
+
+using namespace boost::posix_time;
+using namespace boost::gregorian;
+
 #define BBWIN_AGENT_EXPORTS
 
 #include "uptime.h"
 
-// HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Perflib\009
-
-#define SYSTEM_OBJECT_INDEX					2		// 'System' object
-#define UPTIME_OBJECT_INDEX					674		// 'Uptime' object
-
-const char				uptimeCounterPath[] = "\\\\.\\System\\System Up Time";
-
 static const BBWinAgentInfo_t 		uptimeAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	0,              // agentMajVersion;
-	2,              // agentMinVersion;
+	1,              // agentMajVersion;
+	0,              // agentMinVersion;
 	"uptime",    // agentName;
 	"uptime agent : report uptime server",        // agentDescription;
 };                
@@ -52,46 +51,17 @@ const BBWinAgentInfo_t & AgentUptime::About() {
 	return uptimeAgentInfo;
 }
 
-template <class T>
-static T 			MyGetCounterValue(LPCTSTR counterPath) {
-	T				value;
-	PDH_STATUS  	status;
-	HQUERY			perfQuery = NULL;
-	HCOUNTER		uptimeCounter;
-	
-	PDH_FMT_COUNTERVALUE uptimeValue;
-	value = 0;
-	OSVERSIONINFO osvi;    
-	ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	if(!GetVersionEx(&osvi) || (osvi.dwPlatformId != VER_PLATFORM_WIN32_NT))
-		return 0;//unknown OS or not NT based
-	if( PdhOpenQuery( NULL, 0, &perfQuery ) != ERROR_SUCCESS )
-		return 0;
-	status = PdhAddCounter( perfQuery, counterPath,
-							0, &uptimeCounter );
-	if( status != ERROR_SUCCESS )
-		return 0;
-	status = PdhCollectQueryData( perfQuery );
-	if( status != ERROR_SUCCESS )
-		return 0;
-	status = PdhGetFormattedCounterValue( uptimeCounter, PDH_FMT_LARGE , NULL, &uptimeValue );
-	if( status != ERROR_SUCCESS )
-		return 0;
-	PdhRemoveCounter(uptimeCounter);
-	PdhCloseQuery( perfQuery );
-	value = (T) (uptimeValue.largeValue);
-	return value;
-}
-
 void AgentUptime::Run() {
 	DWORD				seconds;
 	bool				alert = false;
 	DWORD				day, hour, min;
 	stringstream 		reportData;	
+	CSystemCounters		data;
+	ptime 				now;
 	
-	seconds = MyGetCounterValue <DWORD> (uptimeCounterPath);
-	reportData << "uptime status [" << m_mgr.GetSetting("hostname") << "]\n\n" << endl;
+	now = second_clock::local_time();
+	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] - uptime\n\n";
+	seconds = data.GetSystemUpTime();
 	if (seconds <= m_delay) {
 		reportData << "&yellow machine rebooted recently" << endl;
 		reportData << endl;

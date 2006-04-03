@@ -23,20 +23,20 @@ BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
 BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
 
-cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
+cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
 	
 ## cpu dependencies
 
-cpu_objs = 	cpu.obj CpuUsage.obj
-
+cpu_objs = 	cpu.obj CpuUsage.obj 
+common_objs = ../common/SystemCounters.obj
 cpu.res: cpu.rc
 	$(rc) $(rcflags) $(rcvars) /fo cpu.res cpu.rc
 	
-cpu.dll: $(cpu_objs) cpu.res
-    $(link) /DLL $(dllldebug) $(cpu_objs) cpu.res -out:cpu.dll $(BOOST_LIB) Psapi.lib pdh.lib
+cpu.dll: $(cpu_objs) cpu.res $(common_objs)
+    $(link) /DLL $(dllldebug) $(cpu_objs) $(common_objs) cpu.res -out:cpu.dll $(BOOST_LIB) Psapi.lib
 	
 clean:
 		erase /Q /S cpu.res cpu.obj cpu.dll cpu.exp cpu.lib $(cpu_objs)

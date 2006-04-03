@@ -17,29 +17,28 @@
 
 !include <Win32.Mak>
 
-all: uptime.dll
+all: memory.dll
 
 BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
 BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
 
-cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
+cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
 	
-## uptime dependencies
+## memory dependencies
 
-uptime_objs = 	uptime.obj ../common/SystemCounters.obj
+memory_objs = 	memory.obj
 
-uptime.res: uptime.rc
-	$(rc) $(rcflags) $(rcvars) /fo uptime.res uptime.rc
+memory.res: memory.rc
+	$(rc) $(rcflags) $(rcvars) /fo memory.res memory.rc
 	
-uptime.dll: $(uptime_objs) uptime.res
-    $(link) /DLL $(dllldebug) $(uptime_objs) uptime.res -out:uptime.dll $(BOOST_LIB) 
-
-
+memory.dll: $(memory_objs) memory.res
+    $(link) /DLL $(dllldebug) $(memory_objs) memory.res -out:memory.dll $(BOOST_LIB)
 	
 clean:
-		erase /Q /S uptime.res uptime.obj uptime.dll uptime.exp uptime.lib
+		erase /Q /S memory.res memory.obj memory.dll memory.exp memory.lib $(memory_objs)
+
 
