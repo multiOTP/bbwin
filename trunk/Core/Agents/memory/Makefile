@@ -37,6 +37,8 @@ memory.res: memory.rc
 	
 memory.dll: $(memory_objs) memory.res
     $(link) /DLL $(dllldebug) $(memory_objs) memory.res -out:memory.dll $(BOOST_LIB)
+	if not exist ..\..\..\Release mkdir ..\..\..\Release
+	copy /Y memory.dll ..\..\..\Release
 	
 clean:
 		erase /Q /S memory.res memory.obj memory.dll memory.exp memory.lib $(memory_objs)

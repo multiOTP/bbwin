@@ -147,17 +147,17 @@ void		AgentMemory::SendStatusReport() {
 			m_memData[VIRT_MEM_TYPE].used % m_memData[VIRT_MEM_TYPE].total % m_memData[VIRT_MEM_TYPE].value;
 	reportData << format("&%s Page:      %6luM %6luM  %3lu%%\n") % bbcolors[m_memData[PAGE_MEM_TYPE].color] %
 			m_memData[PAGE_MEM_TYPE].used % m_memData[PAGE_MEM_TYPE].total % m_memData[PAGE_MEM_TYPE].value;
-	m_mgr.Status("memory", bbcolors[m_pageColor], reportData.str());
+	m_mgr.Status("memory", bbcolors[m_pageColor], reportData.str().c_str());
 }
 
 void 		AgentMemory::Run() {
 	if (GetMemoryData() == false)
 		return ;
-	if (m_alwaysgreen == true && m_pageColor != GREEN) {
+	ApplyLevels();
+	if (m_alwaysgreen == true) {
 		m_pageColor = GREEN;
 		m_status = "Memory AlwaysGreen";
 	}
-	ApplyLevels();
 	SendStatusReport();
 }
 
@@ -168,8 +168,9 @@ void			AgentMemory::SetMemDataLevels(mem_data_t & mem, DWORD warn, DWORD panic) 
 		m_mgr.ReportEventWarn("invalid warn range level. (1 to 101 % needed)");
 	if (panic > 0 && panic < 110)
 		mem.panic = panic;
-	else 
+	else {
 		m_mgr.ReportEventWarn("invalid panic range level. (1 to 101 % needed)");
+	}
 	if (mem.panic < mem.warn) {
 		m_mgr.ReportEventWarn("one warn level is higher than the panic level");
 		mem.warn = mem.panic;
@@ -177,40 +178,57 @@ void			AgentMemory::SetMemDataLevels(mem_data_t & mem, DWORD warn, DWORD panic) 
 }
 
 bool AgentMemory::Init() {
-	bbwinagentconfig_t		conf;
+	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
-	if (m_mgr.LoadConfiguration(m_mgr.GetAgentName(), conf) == false)
+	if (conf == NULL)
 		return false;
 	m_klib = GetModuleHandle("kernel32.dll");
     if (m_klib == NULL) {
 		m_mgr.ReportEventError("can't get kernel32.dll module");
 		return false;
 	}
-	std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t > 	range;
-	range = conf.equal_range("setting");
-	for ( ; range.first != range.second; ++range.first) {
-		if (range.first->second["name"] == "alwaysgreen") {
-			if (range.first->second["value"] == "true")
+	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		string			name;
+
+		name = m_mgr.GetConfigurationRangeValue(range, "name");
+		if (name == "alwaysgreen") {
+			string value =  m_mgr.GetConfigurationRangeValue(range, "value");
+			if (value == "true")
 				m_alwaysgreen = true;
-		}
-		if (range.first->second["name"] == "physical") {
-			SetMemDataLevels(m_memData[PHYS_MEM_TYPE], m_mgr.GetNbr(range.first->second["warnlevel"]), 
-														m_mgr.GetNbr(range.first->second["paniclevel"]));
-		}
-		if (range.first->second["name"] == "pages") {
-			SetMemDataLevels(m_memData[PAGE_MEM_TYPE], m_mgr.GetNbr(range.first->second["warnlevel"]), 
-														m_mgr.GetNbr(range.first->second["paniclevel"]));
-		}
-		if (range.first->second["name"] == "virtual") {
-			SetMemDataLevels(m_memData[VIRT_MEM_TYPE], m_mgr.GetNbr(range.first->second["warnlevel"]), 
-														m_mgr.GetNbr(range.first->second["paniclevel"]));
+		} else {
+			DWORD panic, warn;
+			string sPanic, sWarn;
+		
+			sPanic = m_mgr.GetConfigurationRangeValue(range, "paniclevel");
+			sWarn = m_mgr.GetConfigurationRangeValue(range, "warnlevel");
+			if (name == "physical") {
+				warn = (sWarn == "") ? DEF_PHYS_WARN : m_mgr.GetNbr(sWarn.c_str());
+				panic = (sPanic == "") ? DEF_PHYS_PANIC : m_mgr.GetNbr(sPanic.c_str());
+				SetMemDataLevels(m_memData[PHYS_MEM_TYPE], warn, panic);
+			}
+			if (name == "page") {
+				warn = (sWarn == "") ? DEF_PAGE_WARN : m_mgr.GetNbr(sWarn.c_str());
+				panic = (sPanic == "") ? DEF_PAGE_PANIC : m_mgr.GetNbr(sPanic.c_str());
+				SetMemDataLevels(m_memData[PAGE_MEM_TYPE], warn, panic);
+			}
+			if (name == "virtual") {
+				warn = (sWarn == "") ? DEF_VIRT_WARN : m_mgr.GetNbr(sWarn.c_str());
+				panic = (sPanic == "") ? DEF_VIRT_PANIC : m_mgr.GetNbr(sPanic.c_str());
+				SetMemDataLevels(m_memData[VIRT_MEM_TYPE], warn, panic);
+			}
 		}
 	}
+	m_mgr.FreeConfigurationRange(range);
+	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 
 AgentMemory::AgentMemory(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	m_alwaysgreen = false;
+	ZeroMemory(m_memData, sizeof(m_memData));
 	m_memData[PHYS_MEM_TYPE].warn = DEF_PHYS_WARN;
 	m_memData[PHYS_MEM_TYPE].panic = DEF_PHYS_PANIC;
 	m_memData[VIRT_MEM_TYPE].warn = DEF_VIRT_WARN;

@@ -43,7 +43,7 @@ const BBWinAgentInfo_t & AgentExternals::About() {
 
 void 			AgentExternals::SendExternalReport(const string & reportName, const string & reportPath) {
 	ifstream 	report(reportPath.c_str());
-	string		res;
+	TCHAR		buf[1024];
 	size_t		pos;
 	string		color;
 	string 		lifeTime;
@@ -71,7 +71,7 @@ void 			AgentExternals::SendExternalReport(const string & reportName, const stri
 		reportData << statusLine << endl;
         reportData << report.rdbuf();
 		report.close();
-		m_mgr.Message(reportData.str(), res);
+		m_mgr.Message(reportData.str().c_str(), buf, 1024);
     }
 }
 
@@ -84,10 +84,13 @@ void			AgentExternals::SendExternalsReports() {
 	dirSpec += m_mgr.GetSetting("tmppath") + "\\*";
 	hFind = FindFirstFile(dirSpec.c_str(), &FindFileData);
 	if (hFind == INVALID_HANDLE_VALUE) {
+		TCHAR	buf[ERROR_STR_LEN + 1];
 		string err;
-		m_mgr.GetLastErrorString(err);
+
+		m_mgr.GetLastErrorString(buf, ERROR_STR_LEN);
+		err = buf;
 		string mess = "can't get file listing from tmp path " + m_mgr.GetSetting("tmppath") + ": " + err;
-		m_mgr.ReportEventError(mess);
+		m_mgr.ReportEventError(mess.c_str());
 		return ;
 	} else {
 		string		reportName;
@@ -140,58 +143,83 @@ void 	AgentExternals::Run() {
 }
 
 AgentExternals::AgentExternals(IBBWinAgentManager & mgr) : m_mgr(mgr) {
-	m_timer = m_mgr.GetNbr(m_mgr.GetSetting("timer"));
+	m_timer = m_mgr.GetNbr(m_mgr.GetSetting("timer").c_str());
 	m_hCount = m_mgr.GetHandlesCount();
-	m_hEvents = new HANDLE[m_hCount];
+	try {
+		m_hEvents = new HANDLE[m_hCount];
+	} catch (std::bad_alloc ex) {
+		m_hEvents = NULL;
+	}
 	m_mgr.GetHandles(m_hEvents);
 	m_logsTimer = EXTERNAL_DEFAULT_LOG_TIMER;
 }
 
 bool		AgentExternals::Init() {
-	if (m_mgr.LoadConfiguration(m_mgr.GetAgentName(), m_conf) == false)
-		return false;
+	 bbwinagentconfig_t		* conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 	
-	std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t > 	range;
-	range = m_conf.equal_range("setting");
-	for ( ; range.first != range.second; ++range.first) {
-		if (range.first->second["name"] == "timer") {
-			DWORD timer = m_mgr.GetSeconds(range.first->second["value"]);
+	if (conf == NULL)
+		return false;
+	if (m_hEvents == NULL)
+		return false;
+	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		string		name, value;
+
+		name = m_mgr.GetConfigurationRangeValue(range, "name");
+		value = m_mgr.GetConfigurationRangeValue(range, "value");		
+		if (name == "timer" && value.length() > 0) {
+			DWORD timer = m_mgr.GetSeconds(value.c_str());
 			if (timer < 5 || timer > 2678400)
 				m_mgr.ReportEventWarn("Setting timer must be between 5 seconds and 31 days(will use default setting (30 seconds) until you check your configuration)");
 			else 
-				m_timer = m_mgr.GetSeconds(range.first->second["value"]);
+				m_timer = m_mgr.GetSeconds(value.c_str());
 		}
-		if (range.first->second["name"] == "logstimer") {
-			DWORD logTimer = m_mgr.GetSeconds(range.first->second["value"]);
+		if (name == "logstimer" && value.length() > 0) {
+			DWORD logTimer = m_mgr.GetSeconds(value.c_str());
 			if (logTimer < 5 || logTimer > 600)
 				m_mgr.ReportEventWarn("Setting logstimer must be between 5 seconds and 10 minutes (will use default setting (30 seconds) until you check your configuration)");
 			else 
-				m_logsTimer = m_mgr.GetSeconds(range.first->second["value"]);
+				m_logsTimer = m_mgr.GetSeconds(value.c_str());
 		}
 	}	
-	range = m_conf.equal_range("load");
-	for ( ; range.first != range.second; ++range.first) {
-		if (range.first->second["value"].length() > 0) {
+	m_mgr.FreeConfigurationRange(range);
+	range = m_mgr.GetConfigurationRange(conf, "load");
+	for ( ; range->first != range->second; ++range->first) {
+		string		timer, value;
+		
+		timer = m_mgr.GetConfigurationRangeValue(range, "timer");
+		value = m_mgr.GetConfigurationRangeValue(range, "value");	
+		if (value.length() > 0) {
 			External		*ext;
-			DWORD			timer = m_timer;
-			if (range.first->second["timer"].length() > 0) {
-				timer = m_mgr.GetSeconds(range.first->second["timer"]);
-				if (timer < 5 || timer > 2678400) {
+			DWORD			dTimer = m_timer;
+			if (timer.length() > 0) {
+				dTimer = m_mgr.GetSeconds(timer.c_str());
+				if (dTimer < 5 || dTimer > 2678400) {
 					string 	mess = "Setting timer ";
-					mess += range.first->second["name"];
+					mess += value;
 					mess += "must be between 5 seconds and 31 days(will use default setting (30 seconds) until you check your configuration)";
-					m_mgr.ReportEventWarn(mess);
+					m_mgr.ReportEventWarn(mess.c_str());
 				} else {
-					timer = m_mgr.GetSeconds(range.first->second["timer"]);
+					dTimer = m_mgr.GetSeconds(timer.c_str());
 				}
 			}
-			ext = new External(m_mgr, range.first->second["value"], timer);
+			try {
+				ext = new External(m_mgr, value, dTimer);
+			} catch (std::bad_alloc ex) {
+				continue ;
+			}
+			if (ext == NULL)
+				continue ;
 			m_externals.push_back(ext);
 		}
 	}
 	if (m_externals.size() == 0) {
 		m_mgr.ReportEventWarn("No externals have been specified");
 	}
+	m_mgr.FreeConfigurationRange(range);
+	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 

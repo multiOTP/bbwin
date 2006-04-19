@@ -25,6 +25,7 @@ using namespace std;
 #include "External.h"
 
 
+
 External::External(IBBWinAgentManager & mgr, const string extCommand, DWORD timer) :
 			m_mgr (mgr),
 			m_extCommand (extCommand),
@@ -39,12 +40,14 @@ bool	External::LaunchExternal() {
 	ZeroMemory(&m_procInfo, sizeof(m_procInfo));
 	if (!CreateProcess(0, const_cast <LPTSTR> (m_extCommand.c_str()), 0, 0, false, 0, 0, NULL, &m_startupInfo, &m_procInfo))
 	{
+		TCHAR		buf[ERROR_STR_LEN + 1];
 		string	err;
 		string 	mess;
 		
-		m_mgr.GetLastErrorString(err);
+		m_mgr.GetLastErrorString(buf, ERROR_STR_LEN);
+		err = buf;
 		mess = "Failed to launch " + m_extCommand + ": " + err;
-		m_mgr.ReportEventWarn(mess);
+		m_mgr.ReportEventWarn(mess.c_str());
 		return false;
 	}
 	return true;
@@ -52,9 +55,15 @@ bool	External::LaunchExternal() {
 
 void 	External::run() {
 	m_hCount = m_mgr.GetHandlesCount();
-	m_hEvents = new HANDLE[m_hCount + 2];
-	m_mgr.GetHandles(m_hEvents);
 	
+	try {
+		m_hEvents = new HANDLE[m_hCount + 2];
+	} catch (std::bad_alloc ex) {
+		return ;
+	}
+	if (m_hEvents == NULL)
+		return ;
+	m_mgr.GetHandles(m_hEvents);
 	for (;;) {
 		DWORD 		dwWait;
 		bool		over = false;

@@ -27,6 +27,8 @@
 #include "ou_thread.h"
 using namespace openutils;
 
+#define ERROR_STR_LEN			1024
+
 class	External : public Thread {
 	private :
 		DWORD				m_timer;

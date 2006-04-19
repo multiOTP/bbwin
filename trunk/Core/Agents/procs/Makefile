@@ -36,7 +36,9 @@ procs.res: procs.rc
 	$(rc) $(rcflags) $(rcvars) /fo procs.res procs.rc
 	
 procs.dll: $(procs_objs) procs.res
-    $(link) /DLL $(dllldebug) $(procs_objs) procs.res -out:procs.dll $(BOOST_LIB) Psapi.lib pdh.lib
+    $(link) /DLL $(dllldebug) $(procs_objs) procs.res -out:procs.dll $(BOOST_LIB) Psapi.lib
+	if not exist ..\..\..\Release mkdir ..\..\..\Release
+	copy /Y procs.dll ..\..\..\Release
 	
 clean:
 		erase /Q /S procs.res procs.obj procs.dll procs.exp procs.lib $(procs_objs)

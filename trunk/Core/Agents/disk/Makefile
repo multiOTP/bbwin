@@ -37,6 +37,8 @@ disk.res: disk.rc
 	
 disk.dll: $(disk_objs) disk.res
     $(link) /DLL $(dllldebug) $(disk_objs) disk.res -out:disk.dll $(BOOST_LIB)
+	if not exist ..\..\..\Release mkdir ..\..\..\Release
+	copy /Y disk.dll ..\..\..\Release
 
 clean:
 		erase /Q /S disk.res $(disk_objs) disk.dll disk.lib disk.exp

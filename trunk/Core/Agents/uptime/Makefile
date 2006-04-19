@@ -37,7 +37,8 @@ uptime.res: uptime.rc
 	
 uptime.dll: $(uptime_objs) uptime.res
     $(link) /DLL $(dllldebug) $(uptime_objs) uptime.res -out:uptime.dll $(BOOST_LIB) 
-
+	if not exist ..\..\..\Release mkdir ..\..\..\Release
+	copy /Y uptime.dll ..\..\..\Release
 
 	
 clean:

@@ -33,6 +33,8 @@ sample.res: sample.rc
 	
 sample.dll: $(sample_objs) sample.res
     $(link) /DLL $(dllldebug) $(sample_objs) sample.res -out:sample.dll
-
+	if not exist ..\..\..\Release mkdir ..\..\..\Release
+	copy /Y sample.dll ..\..\..\Release
+	
 clean:
 		erase /Q /S sample.res sample.obj sample.dll

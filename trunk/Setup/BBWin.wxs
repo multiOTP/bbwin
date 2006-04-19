@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
-	<Product Name='BBWin 0.5' Id='A8E1F95F-BF9E-47b6-BF01-D058CDAE1239'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
-		Language='1033' Codepage='1252' Version='0.5' Manufacturer='GNU'>
+	<Product Name='BBWin 0.6' Id='CDDF2D5B-ED67-4e3d-942B-E9BA8DA4D092'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
+		Language='1033' Codepage='1252' Version='0.6' Manufacturer='GNU'>
 
-    <Package Id='3AD9AD90-E964-4ae0-824E-EDE7CE61641A' Keywords='Installer'
-      Description="BBWin 0.5 Installer"
+    <Package Id='1BB5B649-A24A-4a4d-91CA-4DA652F5F2C2' Keywords='Installer'
+      Description="BBWin 0.6 Installer"
       Comments='BBWin : Big Brother Hobbit Windows Client' Manufacturer='GNU'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
@@ -21,7 +21,7 @@
 				
 				<Directory Id='binD' Name="bin">
 					<Component Id='BBWinServiceC' Guid='309BF033-B4EE-48fd-BECA-D4C1E9DA002E'>
-						<File Id='BBWinF' Name="BBWin.exe" LongName='BBWin.exe' DiskId='1' src='../Core/Release/BBWin.exe' Vital='yes'/>
+						<File Id='BBWinF' Name="BBWin.exe" LongName='BBWin.exe' DiskId='1' src='../Release/BBWin.exe' Vital='yes'/>
 						
 						<!-- Block for the installation of the service -->
 						<ServiceInstall Id='bbwinService' Description='Big Brother Hobbit Windows Client' 
@@ -29,11 +29,12 @@
 						Type='ownProcess' ErrorControl='ignore' Vital="yes"/>
 						<ServiceControl Id='bbwinControl' Name='BBWin' Remove='uninstall' Stop='both' Wait='yes'/>
 						<CreateFolder Directory='tmpD'/>
+						<CreateFolder Directory='logsD'/>
 					</Component>
 					
 					<!-- BBWinCmd.exe-->
 					<Component Id='BBWinCmdC' Guid='EAD17309-E32B-4e40-BFD9-E57AB379B3A7'>
-						<File Id='bbwincmdF' Name="BBCmd.exe" LongName='BBWinCmd.exe' DiskId='1' src='../Core/Release/BBWinCmd.exe' Vital='yes'/>
+						<File Id='bbwincmdF' Name="BBCmd.exe" LongName='BBWinCmd.exe' DiskId='1' src='../Release/BBWinCmd.exe' Vital='yes'/>
 					</Component>
 					
 					<!-- Registry settings -->
@@ -54,31 +55,35 @@
 					Agents Sections
 					-->
 					<Component Id='CpuC' Guid='1E68A93A-7A2D-407e-AAFD-CB7486DF40C3'>
-						<File Id='cpu.dll' Name="cpu.dll" LongName='cpu.dll' DiskId='1' src='../Core/Agents/Cpu/Cpu.dll' />
+						<File Id='cpu.dll' Name="cpu.dll" LongName='cpu.dll' DiskId='1' src='../Release/Cpu.dll' />
 					</Component>
 					
 					<Component Id='DiskC' Guid='9D02AF30-5600-49b7-B1A5-E98549AD28C1'>
-						<File Id='disk.dll' Name="disk.dll" LongName='disk.dll' DiskId='1' src='../Core/Agents/Disk/Disk.dll' />
+						<File Id='disk.dll' Name="disk.dll" LongName='disk.dll' DiskId='1' src='../Release/Disk.dll' />
 					</Component>
 					
 					<Component Id='ExternalsC' Guid='83BA5796-DC8B-42a1-A6E5-797E75AC936A'>
-						<File Id='externals.dll' Name="ext.dll" LongName='externals.dll' DiskId='1' src='../Core/Agents/Externals/Externals.dll' />
+						<File Id='externals.dll' Name="ext.dll" LongName='externals.dll' DiskId='1' src='../Release/Externals.dll' />
 					</Component>
 					
 					<Component Id='MemoryC' Guid='68FA599B-2FC7-42b2-A30E-242EE9FC71C9'>
-						<File Id='memory.dll' Name="mem.dll" LongName='memory.dll' DiskId='1' src='../Core/Agents/Memory/Memory.dll' />
+						<File Id='memory.dll' Name="mem.dll" LongName='memory.dll' DiskId='1' src='../Release/Memory.dll' />
 					</Component>
 					
 					<Component Id='ProcsC' Guid='051FD1F6-DC24-4c3e-8DD6-82DD7DBE92A2'>
-						<File Id='procs.dll' Name="procs.dll" LongName='procs.dll' DiskId='1' src='../Core/Agents/Procs/Procs.dll' />
+						<File Id='procs.dll' Name="procs.dll" LongName='procs.dll' DiskId='1' src='../Release/Procs.dll' />
 					</Component>
 					
 					<Component Id='StatsC' Guid='A459F420-1E1D-45c3-8579-9E5FA1FFEA47'>
-						<File Id='stats.dll' Name="stats.dll" LongName='stats.dll' DiskId='1' src='../Core/Agents/Stats/Stats.dll' />
+						<File Id='stats.dll' Name="stats.dll" LongName='stats.dll' DiskId='1' src='../Release/Stats.dll' />
+					</Component>
+					
+					<Component Id='SvcsC' Guid='4C5F9D0E-1886-4aef-8C4A-D2A876481881'>
+						<File Id='svcs.dll' Name="svcs.dll" LongName='svcs.dll' DiskId='1' src='../Release/Svcs.dll' />
 					</Component>
 					
 					<Component Id='UptimeC' Guid='83BA5796-DC8B-42a1-A6E5-797E75AC936A'>
-						<File Id='uptime.dll' Name="uptime.dll" LongName='uptime.dll' DiskId='1' src='../Core/Agents/Uptime/Uptime.dll' />
+						<File Id='uptime.dll' Name="uptime.dll" LongName='uptime.dll' DiskId='1' src='../Release/Uptime.dll' />
 					</Component>
 					
 				
@@ -87,7 +92,7 @@
 					-->
 					
 					<Component Id='ClusterC' Guid='1FE84C9C-B682-457a-83AD-CF28B4C51D00'>
-						<File Id='cluster.exe' Name="clustr.exe" LongName='cluster.exe' DiskId='1' src='../Externals/c/Cluster/cluster.exe' />
+						<File Id='cluster.exe' Name="clustr.exe" LongName='cluster.exe' DiskId='1' src='../Release/cluster.exe' />
 					</Component>
 					
 					<Component Id='FsmonC' Guid='F6088C2A-0E71-4a67-A30D-12C39D9F3432'>
@@ -102,6 +107,8 @@
 				</Directory>
 				
 				<Directory Id='tmpD' Name="tmp" />
+				
+				<Directory Id='logsD' Name="logs" />
 
 				<Directory Id='docD' Name="doc" >
 					<Component Id="CommonReadMeTextFilesC" Guid='B7889E96-1BB2-46f2-83FE-52EC721915CA'>
@@ -163,7 +170,7 @@
         </Directory>
 	</Directory>
 						
-    <Feature Id='Complete' Title='BBWin 0.5' Description='The complete BBWin package.'
+    <Feature Id='Complete' Title='BBWin 0.6' Description='The complete BBWin package.'
       TypicalDefault='install' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
 		<Feature Id='BBWin' Title='BBWin' Description='The BBWin core service.'
 		TypicalDefault='install' Level='1' Absent='disallow' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR'>
@@ -204,6 +211,10 @@
 			TypicalDefault='install' Level='1'>
 				<ComponentRef Id='StatsC' />
 			</Feature>
+			<Feature Id='Svcs' Title='Svcs' Description='Monitor Windows services.'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='SvcsC' />
+			</Feature>
 			<Feature Id='Uptime' Title='Uptime' Description='Monitor the uptime. It will warn if a reboot has been done recently.'
 			TypicalDefault='install' Level='1'>
 				<ComponentRef Id='UptimeC' />
@@ -217,13 +228,13 @@
 			</Feature>
 			<Feature Id='Fsmon' Title='Fsmon' Description='Monitor folders and Windows files.'
 			TypicalDefault='advertise' Level='1'>
-				<ComponentRef Id='WlbsC' />
-				<ComponentRef Id='WlbsConfigC' />
+				<ComponentRef Id='FsmonC' />
+				<ComponentRef Id='FsmonConfigC' />
 			</Feature>
 			<Feature Id='Wlbs' Title='Wlbs' Description='Monitor WLBS (NLB) Windows clusters. It will warn if the node status is not correct.'
 			TypicalDefault='advertise' Level='1'>
-				<ComponentRef Id='FsmonC' />
-				<ComponentRef Id='FsmonConfigC' />
+				<ComponentRef Id='WlbsC' />
+				<ComponentRef Id='WlbsConfigC' />
 			</Feature>
 		</Feature>	
 		<Feature Id='Tools' Title='Tools' Description='Extra BBWin tools' 

@@ -66,8 +66,8 @@ $(OUTDIR)\BBWinMessages.res: $(bbwinmessage_objs)
 $(OUTDIR)\BBWin.exe: $(OUTDIR)\BBWinMessages.res $(OUTDIR)\BBWin.res $(bbwin_objs)
     $(link) $(ldebug) $(bbwin_objs) $(OUTDIR)\BBWin.res $(OUTDIR)\BBWinMessages.res \
     -out:$(OUTDIR)\BBWin.exe  $(conlibsmt) advapi32.lib User32.lib
-	if not exist Release mkdir Release
-	copy /Y $(OUTDIR)\BBWin.exe Release
+	if not exist ..\Release mkdir ..\Release
+	copy /Y $(OUTDIR)\BBWin.exe ..\Release
 	
 ## BBwinCmd dependencies
 
@@ -79,8 +79,8 @@ $(OUTDIR)\BBWincmd.res: BBWincmd.rc
 
 $(OUTDIR)\BBWinCmd.exe: $(bbwincmd_objs) $(OUTDIR)\BBWincmd.res
     $(link) $(ldebug) $(conlflags) -out:$(OUTDIR)\BBWinCmd.exe $(bbwincmd_objs) $(OUTDIR)\BBWincmd.res $(conlibsmt)
-	if not exist Release mkdir Release
-	copy /Y $(OUTDIR)\BBWinCmd.exe Release
+	if not exist ..\Release mkdir ..\Release
+	copy /Y $(OUTDIR)\BBWinCmd.exe ..\Release
 
 $(DIRS):
 !include <sdkbld.mak>

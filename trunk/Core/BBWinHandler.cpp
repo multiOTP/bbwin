@@ -60,7 +60,13 @@ BBWinHandler::BBWinHandler(bbwinhandler_data_t & data) :
 {
 		Thread::setName(m_agentFileName.c_str());
 		m_log = Logging::getInstancePtr();
-		m_mgr = new BBWinAgentManager(data);
+		try {
+			m_mgr = new BBWinAgentManager(data);
+		} catch (std::bad_alloc ex) {
+			throw ex;
+		}
+		if (m_mgr == NULL)
+			throw std::bad_alloc("no more memory");
 }
 
 //
@@ -103,6 +109,14 @@ void		BBWinHandler::init() {
 		throw BBWinHandlerException("can't get proc");
 	}
 	m_agent = m_create(*m_mgr);
+	if (m_agent == NULL) {
+		string err;
+		GetLastErrorString(err);
+		LPCTSTR		arg[] = { m_agentFileName.c_str(), err.c_str(), NULL};
+		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_CANT_INSTANTIATE_AGENT, 2, arg);
+		FreeLibrary(m_hm);
+		throw BBWinHandlerException("can't allocate agent");
+	}
 }
 
 //
@@ -155,8 +169,10 @@ void		BBWinHandler::checkAgentCompatibility() {
 //
 void BBWinHandler::run() {
 	bool		initSuccess;
+	string		mess;
 	
-	m_log->logDebug("Thread for agent started.");
+	mess = "Thread for agent " + m_agentName + " started.";
+	m_log->logDebug(mess);
 	try {
 		init();
 	} catch (BBWinHandlerException ex) {
@@ -179,14 +195,19 @@ void BBWinHandler::run() {
 			}
 		}
 	}
-	// not functionnal for the moment
-	//m_destroy(m_agent);
-	//
-	m_log->logDebug("Agent destroyed.");
+	// be carefull with destroy call
+	// problem with this call for the moment
+	mess = "Agent " + m_agentName + " going to be destroyed.";
+	m_log->logDebug(mess);
+	m_destroy(m_agent);
+	mess = "Agent " + m_agentName + " destroyed.";
+	m_log->logDebug(mess);
 	FreeLibrary(m_hm);
-	m_log->logDebug("Agent DLL Unloaded.");
+	mess = "Agent DLL " + m_agentName + " Unloaded.";
+	m_log->logDebug(mess);
 	delete m_mgr;
-	m_log->logDebug("Thread for agent stopped.");
+	mess = "Thread for agent " + m_agentName + " stopped.";
+	m_log->logDebug(mess);
 }
 
 // BBWinHandlerException

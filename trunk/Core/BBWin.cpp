@@ -47,6 +47,7 @@ using namespace utils;
 // service should end
 //
 HANDLE  hServiceStopEvent = NULL;
+BBWin	* bbw = NULL;
 
 //
 //  FUNCTION: ServiceStart
@@ -81,7 +82,7 @@ VOID ServiceStart (DWORD dwArgc, LPTSTR *lpszArgv) {
 		return ;
 	}
 
-	BBWin		& bbw = BBWin::getInstance();
+	bbw = BBWin::getInstancePtr();
 
 	if (!ReportStatusToSCMgr(SERVICE_START_PENDING, NO_ERROR, 3000))
 	{
@@ -98,13 +99,17 @@ VOID ServiceStart (DWORD dwArgc, LPTSTR *lpszArgv) {
 	//
 	
 	try {
-		bbw.Run(hServiceStopEvent);
+		bbw->Start(hServiceStopEvent);
 	} catch (BBWinException ex) {
 		cout << "can't start : " << ex.getMessage();
 		CloseHandle(hServiceStopEvent);
 		hServiceStopEvent = NULL;
 	}
+
+	ReportStatusToSCMgr(SERVICE_STOP_PENDING, NO_ERROR, 3000);
+	bbw->Stop();
 	BBWin::freeInstance();
+	
 	if (hServiceStopEvent)
 		CloseHandle(hServiceStopEvent);
 }
@@ -161,6 +166,7 @@ BBWin::BBWin() {
 	m_defaultSettings[ "timer" ] = &BBWin::addSimpleSetting;
 	m_defaultSettings[ "loglevel" ] = &BBWin::addSimpleSetting;
 	m_defaultSettings[ "logpath" ] = &BBWin::addSimpleSetting;
+	m_defaultSettings[ "logreportfailure" ] = &BBWin::addSimpleSetting;
 	m_setting[ "timer" ] = "300";
 	m_setting[ "loglevel" ] = "0";
 	m_setting[ "logpath" ] = BBWIN_LOG_DEFAULT_PATH;
@@ -452,7 +458,11 @@ void				BBWin::LoadAgents() {
 		
 		itr = m_handler.find(range.first->second["name"]);
 		if (itr == m_handler.end()) {
-			hand = new BBWinHandler(data);
+			try {
+				hand = new BBWinHandler(data);
+			} catch (std::bad_alloc ex) {
+				continue ;
+			}
 			hand->start();
 			m_handler.insert(pair< std::string, BBWinHandler * >(range.first->second["name"], hand));
 		} else {
@@ -479,10 +489,18 @@ void				BBWin::LoadAgents() {
 void				BBWin::UnloadAgents() {
 	map<string, BBWinHandler * >::iterator itr;
 
+	m_log->logDebug("Listing Agents Threads before Terminating.");
+	for (itr = m_handler.begin(); itr != m_handler.end(); ++itr) {
+		string mes = "will stop " + (*itr).second->GetName();
+		m_log->logDebug(mes);
+	}
 	m_log->logDebug("Agents Threads Terminating.");
 	for (itr = m_handler.begin(); itr != m_handler.end(); ++itr) {
+		string mes = "wait for " + (*itr).second->GetName();
+		m_log->logDebug(mes);
 		(*itr).second->stop();
 	}
+	m_log->logDebug("Agents Threads Terminated.");
 	for (itr = m_handler.begin(); itr != m_handler.end(); ++itr) {
 		delete (*itr).second;
 	}
@@ -518,7 +536,7 @@ void						BBWin::WaitFor() {
 }
 
 //
-//  FUNCTION: BBWin::Run
+//  FUNCTION: BBWin::Start
 //
 //  PURPOSE: Run method 
 //
@@ -531,7 +549,7 @@ void						BBWin::WaitFor() {
 //  COMMENTS:
 // public entry point to run the BBWin engine
 //
-void 			BBWin::Run(HANDLE h) {
+void 			BBWin::Start(HANDLE h) {
 	try {
 		Init(h);
 	} catch (BBWinException ex) {
@@ -553,12 +571,29 @@ void 			BBWin::Run(HANDLE h) {
 	} catch (BBWinException ex) {
 		throw ex;
 	}
+
+}
+
+//
+//  FUNCTION: BBWin::Stop
+//
+//  PURPOSE: Stop the BBWin
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+// public entry point to stop the BBWin engine
+//
+void 			BBWin::Stop() {
 	UnloadAgents();
 	m_log->logInfo("bbwin is stopped.");
 	LPCTSTR		argStop[] = {SZSERVICENAME, NULL};
 	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_STOPPED, 1, argStop);
 }
-
 
 // BBWinException
 BBWinException::BBWinException(const char* m) {

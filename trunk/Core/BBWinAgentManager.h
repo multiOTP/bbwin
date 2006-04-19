@@ -37,53 +37,59 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 		DWORD				m_timer;
 		BBWinNet			m_net;
 		bool				m_logReportFailure;
-		
+		bbwinagentconfig_t * m_conf;
+		bbwinconfig_range_t	m_range;
+
 	private :
 		void	LoadFileConfiguration(const std::string & filePath, const std::string & nameSpace, bbwinagentconfig_t & config);
 	
 	public :
 		BBWinAgentManager(const bbwinhandler_data_t & data);
 
-		const std::string		&GetAgentName() { return m_agentName; };
-		const std::string		&GetAgentFileName() { return m_agentFileName; };
-		void			GetEnvironmentVariable(const std::string & varname, std::string & dest);
-		void			GetLastErrorString(std::string & str);
-		DWORD			GetNbr(const std::string & str );
-		DWORD			GetSeconds(const std::string & str);
-		const std::string &GetSetting(const std::string & settingName) { return m_setting[ settingName]; };
+		LPCTSTR	GetAgentName() { return m_agentName.c_str(); };
+		LPCTSTR	GetAgentFileName() { return m_agentFileName.c_str(); };
+		void			GetEnvironmentVariable(LPCTSTR varname, LPTSTR dest, DWORD size);
+		void			GetLastErrorString(LPTSTR dest, DWORD size);
+		DWORD			GetNbr(LPCTSTR str);
+		DWORD			GetSeconds(LPCTSTR str);
+		const std::string & GetSetting(LPCTSTR settingName);
 		
 		DWORD	GetAgentTimer() { return m_timer; };
 		void	GetHandles(HANDLE * hEvents);
 		
 		DWORD	GetHandlesCount() { return m_hCount; } ;
 		
-		bool	LoadConfiguration(const std::string & nameSpace, bbwinagentconfig_t & config);
-		bool	LoadConfiguration(const std::string & fileName, const std::string & nameSpace, bbwinagentconfig_t & config);
+		bbwinagentconfig_t * LoadConfiguration(LPCTSTR nameSpace);
+		bbwinagentconfig_t * LoadConfiguration(LPCTSTR fileName, LPCTSTR nameSpace);
+		void	FreeConfiguration(bbwinagentconfig_t * conf);
+		bbwinconfig_range_t * GetConfigurationRange(bbwinagentconfig_t * conf, LPCTSTR name);
+		LPCTSTR				GetConfigurationRangeValue(bbwinconfig_range_t *range, LPCTSTR name);
+		void				FreeConfigurationRange(bbwinconfig_range_t *range);
 
 		// hobbit protocol
-		void 		Status(const std::string & testName, const std::string & color, const std::string & text, const string & lifeTime = "");
-		void		Notify(const std::string & testName, const std::string & text);
-		void		Data(const std::string & dataName, const std::string & text);
-		void 		Disable(const std::string & testName, const std::string & duration, const std::string & text);
-		void		Enable(const std::string & testName);
+		void 		Status(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime = "");
+		void		Notify(LPCTSTR testName, LPCTSTR text);
+		void		Data(LPCTSTR dataName, LPCTSTR text);
+		void 		Disable(LPCTSTR testName, LPCTSTR duration, LPCTSTR text);
+		void		Enable(LPCTSTR testName);
 		void		Drop();
-		void		Drop(const std::string & testName);
-		void		Rename(const std::string & newHostName);
-		void		Rename(const std::string & oldTestName, const std::string & newTestName);
-		void		Message(const std::string & message, std::string & dest);
-		void		Config(const std::string & fileName, std::string & dest);
-		void		Query(const std::string & testName, std::string & dest);
+		void		Drop(LPCTSTR testName);
+		void		Rename(LPCTSTR newHostName);
+		void		Rename(LPCTSTR oldTestName, LPCTSTR newTestName);
+		void		Message(LPCTSTR message, LPTSTR dest, DWORD size);
+		void		Config(LPCTSTR fileName, LPTSTR dest, DWORD size);
+		void		Query(LPCTSTR testName, LPTSTR dest, DWORD size);
 		
 		// Report Functions : report in the bbwin log file
-		void 	ReportError(const std::string & str);
-		void 	ReportInfo(const std::string & str);
-		void 	ReportDebug(const std::string & str);
-		void 	ReportWarn(const std::string & str);
+		void 	ReportError(LPCTSTR str);
+		void 	ReportInfo(LPCTSTR str);
+		void 	ReportDebug(LPCTSTR str);
+		void 	ReportWarn(LPCTSTR str);
 		
 		// Event Report Functions : report in the Windows event log
-		void 	ReportEventError(const std::string & str);
-		void 	ReportEventInfo(const std::string & str);
-		void 	ReportEventWarn(const std::string & str);
+		void 	ReportEventError(LPCTSTR str);
+		void 	ReportEventInfo(LPCTSTR str);
+		void 	ReportEventWarn(LPCTSTR str);
 };
 
 #endif // __BBWINAGENTMANAGER_H__

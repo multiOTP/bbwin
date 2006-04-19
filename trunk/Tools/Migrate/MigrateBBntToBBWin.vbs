@@ -19,10 +19,10 @@
 '*
 '* File:		MigrateBBntToBBWin.VBS
 '* Created:		March 17, 2006
-'* Last Modified:	March 21, 2006
-'* Version:		0.2
+'* Last Modified:	April 18, 2006
+'* Version:		0.3
 '*
-'* BBWin Version	0.5
+'* BBWin Version	0.6
 '*
 '* Main Function:  	Migrate BBnt registry to create the BBWin configuration file
 '* 
@@ -32,7 +32,8 @@
 '* 
 '*
 '* History
-'* 2006/03/17      1.0          First try
+'* 2006/03/17      0.2          First try
+'* 2006/04/18      0.3          Svcs migration part added, Memory Virtual changed by Memory Page
 '***********************************************************************************
 
 ' use explicit declaration
@@ -101,6 +102,7 @@ Sub			buildBBWinConfiguration(byref confFile)
 	confFile.WriteLine("<load name=""procs"" value=""procs.dll"" />")
 	confFile.WriteLine("<load name=""memory"" value=""memory.dll"" />")
 	confFile.WriteLine("<load name=""stats"" value=""stats.dll"" />")
+	confFile.WriteLine("<load name=""svcs"" value=""svcs.dll"" />")
 	confFile.WriteLine("<load name=""uptime"" value=""uptime.dll"" />")
 	val = shello.RegRead(C_BBntRegistry & "Activatelog\")
 	val = "0"
@@ -200,7 +202,7 @@ Sub			buildProcsConfiguration(byref confFile)
 		If regEx.test(val) = True Then
 			color = "yellow"
 			Set match = regEx.Execute(val)
-			If match(0).SubMatches(2) = "Y" Then
+			If match(0).SubMatches(1) = "Y" Then
 				color = "red"
 			End If
 			confFile.WriteLine("<setting name=""" & match(0).SubMatches(0) & """ rule=""=" & _
@@ -210,6 +212,52 @@ Sub			buildProcsConfiguration(byref confFile)
 	confFile.WriteLine("</procs>")
 End Sub
 
+
+'********************************************************************
+'*
+'* Sub buildSvcsConfiguration()
+'* Purpose: buildSvcsConfiguration entry point
+'* Input: confFile 		configuration file object
+'* Output:  
+'********************************************************************
+Sub			buildSvcsConfiguration(byref confFile)
+	Dim		val
+	Dim 	regEx ' regexp object 
+	Dim 	match ' match results
+	Dim		color, state, reset
+	
+	confFile.WriteLine("<svcs>")
+	val = shello.RegRead(C_BBntRegistry & "Services\")
+	Dim SvcsArray 
+	SvcsArray = split(val, ";")
+	Set regEx = New RegExp
+   	regEx.Pattern = "^\s*(.*):(.*):(.*):(.*)\s*$"
+	regEx.IgnoreCase = True
+	regEx.Global = True
+	confFile.WriteLine("<setting name=""alwaysgreen"" value=""false"" />")
+	confFile.WriteLine("<setting name=""alarmcolor"" value=""yellow"" />")
+	confFile.WriteLine("<setting name=""autoreset"" value=""false"" />")
+	For each val In SvcsArray
+		If regEx.test(val) = True Then
+			color = "yellow"
+			state = "started"
+			reset = "false"
+			Set match = regEx.Execute(val)
+			If match(0).SubMatches(1) = "R" Then
+				color = "red"
+			End If
+			If match(0).SubMatches(2) = "S" Then
+				state = "stopped"
+			End If
+			If match(0).SubMatches(3) = "Y" Then
+				reset = "true"
+			End If
+			confFile.WriteLine("<setting name=""" & match(0).SubMatches(0) & """ value=""=" & _
+							state & """ autoreset=""" & reset & """ alarmcolor=""" & color & """ />")
+		End If
+	Next
+	confFile.WriteLine("</svcs>")
+End Sub
 
 '********************************************************************
 '*
@@ -302,7 +350,7 @@ Sub			buildMemoryConfiguration(byref confFile)
 	For Each val In MemArray
 		Set match = regEx.Execute(val)
 		If match(0).SubMatches(0) = "COMMIT" Then
-			title = "virtual"
+			title = "page"
 		Else
 			title = "physical"
 		End If
@@ -339,6 +387,7 @@ Sub 	MigrateBBntToBBWin(byref args)
 	buildExternalsConfiguration(confFile)
 	buildMemoryConfiguration(confFile)
 	buildProcsConfiguration(confFile)
+	buildSvcsConfiguration(confFile)
 	buildUpTimeConfiguration(confFile)
 	confFile.WriteLine("</configuration>")
 	confFile.Close

@@ -53,7 +53,7 @@ private:
 	
 public:
 	BBWinHandler(bbwinhandler_data_t & data);
-	
+	const std::string &	GetName() { return m_agentName; };
 	void run();
 };
 

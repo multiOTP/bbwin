@@ -58,16 +58,16 @@ class UsageProc {
 		size_t			m_mem;
 
 	public :
-		UsageProc(DWORD pid);
-		bool	GetExists() const { return m_exists; };
-		void	SetExists(const bool exists) { m_exists = exists; };
-		double	ExecGetUsage();
-		double	GetUsage() const { return m_lastUsage; } ;
-		DWORD	GetPid() const { return m_pid; };
-		void	SetMemUsage(const size_t & mem) { m_mem = mem; };
-		size_t	GetMemUsage() const { return m_mem; };
-		void	SetName(const std::string & name) { m_name = name; };
-		const std::string & GetName() const { return m_name; };
+		__stdcall UsageProc(DWORD pid);
+		bool	__stdcall GetExists() const { return m_exists; };
+		void	__stdcall SetExists(const bool exists) { m_exists = exists; };
+		double	__stdcall ExecGetUsage();
+		double	__stdcall GetUsage() const { return m_lastUsage; } ;
+		DWORD	__stdcall GetPid() const { return m_pid; };
+		void	__stdcall SetMemUsage(const size_t & mem) { m_mem = mem; };
+		size_t	__stdcall GetMemUsage() const { return m_mem; };
+		void	__stdcall SetName(const std::string & name) { m_name = name; };
+		const std::string &  __stdcall GetName() const { return m_name; };
 };
 
 //  

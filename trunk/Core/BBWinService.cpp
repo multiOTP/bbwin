@@ -188,35 +188,33 @@ void WINAPI service_main(DWORD dwArgc, LPTSTR *lpszArgv)
 //
 VOID WINAPI service_ctrl(DWORD dwCtrlCode)
 {
+	DWORD dwState = SERVICE_RUNNING;
    // Handle the requested control code.
    //
    switch (dwCtrlCode)
    {
-   // Stop the service.
-   //
-   // SERVICE_STOP_PENDING should be reported before
-   // setting the Stop Event - hServiceStopEvent - in
-   // ServiceStop().  This avoids a race condition
-   // which may result in a 1053 - The Service did not respond...
-   // error.
-   case SERVICE_CONTROL_STOP:
-      ReportStatusToSCMgr(SERVICE_STOP_PENDING, NO_ERROR, 0);
-      ServiceStop();
-      return;
-
-      // Update the service status.
-      //
-   case SERVICE_CONTROL_INTERROGATE:
-      break;
+		case SERVICE_CONTROL_STOP:
+			dwState = SERVICE_STOP_PENDING;
+		break ;
+		
+		case SERVICE_CONTROL_SHUTDOWN:
+			dwState = SERVICE_STOP_PENDING;
+			break;
+		
+		case SERVICE_CONTROL_INTERROGATE:
+			break;
 
       // invalid control code
       //
-   default:
-      break;
-
-   }
-
-   ReportStatusToSCMgr(ssStatus.dwCurrentState, NO_ERROR, 0);
+		default:
+			break;
+	}
+	ReportStatusToSCMgr(dwState, NO_ERROR, 0);
+	if ((dwCtrlCode == SERVICE_CONTROL_STOP) ||
+       (dwCtrlCode == SERVICE_CONTROL_SHUTDOWN))
+	{
+		ServiceStop();
+	}
 }
 
 

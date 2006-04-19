@@ -37,6 +37,8 @@ stats.res: stats.rc
 	
 stats.dll: $(stats_objs) stats.res
     $(link) /DLL $(dllldebug) $(stats_objs) stats.res -out:stats.dll $(BOOST_LIB) Psapi.lib pdh.lib
+	if not exist ..\..\..\Release mkdir ..\..\..\Release
+	copy /Y stats.dll ..\..\..\Release
 	
 clean:
 		erase /Q /S stats.res stats.obj stats.dll stats.exp stats.lib $(stats_objs)

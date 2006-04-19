@@ -19,8 +19,10 @@ Mourad Mekkaoui
 Stéphane Moriaud
 Steve Sanchez
 
+I also would like to thanks Steve Friedl (http://www.unixwiz.net) who helped me 
+by providing me excellent coding rules advises to improve the source code of BBWin.
 
-					
+
 Of course, BBWin would not exists if the hobbit project
 created and maintained by Henrik Stoerner did not exists.
 

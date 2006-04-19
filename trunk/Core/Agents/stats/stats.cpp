@@ -50,15 +50,19 @@ const BBWinAgentInfo_t & AgentStats::About() {
 	return statsAgentInfo;
 }
 
+#define		TEMP_PATH_LEN		1024
+
 void	AgentStats::Netstat() {
 	stringstream 	reportData;	
 	string			path, cmd;
-	
+	TCHAR			buf[TEMP_PATH_LEN + 1];
+
 	ptime now = second_clock::local_time();
 	date today = now.date();
 	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "]";
 	reportData << endl;
-	m_mgr.GetEnvironmentVariable("TEMP", path);
+	m_mgr.GetEnvironmentVariable("TEMP", buf, TEMP_PATH_LEN);
+	path = buf;
 	path += "\\netstat.tmp";
 	cmd = "netstat -s > " + path;
 	system(cmd.c_str());
@@ -93,7 +97,7 @@ void	AgentStats::Netstat() {
         }
     }
 	reportData << endl;
-	m_mgr.Status("netstat", "green", reportData.str());
+	m_mgr.Status("netstat", "green", reportData.str().c_str());
 }
 
 void AgentStats::Run() {
@@ -101,15 +105,6 @@ void AgentStats::Run() {
 }
 
 bool AgentStats::Init() {
-	// bbwinagentconfig_t		conf;
-	
-	// if (m_mgr.LoadConfiguration(m_mgr.GetAgentName(), conf) == false)
-		// return false;
-	// std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t > 	range;
-	// range = conf.equal_range("setting");
-	// for ( ; range.first != range.second; ++range.first) {
-		
-	// }
 	return true;
 }
 

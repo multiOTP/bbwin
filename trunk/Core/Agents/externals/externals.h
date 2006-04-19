@@ -29,7 +29,6 @@ class AgentExternals : public IBBWinAgent
 {
 	private :
 		IBBWinAgentManager 		& m_mgr;
-		bbwinagentconfig_t		m_conf;
 		HANDLE					*m_hEvents;
 		DWORD					m_hCount;
 		DWORD					m_timer;

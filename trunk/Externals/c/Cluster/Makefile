@@ -44,7 +44,8 @@ $(OUTDIR)\Cluster.res: Cluster.rc Cluster.ico
 
 $(OUTDIR)\Cluster.exe: $(OUTDIR)\Cluster.obj $(OUTDIR)\Cluster.res
     $(link) $(ldebug) $(conlflags) -out:$(OUTDIR)\Cluster.exe $(OBJ) $(OUTDIR)\Cluster.res $(conlibs) clusapi.lib
-	copy /Y $(OUTDIR)\Cluster.exe .
+	if not exist ..\..\..\Release mkdir ..\..\..\Release
+	copy /Y $(OUTDIR)\Cluster.exe ..\..\..\Release
 	
 clean:
         $(CLEANUP)
