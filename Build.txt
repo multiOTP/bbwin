@@ -45,14 +45,31 @@ certainly used in the BBWin core service in the future.
 You should get the boost C++ from the website : 
 http://www.boost.org/
 Build it in the directory C:\boost so you won't have to change BBWin Makefiles.
+If you want to build BBWin with Visual C++ Express 2005, please read the following page :
+http://www.boost.org/tools/build/v1/vc-8_0-tools.html
+
 
 I recommand you the Notepad++ editor if you are looking for a nice free code editor.
 You can download it from : 
 http://notepad-plus.sourceforge.net
 
 
-Building the BBWin
-==================
+
+Building the BBWin with Visual C++ Express 2005
+===============================================
+
+Open the BBWin.sln file at the top directory of the project
+First, you should prepare your Visual C++ configuration by adding
+in the default bin, include and lib directories the different directories from :
+
+- the platform SDK
+- the boost libraries
+
+Then just build the solution.
+
+
+Building the BBWin with Visual C++ ToolKit 2003
+===============================================
 
 Open a Platform SDK Build command line environment (installed with the Platform SDK)
 Go the top directory of the BBWin source tree

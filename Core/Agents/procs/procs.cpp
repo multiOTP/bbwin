@@ -191,7 +191,7 @@ void AgentProcs::Run() {
 	else
 		finalState = ExecProcRules(reportData);
 	reportData << endl;
-	m_mgr.Status("procs", bbcolors[finalState], reportData.str());
+	m_mgr.Status("procs", bbcolors[finalState], reportData.str().c_str());
 }
 
 //
@@ -204,7 +204,13 @@ void AgentProcs::AddRule(const string & name, const string & rule, const string 
 		return ;
 	}
 	ProcRule_t		*procRule;
-	procRule = new ProcRule_t;
+	try {
+		procRule = new ProcRule_t;
+	} catch (std::bad_alloc ex) {
+		return ;
+	}
+	if (procRule == NULL) 
+		return ;
 	procRule->name = name;
 	procRule->color = YELLOW;
 	if (color.length() > 0) {
@@ -218,7 +224,7 @@ void AgentProcs::AddRule(const string & name, const string & rule, const string 
 		size_t	res = rule.find(globalRules[i].name);
 		if (res >= 0 && res < rule.size()) {
 			procRule->apply_rule = globalRules[i].apply_rule;
-			procRule->count = m_mgr.GetNbr(rule.substr(strlen(globalRules[i].name), rule.length()));
+			procRule->count = m_mgr.GetNbr(rule.substr(strlen(globalRules[i].name), rule.length()).c_str());
 			break ;
 		}
 	}
@@ -235,15 +241,20 @@ void AgentProcs::AddRule(const string & name, const string & rule, const string 
 // init function
 //
 bool AgentProcs::Init() {
-	bbwinagentconfig_t		conf;
+	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 	
-	if (m_mgr.LoadConfiguration(m_mgr.GetAgentName(), conf) == false)
+	if (conf == NULL)
 		return false;
-	std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t > 	range;
-	range = conf.equal_range("setting");
-	for ( ; range.first != range.second; ++range.first) {
-		AddRule(range.first->second["name"], range.first->second["rule"], range.first->second["alarmcolor"]);
+	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		AddRule(m_mgr.GetConfigurationRangeValue(range, "name"), 
+				m_mgr.GetConfigurationRangeValue(range, "rule"), 
+				m_mgr.GetConfigurationRangeValue(range, "alarmcolor"));
 	}
+	m_mgr.FreeConfigurationRange(range);
+	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 

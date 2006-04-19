@@ -35,8 +35,8 @@ typedef struct			BBWinAgentInfo_s
 	DWORD				bbwinVersion;
 	DWORD				agentMajVersion;
 	DWORD				agentMinVersion;
-	std::string			agentName;
-	std::string			agentDescription;
+	const char			*agentName;
+	const char 			*agentDescription;
 }						BBWinAgentInfo_t;
 
 //

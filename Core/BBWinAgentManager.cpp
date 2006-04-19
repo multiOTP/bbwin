@@ -16,6 +16,7 @@
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <windows.h>
+#include <assert.h>
 
 #include <string>
 #include <iostream>
@@ -50,9 +51,11 @@ BBWinAgentManager::BBWinAgentManager(const bbwinhandler_data_t & data) :
 							m_agentFileName (data.agentFileName),
 							m_hEvents (data.hEvents),
 							m_hCount (data.hCount),
-							m_timer (data.timer)
+							m_timer (data.timer),
+							m_conf (NULL)
 {
 		m_log = Logging::getInstancePtr();
+
 		m_logReportFailure = false;
 		if (m_setting["logreportfailure"] == "true")
 			m_logReportFailure = true;	
@@ -75,27 +78,49 @@ BBWinAgentManager::BBWinAgentManager(const bbwinhandler_data_t & data) :
 void	BBWinAgentManager::GetHandles(HANDLE * hEvents)	{
 	DWORD			ci;
 	
+	assert(hEvents != NULL);
 	for (ci = 0; ci < m_hCount; ++ci) {
 		hEvents[ci] = m_hEvents[ci];
 	}
 }
 
-DWORD			BBWinAgentManager::GetSeconds(const string & str) {
-	return utils::GetSeconds(str);
+DWORD			BBWinAgentManager::GetSeconds(LPCTSTR str) {
+	string		temp;
+
+	assert(str != NULL);
+	assert(str != NULL);
+	temp = str;
+	return utils::GetSeconds(temp);
 }
 
-void			BBWinAgentManager::GetLastErrorString(string & str) {
-	utils::GetLastErrorString(str);
+void			BBWinAgentManager::GetLastErrorString(LPTSTR dest, DWORD size) {
+	string		sDest;
+
+	assert(dest != NULL);
+	utils::GetLastErrorString(sDest);
+	strncpy(dest, sDest.c_str(), size);
 } 
 
-void			BBWinAgentManager::GetEnvironmentVariable(const string & varname, string & dest) {
-	utils::GetEnvironmentVariable(varname, dest);
+void			BBWinAgentManager::GetEnvironmentVariable(LPCTSTR varname, LPTSTR dest, DWORD size) {
+	string		sDest;
+
+	assert(dest != NULL);
+	utils::GetEnvironmentVariable(varname, sDest);
+	strncpy(dest, sDest.c_str(), size);
 }
 
-DWORD			BBWinAgentManager::GetNbr(const string & str ) {
-	return utils::GetNbr(str);
+DWORD			BBWinAgentManager::GetNbr(LPCTSTR str) {
+	string		temp;
+
+	assert(str != NULL);
+	temp = str;
+	return utils::GetNbr(temp);
 }
 
+const std::string	& BBWinAgentManager::GetSetting(LPCTSTR settingName) {
+	assert(settingName != NULL);
+	return m_setting[ settingName]; 
+}
 
 void			BBWinAgentManager::LoadFileConfiguration(const string & filePath, const string & nameSpace, bbwinagentconfig_t & config) {
 	BBWinConfig					*conf = BBWinConfig::getInstancePtr();
@@ -106,39 +131,86 @@ void			BBWinAgentManager::LoadFileConfiguration(const string & filePath, const s
 	}
 }
 
-bool			BBWinAgentManager::LoadConfiguration(const string & nameSpace, bbwinagentconfig_t & config) {
+bbwinagentconfig_t * BBWinAgentManager::LoadConfiguration(LPCTSTR nameSpace) {
 	string		filePath;
 	
+	assert(nameSpace != NULL);
+	if (m_conf != NULL) {
+		return m_conf;
+	}
+	m_conf = new bbwinagentconfig_t;
+	if (m_conf == NULL)
+		return NULL;
 	filePath = m_setting[ "etcpath" ];
 	filePath += "\\";
 	filePath += m_setting[ "bbwinconfigfilename" ]; 
 	try {
-		LoadFileConfiguration(filePath, nameSpace, config);
+		LoadFileConfiguration(filePath, nameSpace, *m_conf);
 	} catch (BBWinConfigException ex) {
-		return false;
+		return m_conf;
 	}
-	return true;
+	return m_conf;
 }
 
-bool			BBWinAgentManager::LoadConfiguration(const string & fileName, const string & nameSpace, bbwinagentconfig_t & config) {
+
+
+bbwinagentconfig_t * BBWinAgentManager::LoadConfiguration(LPCTSTR fileName, LPCTSTR nameSpace) {
 	string		filePath;
 	
+	assert(nameSpace != NULL);
+	if (m_conf != NULL) {
+		return m_conf;
+	}
+	m_conf = new bbwinagentconfig_t;
+	if (m_conf == NULL)
+		return NULL;
 	filePath = m_setting[ "etcpath" ];
 	filePath += "\\";
 	filePath += fileName; 
 	try {
-		LoadFileConfiguration(filePath, nameSpace, config);
+		LoadFileConfiguration(filePath, nameSpace, *m_conf);
 	} 	catch (BBWinConfigException ex) {
-		return false;
+		return m_conf;
 	}
-	return true;
+	return m_conf;
+}
+
+void			BBWinAgentManager::FreeConfiguration(bbwinagentconfig_t * conf) {
+	// conf argument not used for the moment because we only handle loading configuration one by one
+	if (m_conf != NULL) {
+		delete m_conf;
+		m_conf = NULL;
+	}
+}
+
+
+bbwinconfig_range_t * BBWinAgentManager::GetConfigurationRange(bbwinagentconfig_t * conf, LPCTSTR name) {
+	// range configuration one by one for the moment
+	assert(conf != NULL);
+	assert(m_conf != NULL);
+	m_range = m_conf->equal_range(name);
+	return &m_range;
+}
+
+LPCTSTR				BBWinAgentManager::GetConfigurationRangeValue(bbwinconfig_range_t *range, LPCTSTR name) {
+	assert(range != NULL);
+	assert(name != NULL);
+	if (range->first->second[name].size() == 0)
+		return "";
+	return range->first->second[name].c_str();
+}
+
+void				BBWinAgentManager::FreeConfigurationRange(bbwinconfig_range_t *range) {
+	// range configuration one by one for the moment
+	assert(range != NULL);
 }
 
 
 // Report Functions : report in the bbwin log file
-void 	BBWinAgentManager::ReportError(const string & str) {
+void 	BBWinAgentManager::ReportError(LPCTSTR str) {
 	string 		log;
 	
+	assert(str != NULL);
 	log += "[";
 	log += m_agentName;
 	log += "]: ";
@@ -146,9 +218,10 @@ void 	BBWinAgentManager::ReportError(const string & str) {
 	m_log->logError(log);
 }
 
-void 	BBWinAgentManager::ReportInfo(const string & str) {
+void 	BBWinAgentManager::ReportInfo(LPCTSTR str) {
 	string 	log;
 	
+	assert(str != NULL);
 	log += "[";
 	log += m_agentName;
 	log += "]: ";
@@ -156,9 +229,10 @@ void 	BBWinAgentManager::ReportInfo(const string & str) {
 	m_log->logInfo(log);
 }
 
-void 	BBWinAgentManager::ReportDebug(const string & str) {
+void 	BBWinAgentManager::ReportDebug(LPCTSTR str) {
 	string 	log;
 	
+	assert(str != NULL);
 	log += "[";
 	log += m_agentName;
 	log += "]: ";
@@ -166,9 +240,10 @@ void 	BBWinAgentManager::ReportDebug(const string & str) {
 	m_log->logDebug(log);
 }
 
-void 	BBWinAgentManager::ReportWarn(const string & str) {
+void 	BBWinAgentManager::ReportWarn(LPCTSTR str) {
 	string 	log;
 	
+	assert(str != NULL);
 	log += "[";
 	log += m_agentName;
 	log += "]: ";
@@ -177,28 +252,35 @@ void 	BBWinAgentManager::ReportWarn(const string & str) {
 }
 
 // Event Report Functions : report in the Windows event log
-void 	BBWinAgentManager::ReportEventError(const string & str) {
-	LPCTSTR		arg[] = {m_agentName.c_str(), str.c_str(), NULL};
+void 	BBWinAgentManager::ReportEventError(LPCTSTR str) {
+	assert(str != NULL);
+	LPCTSTR		arg[] = {m_agentName.c_str(), str, NULL};
 	
 	m_log->reportErrorEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
 } 
 
-void 	BBWinAgentManager::ReportEventInfo(const string & str) {
-	LPCTSTR		arg[] = {m_agentName.c_str(), str.c_str(), NULL};
+void 	BBWinAgentManager::ReportEventInfo(LPCTSTR str) {
+	assert(str != NULL);
+	LPCTSTR		arg[] = {m_agentName.c_str(), str, NULL};
 	
 	m_log->reportInfoEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
 }
 
-void 	BBWinAgentManager::ReportEventWarn(const string & str) {
-	LPCTSTR		arg[] = {m_agentName.c_str(), str.c_str(), NULL};
+void 	BBWinAgentManager::ReportEventWarn(LPCTSTR str) {
+	assert(str != NULL);
+	LPCTSTR		arg[] = {m_agentName.c_str(), str, NULL};
 	
 	m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
 }
 
-void 			BBWinAgentManager::Status(const string & testName, const string & color, const string & text, const string & lifeTime) {
+void 			BBWinAgentManager::Status(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet	hobNet;
-		
+	
+	assert(testName != NULL);
+	assert(color != NULL);
+	assert(text != NULL);
+	assert(lifeTime != NULL);
 	hobNet.SetHostName(m_setting["hostname"]);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
@@ -217,10 +299,12 @@ void 			BBWinAgentManager::Status(const string & testName, const string & color,
 	}
 }
 
-void		BBWinAgentManager::Notify(const string & testName, const string & text) {
+void		BBWinAgentManager::Notify(LPCTSTR testName, LPCTSTR text) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet	hobNet;
 		
+	assert(testName != NULL);
+	assert(text != NULL);
 	hobNet.SetHostName(m_setting["hostname"]);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
@@ -239,10 +323,12 @@ void		BBWinAgentManager::Notify(const string & testName, const string & text) {
 	}
 }
 
-void		BBWinAgentManager::Data(const string & dataName, const string & text) {
+void		BBWinAgentManager::Data(LPCTSTR dataName, LPCTSTR text) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet	hobNet;
 		
+	assert(dataName != NULL);
+	assert(text != NULL);
 	hobNet.SetHostName(m_setting["hostname"]);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
@@ -261,10 +347,13 @@ void		BBWinAgentManager::Data(const string & dataName, const string & text) {
 	}
 }
 
-void 		BBWinAgentManager::Disable(const string & testName, const string & duration, const string & text) {
+void 		BBWinAgentManager::Disable(LPCTSTR testName, LPCTSTR duration, LPCTSTR text) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet						hobNet;
 		
+	assert(testName != NULL);
+	assert(duration != NULL);
+	assert(text != NULL);
 	hobNet.SetHostName(m_setting["hostname"]);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
@@ -283,10 +372,11 @@ void 		BBWinAgentManager::Disable(const string & testName, const string & durati
 	}
 }
 
-void		BBWinAgentManager::Enable(const string & testName) {
+void		BBWinAgentManager::Enable(LPCTSTR testName) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet						hobNet;
 		
+	assert(testName != NULL);
 	hobNet.SetHostName(m_setting["hostname"]);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
@@ -328,10 +418,11 @@ void		BBWinAgentManager::Drop()  {
 }
 
 
-void		BBWinAgentManager::Drop(const string & testName) {
+void		BBWinAgentManager::Drop(LPCTSTR testName) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet						hobNet;
 		
+	assert(testName != NULL);
 	hobNet.SetHostName(m_setting["hostname"]);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
@@ -350,10 +441,11 @@ void		BBWinAgentManager::Drop(const string & testName) {
 	}
 }
 
-void		BBWinAgentManager::Rename(const string & newHostName) {
+void		BBWinAgentManager::Rename(LPCTSTR newHostName) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet						hobNet;
 		
+	assert(newHostName != NULL);
 	hobNet.SetHostName(m_setting["hostname"]);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
@@ -373,10 +465,12 @@ void		BBWinAgentManager::Rename(const string & newHostName) {
 }
 
 
-void		BBWinAgentManager::Rename(const string & oldTestName, const string & newTestName) {
+void		BBWinAgentManager::Rename(LPCTSTR oldTestName, LPCTSTR newTestName) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet						hobNet;
 		
+	assert(oldTestName != NULL);
+	assert(newTestName != NULL);
 	hobNet.SetHostName(m_setting["hostname"]);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
@@ -395,14 +489,17 @@ void		BBWinAgentManager::Rename(const string & oldTestName, const string & newTe
 	}
 }
 
-void		BBWinAgentManager::Message(const string & message, string & dest) {
+void		BBWinAgentManager::Message(LPCTSTR message, LPTSTR dest, DWORD size) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet	hobNet;
-		
+	string		result;
+
+	assert(message != NULL);
+	assert(dest != NULL);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
-			hobNet.Message(message, dest);
+			hobNet.Message(message, result);
 		} catch (BBWinNetException ex) {
 			if (m_logReportFailure) {
 				string mes;
@@ -414,16 +511,20 @@ void		BBWinAgentManager::Message(const string & message, string & dest) {
 			continue ; 
 		}
 	}
+	strncpy(dest, result.c_str(), size);
 }
 
-void		BBWinAgentManager::Config(const string & fileName, string & dest) {
+void		BBWinAgentManager::Config(LPCTSTR fileName, LPTSTR dest, DWORD size) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet	hobNet;
-		
+	string		result;
+
+	assert(fileName != NULL);
+	assert(dest != NULL);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
-			hobNet.Config(fileName, dest);
+			hobNet.Config(fileName, result);
 		} catch (BBWinNetException ex) {
 			if (m_logReportFailure) {
 				string mes;
@@ -435,16 +536,20 @@ void		BBWinAgentManager::Config(const string & fileName, string & dest) {
 			continue ; 
 		}
 	}
+	strncpy(dest, result.c_str(), size);
 }
 
-void		BBWinAgentManager::Query(const string & testName, string & dest) {
+void		BBWinAgentManager::Query(LPCTSTR testName, LPTSTR dest, DWORD size) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet	hobNet;
-		
+	string		result;
+
+	assert(testName != NULL);
+	assert(dest != NULL);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
-			hobNet.Query(testName, dest);
+			hobNet.Query(testName, result);
 		} catch (BBWinNetException ex) {
 			if (m_logReportFailure) {
 				string mes;
@@ -456,4 +561,5 @@ void		BBWinAgentManager::Query(const string & testName, string & dest) {
 			continue ; 
 		}
 	}
+	strncpy(dest, result.c_str(), size);
 }

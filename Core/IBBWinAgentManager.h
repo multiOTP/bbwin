@@ -26,6 +26,7 @@
 typedef std::map < std::string, std::string > 						bbwinagentconfig_attr_t;
 typedef std::multimap < std::string, bbwinagentconfig_attr_t > 		bbwinagentconfig_t;
 typedef bbwinagentconfig_t::iterator bbwinagentconfig_iter_t;
+typedef std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t >	bbwinconfig_range_t;
 
 //
 // BBWinAgentManager is from the simple design pattern facade 
@@ -35,21 +36,21 @@ typedef bbwinagentconfig_t::iterator bbwinagentconfig_iter_t;
 class   IBBWinAgentManager {
 	public :
 		// return the agent name
-		virtual const std::string		& GetAgentName() = 0;
+		virtual LPCTSTR			GetAgentName() = 0;
 		// return agent file name (path)
-		virtual const std::string		& GetAgentFileName() = 0;
+		virtual LPCTSTR			GetAgentFileName() = 0;
 		// return the agent timer setting
 		virtual DWORD				GetAgentTimer() = 0;
-		// get an environnement variable
-		virtual void				GetEnvironmentVariable(const std::string & varname, std::string & dest) = 0;
-		// get the last error in string str
-		virtual void			GetLastErrorString(std::string & str) = 0; 
+		// get an environnement variable (copy the string in dest, size argument is size of dest)
+		virtual void				GetEnvironmentVariable(LPCTSTR varname, LPTSTR dest, DWORD size) = 0;
+		// get the last error in dest, size argument is size of dest
+		virtual void			GetLastErrorString(LPTSTR dest, DWORD size) = 0; 
 		// return a converted number
-		virtual DWORD			GetNbr(const std::string & str ) = 0;
+		virtual DWORD			GetNbr(LPCTSTR str) = 0;
 		// return number seconds from str example : "5m" returns 300
-		virtual DWORD			GetSeconds(const std::string & str) = 0;
+		virtual DWORD			GetSeconds(LPCTSTR str) = 0;
 		// return a setting from the bbwin main configuration
-		virtual const std::string		 & GetSetting(const std::string & settingName) = 0;
+		virtual const std::string		 & GetSetting(LPCTSTR settingName) = 0;
 		
 		//
 		// stopping handles count : Only useful for agent using multiple threading or Wait functions
@@ -57,35 +58,49 @@ class   IBBWinAgentManager {
 		virtual void	GetHandles(HANDLE * hEvents) = 0;
 		virtual DWORD	GetHandlesCount() = 0;
 		
+		//
+		//
+		// Configuration Loading Abstration Tools
+		// (not very good, will be improved in future version of BBWin)
+		//
 		// loading configuration functions on default bbwin configuration file bbwin.cfg : return true if success
-		virtual bool	LoadConfiguration(const std::string & nameSpace, bbwinagentconfig_t & config) = 0;
+		virtual bbwinagentconfig_t * LoadConfiguration(LPCTSTR nameSpace) = 0;
 		// loading configuration functions on custom configuration file 
-		virtual bool	LoadConfiguration(const std::string & fileName, const std::string & nameSpace, bbwinagentconfig_t & config) = 0;
-		
+		virtual bbwinagentconfig_t * LoadConfiguration(LPCTSTR fileName, LPCTSTR nameSpace) = 0;
+		// free the configuration instance
+		virtual void	FreeConfiguration(bbwinagentconfig_t * conf) = 0;
+		// get a range of configuration settings
+		virtual bbwinconfig_range_t * GetConfigurationRange(bbwinagentconfig_t * conf, LPCTSTR name) = 0;
+		// get a value from a bbwin_config_range
+		virtual LPCTSTR				GetConfigurationRangeValue(bbwinconfig_range_t *range, LPCTSTR name) = 0;
+		// free the range of configuration settings
+		virtual void				FreeConfigurationRange(bbwinconfig_range_t *range) = 0;
+
+
 		// Report Functions : report in the bbwin log file
-		virtual void 	ReportError(const std::string & str) = 0;
-		virtual void 	ReportInfo(const std::string & str) = 0;
-		virtual void 	ReportDebug(const std::string & str) = 0;
-		virtual void 	ReportWarn(const std::string & str) = 0;
+		virtual void 	ReportError(LPCTSTR str) = 0;
+		virtual void 	ReportInfo(LPCTSTR str) = 0;
+		virtual void 	ReportDebug(LPCTSTR str) = 0;
+		virtual void 	ReportWarn(LPCTSTR str) = 0;
 		
 		// Event Report Functions : report in the Windows event log
-		virtual void 	ReportEventError(const std::string & str) = 0;
-		virtual void 	ReportEventInfo(const std::string & str) = 0;
-		virtual void 	ReportEventWarn(const std::string & str) = 0;
+		virtual void 	ReportEventError(LPCTSTR str) = 0;
+		virtual void 	ReportEventInfo(LPCTSTR str) = 0;
+		virtual void 	ReportEventWarn(LPCTSTR str) = 0;
 		
 		// hobbit protocol
-		virtual void 	Status(const std::string & testName, const std::string & color, const std::string & text, const string & lifeTime = "") = 0;
-		virtual void	Notify(const std::string & testName, const std::string & text) = 0;
-		virtual void	Data(const std::string & dataName, const std::string & text) = 0;
-		virtual void 	Disable(const std::string & testName, const std::string & duration, const std::string & text) = 0;
-		virtual void	Enable(const std::string & testName) = 0;
+		virtual void 	Status(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime = "") = 0;
+		virtual void	Notify(LPCTSTR testName, LPCTSTR text) = 0;
+		virtual void	Data(LPCTSTR dataName, LPCTSTR text) = 0;
+		virtual void 	Disable(LPCTSTR testName, LPCTSTR duration, LPCTSTR text) = 0;
+		virtual void	Enable(LPCTSTR testName) = 0;
 		virtual void	Drop() = 0;
-		virtual void	Drop(const std::string & testName) = 0;
-		virtual void	Rename(const std::string & newHostName) = 0;
-		virtual void	Rename(const std::string & oldTestName, const std::string & newTestName) = 0;
-		virtual void	Message(const std::string & message, std::string & dest) = 0;
-		virtual void	Config(const std::string & fileName, std::string & dest) = 0;
-		virtual void	Query(const std::string & testName, std::string & dest) = 0;
+		virtual void	Drop(LPCTSTR testName) = 0;
+		virtual void	Rename(LPCTSTR newHostName) = 0;
+		virtual void	Rename(LPCTSTR oldTestName, LPCTSTR newTestName) = 0;
+		virtual void	Message(LPCTSTR message, LPTSTR dest, DWORD size) = 0;
+		virtual void	Config(LPCTSTR fileName, LPTSTR dest, DWORD size) = 0;
+		virtual void	Query(LPCTSTR testName, LPTSTR dest, DWORD size) = 0;
 
 		// virtual destructor 
 		virtual ~IBBWinAgentManager() {};

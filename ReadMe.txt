@@ -253,7 +253,7 @@ Memory is an agent use to monitor your memory usage.
 Memory configuration namespace :
 
 <memory>
-	<!-- If true, this setting will always report with green status -->
+	<!-- If true, this agent will always report with green status -->
 	<setting name="alwaysgreen" value="false" />
 	<setting name="physical" warnlevel="78" paniclevel="98" />
 	<setting name="page" warnlevel="70" paniclevel="90" />
@@ -291,6 +291,27 @@ Possible rules are =
 
 Default color is yellow.
 If no rules are specified, green status is still sent.
+
+* Svcs
+------
+
+Svcs is an agent to check the Windows services.
+
+You have to specify the rules in the bbwin.cfg file
+
+Example:
+<svcs>
+	<!-- If true, this agent will always report with green status -->
+	<setting name="alwaysgreen" name="false" />
+	<!-- The rule bellow will check that each service configured in automatic state 
+	is running. If not, it will be restarted automatically -->
+	<setting name="autoreset" value="true" />
+	<setting name="alarmcolor" value="yellow" />
+	<!-- The line bellow show you svcs rules. If the "Automatic Updates" service is stopped, 
+	it will be automatically restarted and a red status will be sent
+	until the service get it's correct status -->
+	<setting name="Automatic Updates" value="started" autoreset="true" alarmcolor="red" />
+</svcs>
 
 
 * Sample

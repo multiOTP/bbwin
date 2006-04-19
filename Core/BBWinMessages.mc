@@ -92,6 +92,12 @@ Language        = English
 The agent %1 is not compatible with this bbwin version.
 .
 
+MessageId       = +1
+SymbolicName    = EVENT_CANT_INSTANTIATE_AGENT
+Language        = English
+The agent %1 has been not instantiated. The reason was : %2
+.
+
 
 MessageId       = +1
 SymbolicName    = EVENT_SERVICE_STARTED

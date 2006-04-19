@@ -117,6 +117,7 @@ double			UsageProc::ExecGetUsage() {
 	return m_lastUsage;
 }
 
+
 //**********************************
 //
 // CPU agent class Methods
@@ -138,7 +139,6 @@ void 		AgentCpu::GetProcsData() {
 		PROCESS_MEMORY_COUNTERS 			pmc;
 		UsageProc							*proc;
 		
-		m_mgr.ReportDebug("OpenProcess started");
 	    HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION |
 	                                   PROCESS_VM_READ,
 	                                   FALSE, pid );
@@ -146,18 +146,24 @@ void 		AgentCpu::GetProcsData() {
 	        HMODULE hMod;
 	        DWORD cbNeeded;
 			
-			m_mgr.ReportDebug("OpenProcess succeed");
 	        if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod), &cbNeeded)) {
-				m_mgr.ReportDebug("EnumProcessModules succeed");
 				itr = m_procs.find(pid);
 				if (itr == m_procs.end()) {
-					m_mgr.ReportDebug("Create new proc");
-					proc = new UsageProc(pid);
-					m_mgr.ReportDebug("Create new proc succeed");
+					try {
+						proc = new UsageProc(pid);
+					} catch (std::bad_alloc ex) {
+						CloseHandle(hProcess);
+						m_mgr.ReportInfo("Can't alloc memory");
+						continue ;
+					}
+					if (proc == NULL) {
+						CloseHandle(hProcess);
+						m_mgr.ReportInfo("Can't alloc memory");
+						continue ;
+					}
 					GetModuleBaseName( hProcess, hMod, szProcessName, sizeof(szProcessName)/sizeof(TCHAR) );
 					proc->SetName(szProcessName);
 					m_procs.insert(pair<DWORD, UsageProc *> (pid, proc));
-					m_mgr.ReportDebug("Insert succeed");
 				} else {
 					proc = itr->second;
 				}
@@ -168,9 +174,7 @@ void 		AgentCpu::GetProcsData() {
 				proc->SetExists(true);
 	        }
 			CloseHandle( hProcess );
-	    } else {
-			m_mgr.ReportDebug("OpenProcess failed");
-		}
+	    } 
 	}
 	m_mgr.ReportDebug("GetProcsData ended");
 }
@@ -216,7 +220,7 @@ void		AgentCpu::SendStatusReport() {
 	}
 	if (m_alwaysgreen)
 		m_pageColor = GREEN;
-	m_mgr.Status("cpu", bbcolors[m_pageColor], reportData.str());	
+	m_mgr.Status("cpu", bbcolors[m_pageColor], reportData.str().c_str());	
 }
 
 //
@@ -296,33 +300,43 @@ AgentCpu::~AgentCpu() {
 
 
 bool AgentCpu::Init() {
-	bbwinagentconfig_t		conf;
+	bbwinagentconfig_t		*conf;
 	
 	m_mgr.ReportDebug("Init cpu started");
-	if (m_mgr.LoadConfiguration(m_mgr.GetAgentName(), conf) == false) {
+	conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	if (conf == NULL) {
 		m_mgr.ReportDebug("Init cpu failed");
 		return false;
 	}
-	std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t > 	range;
-	range = conf.equal_range("setting");
-	for ( ; range.first != range.second; ++range.first) {
-		if (range.first->second["name"] == "alwaysgreen") {
-			if (range.first->second["value"] == "true")
-				m_alwaysgreen = true;
+	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		string		name, value;
+
+		name = m_mgr.GetConfigurationRangeValue(range, "name");
+		value = m_mgr.GetConfigurationRangeValue(range, "value");
+		if (name == "alwaysgreen" && value == "true") {
+			m_alwaysgreen = true;
 		}
-		if (range.first->second["name"] == "psmode") {
-			if (range.first->second["value"] == "false")
-				m_psMode = false;
+		if (name == "psmode" && value == "false") {
+			m_psMode = false;
 		}
-		if (range.first->second["name"] == "default") {
-			if (range.first->second["warnlevel"].size() > 0)
-				m_warnPercent = m_mgr.GetNbr(range.first->second["warnlevel"]);
-			if (range.first->second["paniclevel"].size() > 0)
-				m_panicPercent = m_mgr.GetNbr(range.first->second["paniclevel"]);
-			if (range.first->second["delay"].size() > 0)
-				m_delay = m_mgr.GetNbr(range.first->second["delay"]);
+		if (name == "default") {
+			string		warn, panic, delay;
+
+			warn = m_mgr.GetConfigurationRangeValue(range, "warnlevel");
+			panic = m_mgr.GetConfigurationRangeValue(range, "paniclevel");
+			delay = m_mgr.GetConfigurationRangeValue(range, "delay");
+			if (warn.size() > 0)
+				m_warnPercent = m_mgr.GetNbr(warn.c_str());
+			if (panic.size() > 0)
+				m_panicPercent = m_mgr.GetNbr(panic.c_str());
+			if (delay.size() > 0)
+				m_delay = m_mgr.GetNbr(delay.c_str());
 		}
 	}
+	m_mgr.FreeConfiguration(conf);
 	m_mgr.ReportDebug("Init cpu ended");
 	return true;
 }
@@ -347,4 +361,3 @@ BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
 }
-

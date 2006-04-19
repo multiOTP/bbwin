@@ -1,6 +1,20 @@
 ChangeLog file for BBWin
 ==============================================================
 
+
+BBWin 0.6 Preview version - 19 April 2006
+-------------------
+
++ New Features
+* Agents:
+	- svcs : monitor Windows Services
+
++ Updates
+* BBWin + Agents : 	resolve critical bug with the file configuration loading manager
+					which crashed the program
+
+
+
 BBWin 0.5 Preview version - 3 April 2006
 -------------------
 

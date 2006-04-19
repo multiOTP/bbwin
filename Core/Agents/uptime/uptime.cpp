@@ -75,28 +75,34 @@ void AgentUptime::Run() {
 	seconds -= min * 60;
 	reportData << day  << " days " << hour << " hours " << min << " minutes " << seconds << " seconds" << endl;
 	if (alert){
-		m_mgr.Status("uptime", m_alarmColor, reportData.str());
+		m_mgr.Status("uptime", m_alarmColor.c_str(), reportData.str().c_str());
 	} else {
-		m_mgr.Status("uptime", "green", reportData.str());
+		m_mgr.Status("uptime", "green", reportData.str().c_str());
 	}
 }
 
 bool AgentUptime::Init() {
-	bbwinagentconfig_t		conf;
-	
-	if (m_mgr.LoadConfiguration(m_mgr.GetAgentName(), conf) == false)
+	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	if (conf == NULL)
 		return false;
-	std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t > 	range;
-	range = conf.equal_range("setting");
-	for ( ; range.first != range.second; ++range.first) {
-		if (range.first->second["name"] == "delay") {
-			DWORD		seconds = m_mgr.GetSeconds(range.first->second["value"]);
+	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		string name, value;
+		
+		name = m_mgr.GetConfigurationRangeValue(range, "name");
+		value = m_mgr.GetConfigurationRangeValue(range, "value");
+		if (name == "delay" && value != "") {
+			DWORD		seconds = m_mgr.GetSeconds(value.c_str());
 			m_delay = seconds;
 		}
-		if (range.first->second["name"] == "alarmcolor") {
-			m_alarmColor = range.first->second["value"];
+		if (name == "alarmcolor" && value != "") {
+			m_alarmColor = value;
 		}
 	}	
+	m_mgr.FreeConfigurationRange(range);
+	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 

@@ -33,6 +33,8 @@ externals.res: externals.rc
 	
 externals.dll: $(externals_objs) externals.res
     $(link) /DLL $(dllldebug) $(externals_objs) externals.res -out:externals.dll
+	if not exist ..\..\..\Release mkdir ..\..\..\Release
+	copy /Y externals.dll ..\..\..\Release
 
 clean:
 		erase /Q /S externals.res externals.obj externals.dll

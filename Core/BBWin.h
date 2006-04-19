@@ -53,7 +53,7 @@ class BBWin : public Singleton< BBWin > {
 		std::string				m_etcPath;
 		std::string				m_binPath;
 		std::string				m_bbwinConfigPath;
-		HANDLE					m_hEvents[1];
+		HANDLE					m_hEvents[BBWIN_MAX_COUNT_HANDLE];
 		DWORD					m_hCount;
 		Logging					*m_log;
 		bbwinconfig_t			m_configuration;
@@ -83,7 +83,8 @@ class BBWin : public Singleton< BBWin > {
 	public :
 		BBWin();
 		~BBWin();
-		void Run(HANDLE h);
+		void Start(HANDLE h);
+		void Stop();
 };
 
 

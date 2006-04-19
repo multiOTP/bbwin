@@ -46,7 +46,7 @@ void 		AgentSample::Run() {
         
 	reportData << "sample monitoring agent\n" << endl;
     reportData << m_message << endl;
-	m_mgr.Status(m_testName, "green", reportData.str());
+	m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
 }
 
 AgentSample::AgentSample(IBBWinAgentManager & mgr) : m_mgr(mgr) {
@@ -55,20 +55,27 @@ AgentSample::AgentSample(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 }
 
 bool		AgentSample::Init() {
-	bbwinagentconfig_t		conf;
-	
-	if (m_mgr.LoadConfiguration(m_mgr.GetAgentName(), conf) == false)
+	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+
+	if (conf == NULL)
 		return false;
-	std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t > 	range;
-	range = conf.equal_range("setting");
-	for ( ; range.first != range.second; ++range.first) {
-		if (range.first->second["name"] == "testname") {
-			m_testName = range.first->second["value"];
+	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		string name, value;
+		
+		name = m_mgr.GetConfigurationRangeValue(range, "name");
+		value = m_mgr.GetConfigurationRangeValue(range, "value");
+		if (name == "testname") {
+			m_testName = value;
 		}
-		if (range.first->second["name"] == "message") {
-			m_message = range.first->second["value"];
+		if (name == "message") {
+			m_message = value;
 		}
 	}	
+	m_mgr.FreeConfigurationRange(range);
+	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 

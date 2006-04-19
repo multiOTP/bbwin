@@ -208,7 +208,6 @@ void Logging::logError(const string & log) {
 		_log += log;
 		write(_log);
 	}
-	cout << "ERRROR OK END" << endl;
 }
 
 //

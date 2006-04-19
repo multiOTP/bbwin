@@ -89,7 +89,7 @@ bool			AgentDisk::GetSizeValue(const string & level, __int64 & val) {
 	for (DWORD inc = 0; disk_unit_table[inc].name; ++inc) {
 		res = level.find(disk_unit_table[inc].name);
 		if (res > 0 && res < level.size()) {
-			val = m_mgr.GetNbr(level) * disk_unit_table[inc].size;
+			val = m_mgr.GetNbr(level.c_str()) * disk_unit_table[inc].size;
 			return true;
 		}
 	}
@@ -116,7 +116,14 @@ bool			AgentDisk::GetDisksData() {
 		driveName = &(driveString[pos]);
 		driveType = GetDriveType(driveName);
 		if (driveType != DRIVE_REMOVABLE) { // no floppy 
-			disk = new disk_t;
+			
+			try {
+				disk = new disk_t;
+			} catch (std::bad_alloc ex) {
+				continue ;
+			}
+			if (disk == NULL)
+				continue ;
 			ZeroMemory(disk, sizeof(*disk));
 			disk->type = driveType;
 			strncpy(disk->letter, driveName, 1);
@@ -291,7 +298,7 @@ void		AgentDisk::SendStatusReport() {
 		reportData << " &" << bbcolors[disk->color];
 		reportData << endl;
 	}
-	m_mgr.Status("disk", bbcolors[m_pageColor], reportData.str());
+	m_mgr.Status("disk", bbcolors[m_pageColor], reportData.str().c_str());
 }
 
 void 		AgentDisk::Run() {
@@ -329,7 +336,7 @@ void		AgentDisk::BuildRule(disk_rule_t & rule, const string & warnlevel, const s
 		if (GetSizeValue(warnlevel, rule.warnSize))
 			rule.warnUseSize = true; 
 		else {
-			rule.warnPercent = m_mgr.GetNbr(warnlevel);	
+			rule.warnPercent = m_mgr.GetNbr(warnlevel.c_str());	
 			rule.warnUseSize = false; 
 		}
 	}
@@ -337,7 +344,7 @@ void		AgentDisk::BuildRule(disk_rule_t & rule, const string & warnlevel, const s
 		if (GetSizeValue(paniclevel, rule.panicSize))
 			rule.panicUseSize = true;
 		else {
-			rule.panicPercent = m_mgr.GetNbr(paniclevel);
+			rule.panicPercent = m_mgr.GetNbr(paniclevel.c_str());
 			rule.panicUseSize = false;
 		}
 	}
@@ -355,7 +362,13 @@ void		AgentDisk::AddRule(const string & label, const string & warnlevel, const s
 								const string & ignore) {
 	disk_rule_t		*rule;
 	
-	rule = new disk_rule_t;
+	try {
+		rule = new disk_rule_t;
+	} catch (std::bad_alloc ex) {
+		return ;
+	}
+	if (rule == NULL)
+		return ;
 	ZeroMemory(rule, sizeof(*rule));
 	rule->ignore = false;
 	if (ignore == "true")
@@ -364,36 +377,48 @@ void		AgentDisk::AddRule(const string & label, const string & warnlevel, const s
 	if (m_rules.find(label) == m_rules.end()) {
 		m_rules.insert(pair<std::string, disk_rule_t *>(label, rule));
 	} else {
-		string mes;
-		mes = "duplicate rule " + label;
-		m_mgr.ReportEventWarn(mes);
+		string mess;
+		mess = "duplicate rule " + label;
+		m_mgr.ReportEventWarn(mess.c_str());
 		delete rule;
 	}
 }
 
 bool		AgentDisk::Init() {
-	bbwinagentconfig_t		conf;
+	bbwinagentconfig_t		* conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 	
-	if (m_mgr.LoadConfiguration(m_mgr.GetAgentName(), conf) == false)
+	if (conf == NULL)
 		return false;
-	std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t > 	range;
-	range = conf.equal_range("setting");
-	for ( ; range.first != range.second; ++range.first) {
-		if (range.first->second["name"] == "alwaysgreen" && range.first->second["value"] == "true") {
-			m_alwaysgreen = true;
-		} else if (range.first->second["name"] == "remote" && range.first->second["value"] == "true") {
-			m_checkRemote = true;
-		} else if (range.first->second["name"] == "cdrom" && range.first->second["value"] == "true") {
-			m_checkCdrom = true;
+	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		string		name, value;
+
+		name = m_mgr.GetConfigurationRangeValue(range, "name");
+		value = m_mgr.GetConfigurationRangeValue(range, "value");
+		if (name == "alwaysgreen") {
+			if (value == "true")
+				m_alwaysgreen = true;
+		} else if (name == "remote") {
+			if (value == "true")
+				m_checkRemote = true;
+		} else if (name == "cdrom") {
+			if (value == "true")
+				m_checkCdrom = true;
 		} else {
-			AddRule(range.first->second["name"], range.first->second["warnlevel"], 
-				range.first->second["paniclevel"], range.first->second["ignore"]);	
+			AddRule(name, 
+					m_mgr.GetConfigurationRangeValue(range, "warnlevel"), 
+					m_mgr.GetConfigurationRangeValue(range, "paniclevel"), 
+					m_mgr.GetConfigurationRangeValue(range, "ignore"));	
 		}
 	}	
 	// if no default, create the default rule
 	if (m_rules.find(DEFAULT_RULE_NAME) == m_rules.end()) {
 		AddRule(DEFAULT_RULE_NAME, DEF_DISK_WARN, DEF_DISK_PANIC, "false");
 	}
+	m_mgr.FreeConfigurationRange(range);
+	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 

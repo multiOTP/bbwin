@@ -23,11 +23,13 @@ DIRS = \
     cpu\~   		\
     disk\~   		\
     memory\~   		\
+    msgs\~   		\
     stats\~   		\
+    svcs\~   		\
     procs\~   		\
     sample\~   		\
 
-	
+
 !include <sdkpropbld.mak>
 	
 all: $(DIRS)	

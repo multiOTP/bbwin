@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
+#include <assert.h>
 
 using namespace std;
 
@@ -89,6 +90,7 @@ protected:
 		{
 			m_Size = Size;
 			m_pBuffer = (LPBYTE) malloc( Size*sizeof(BYTE) );
+			assert(m_pBuffer != NULL);
 		}
 		~CBuffer()
 		{
@@ -98,6 +100,7 @@ protected:
 		{
 			m_Size = Size;
 			m_pBuffer = (LPBYTE) realloc( m_pBuffer, Size );
+			assert(m_pBuffer != NULL);
 			return m_pBuffer;
 		}
 
