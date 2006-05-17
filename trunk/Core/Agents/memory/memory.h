@@ -68,6 +68,7 @@ class AgentMemory : public IBBWinAgent
 		bool					m_ready;
 		HMODULE  				m_klib;		
 		DWORD					m_pageColor;
+		std::string				m_testName;
 		std::string				m_status;
 		
 	private :

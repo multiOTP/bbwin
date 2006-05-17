@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual C++ Express 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BBWin", "Core\Core.vcproj", "{98DF289A-CD24-47CD-B811-603C09881B88}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1} = {E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BBWinCmd", "Core\BBWinCmd.vcproj", "{7FB946D3-0EF9-4C59-ACD5-4159BAA02008}"
 EndProject
@@ -34,6 +37,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "svcs", "Core\Agents\svcs\svcs.vcproj", "{FC692CA9-FCBB-4161-A104-FD7C5C269B95}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msgs", "Core\Agents\msgs\msgs.vcproj", "{AB3AF868-F5E9-406F-AF02-A73FE6FEE3D6}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbwinupdate", "Core\Agents\bbwinupdate\bbwinupdate.vcproj", "{44A9B2B1-08C7-4E52-9887-AFD3D7C33468}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1} = {E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxml", "Core\tinyxml.vcproj", "{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,6 +107,14 @@ Global
 		{AB3AF868-F5E9-406F-AF02-A73FE6FEE3D6}.Debug|Win32.Build.0 = Debug|Win32
 		{AB3AF868-F5E9-406F-AF02-A73FE6FEE3D6}.Release|Win32.ActiveCfg = Release|Win32
 		{AB3AF868-F5E9-406F-AF02-A73FE6FEE3D6}.Release|Win32.Build.0 = Release|Win32
+		{44A9B2B1-08C7-4E52-9887-AFD3D7C33468}.Debug|Win32.ActiveCfg = Debug|Win32
+		{44A9B2B1-08C7-4E52-9887-AFD3D7C33468}.Debug|Win32.Build.0 = Debug|Win32
+		{44A9B2B1-08C7-4E52-9887-AFD3D7C33468}.Release|Win32.ActiveCfg = Release|Win32
+		{44A9B2B1-08C7-4E52-9887-AFD3D7C33468}.Release|Win32.Build.0 = Release|Win32
+		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}.Debug|Win32.Build.0 = Debug|Win32
+		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}.Release|Win32.ActiveCfg = Release|Win32
+		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

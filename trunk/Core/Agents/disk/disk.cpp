@@ -298,7 +298,7 @@ void		AgentDisk::SendStatusReport() {
 		reportData << " &" << bbcolors[disk->color];
 		reportData << endl;
 	}
-	m_mgr.Status("disk", bbcolors[m_pageColor], reportData.str().c_str());
+	m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
 }
 
 void 		AgentDisk::Run() {
@@ -314,6 +314,7 @@ AgentDisk::AgentDisk(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	m_checkRemote = false;
 	m_checkCdrom = false;
 	m_alwaysgreen = false;
+	m_testName = "disk";
 }
 
 void		AgentDisk::BuildRule(disk_rule_t & rule, const string & warnlevel, const string & paniclevel) {
@@ -403,6 +404,9 @@ bool		AgentDisk::Init() {
 		} else if (name == "remote") {
 			if (value == "true")
 				m_checkRemote = true;
+		} else if (name == "testname") {
+			if (value.length() > 0) 
+				m_testName = value;
 		} else if (name == "cdrom") {
 			if (value == "true")
 				m_checkCdrom = true;

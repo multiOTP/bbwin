@@ -97,7 +97,7 @@ void	AgentStats::Netstat() {
         }
     }
 	reportData << endl;
-	m_mgr.Status("netstat", "green", reportData.str().c_str());
+	m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
 }
 
 void AgentStats::Run() {
@@ -105,10 +105,29 @@ void AgentStats::Run() {
 }
 
 bool AgentStats::Init() {
+		bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+
+	if (conf == NULL)
+		return false;
+	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		string name, value;
+		
+		name = m_mgr.GetConfigurationRangeValue(range, "name");
+		value = m_mgr.GetConfigurationRangeValue(range, "value");
+		if (name == "testname") {
+			m_testName = value;
+		}
+	}	
+	m_mgr.FreeConfigurationRange(range);
+	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 
 AgentStats::AgentStats(IBBWinAgentManager & mgr) : m_mgr(mgr) {
+	m_testName = "netstat";
 }
 
 BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)

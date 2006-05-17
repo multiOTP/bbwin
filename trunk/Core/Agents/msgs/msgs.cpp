@@ -29,6 +29,7 @@ using namespace std;
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
 
+using boost::format;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
@@ -40,14 +41,23 @@ static const BBWinAgentInfo_t 		msgsAgentInfo =
 	0,              // agentMajVersion;
 	1,              // agentMinVersion;
 	"msgs",    // agentName;
-	"msgs agent : check the event viewer",        // agentDescription;
+	"msgs agent : check the event logs",        // agentDescription;
 };                
 
+using namespace EventLog;
 
 //
 // common bb colors
 //
 static const char	*bbcolors[] = {"green", "yellow", "red", NULL};
+
+
+
+//
+// AgentMsgs methods
+//
+//
+
 
 //
 // Agent functions
@@ -57,151 +67,69 @@ const BBWinAgentInfo_t & AgentMsgs::About() {
 }
 
 
-#define BUFFER_SIZE		1024
-
 //
 // Run method
 // called from init
 //
 void AgentMsgs::Run() {
 	stringstream 					reportData;	
-	BBAlarmType						finalState;
+	DWORD							finalState;
 	
     ptime now = second_clock::local_time();
 	finalState = GREEN;
 	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
 	reportData << endl;
+	finalState = m_eventlog.Execute(reportData);
+	if (m_alwaysgreen)
+		finalState = GREEN;
 
-	HANDLE h;
-	DWORD cRecords; 
-	DWORD dwOldest;
-
-	// Open the System event log. 
-
-	h = OpenEventLog(NULL,  // uses local computer 
-		"System");     // source name 
-	if (h == NULL) 
-	{    
-		printf("Could not open the System event log."); 
-		return;
+	if (m_summary) {
+		reportData << "\nSummary:\n" << endl;
+		reportData << format("Events Analyzed: %6u") % m_eventlog.GetTotalCount() << endl ;
+		reportData << format("Events Matched:  %6u") % m_eventlog.GetMatchCount() << endl ;
+		reportData << format("Events Ignored:  %6u") % m_eventlog.GetIgnoreCount() << endl ;
+		reportData << endl;
 	}
-
-	// Display the number of records and the oldest record. 
-	if (GetNumberOfEventLogRecords(h, &cRecords)) 
-		printf("There are %d records in the System log.\n", cRecords); 
-
-	if (GetOldestEventLogRecord(h, &dwOldest))
-		printf("The oldest record is: %d\n\n", dwOldest);
-
-	CloseEventLog(h); 
-
-	// Open the Application event log. 
-
-	h = OpenEventLog(NULL,    // uses local computer  
-		"Application");  // source name 
-	if (h == NULL) 
-	{
-		printf("Could not open the Application event log."); 
-		return;
-	}
-
-	// Display the number of records and the oldest record. 
-
-	if (GetNumberOfEventLogRecords(h, &cRecords)) 
-		printf("There are %d records in the Application log.\n", 
-		cRecords); 
-
-	if (GetOldestEventLogRecord(h, &dwOldest))
-		printf("The oldest record is: %d\n", dwOldest);
-
-	CloseEventLog(h); 
-
-
-
-	EVENTLOGRECORD *pevlr; 
-	BYTE bBuffer[BUFFER_SIZE]; 
-	DWORD dwRead, dwNeeded, dwThisRecord; 
-
-	// Open the Application event log. 
-
-	h = OpenEventLog( NULL,    // use local computer
-		"Application");   // source name
-	if (h == NULL) 
-	{
-		printf("Could not open the Application event log."); 
-		return;
-	}
-
-	pevlr = (EVENTLOGRECORD *) &bBuffer; 
-
-	// Get the record number of the oldest event log record.
-
-	GetOldestEventLogRecord(h, &dwThisRecord);
-
-	// Opening the event log positions the file pointer for this 
-	// handle at the beginning of the log. Read the event log records 
-	// sequentially until the last record has been read. 
-
-	while (ReadEventLog(h,                // event log handle 
-		EVENTLOG_FORWARDS_READ |  // reads forward 
-		EVENTLOG_SEQUENTIAL_READ, // sequential read 
-		0,            // ignored for sequential reads 
-		pevlr,        // pointer to buffer 
-		BUFFER_SIZE,  // size of buffer 
-		&dwRead,      // number of bytes read 
-		&dwNeeded))   // bytes in next record 
-	{
-		while (dwRead > 0) 
-		{ 
-			// Print the record number, event identifier, type, 
-			// and source name. 
-
-			printf("%03d  Event ID: 0x%08X  Event type: ", 
-				dwThisRecord++, pevlr->EventID); 
-
-			switch(pevlr->EventType)
-			{
-			case EVENTLOG_ERROR_TYPE:
-				printf("EVENTLOG_ERROR_TYPE\t  ");
-				break;
-			case EVENTLOG_WARNING_TYPE:
-				printf("EVENTLOG_WARNING_TYPE\t  ");
-				break;
-			case EVENTLOG_INFORMATION_TYPE:
-				printf("EVENTLOG_INFORMATION_TYPE  ");
-				break;
-			case EVENTLOG_AUDIT_SUCCESS:
-				printf("EVENTLOG_AUDIT_SUCCESS\t  ");
-				break;
-			case EVENTLOG_AUDIT_FAILURE:
-				printf("EVENTLOG_AUDIT_FAILURE\t  ");
-				break;
-			default:
-				printf("Unknown ");
-				break;
-			}
-
-			printf("Event source: %s\n", 
-				(LPSTR) ((LPBYTE) pevlr + sizeof(EVENTLOGRECORD))); 
-			
-			printf("Description: %s\n", 
-				(LPSTR) ((LPBYTE) pevlr + pevlr->StringOffset));
-
-			dwRead -= pevlr->Length; 
-			pevlr = (EVENTLOGRECORD *) 
-				((LPBYTE) pevlr + pevlr->Length); 
-		} 
-
-		pevlr = (EVENTLOGRECORD *) &bBuffer; 
-	} 
-
-	CloseEventLog(h); 
-
-
-	//m_mgr.Status("msgs", bbcolors[finalState], reportData.str().c_str());
+	m_mgr.Status(m_testName.c_str(), bbcolors[finalState], reportData.str().c_str());
 }
 
-
+void	AgentMsgs::AddRule(bbwinconfig_range_t * elem, bool ignore) {
+	string		logfile, source, delay, type, alarmcolor, value, eventid;
+	EventLog::Rule		rule;
+	
+	logfile = m_mgr.GetConfigurationRangeValue(elem, "logfile");
+	if (logfile.length() == 0)
+		return ;
+	alarmcolor = m_mgr.GetConfigurationRangeValue(elem, "alarmcolor");
+	source = m_mgr.GetConfigurationRangeValue(elem, "source");
+	value = m_mgr.GetConfigurationRangeValue(elem, "value");
+	delay = m_mgr.GetConfigurationRangeValue(elem, "delay");
+	type = m_mgr.GetConfigurationRangeValue(elem, "type");
+	eventid = m_mgr.GetConfigurationRangeValue(elem, "eventid");
+	if (value.length() > 0)
+		rule.SetValue(value);
+	if (alarmcolor.length() > 0) {
+		if (alarmcolor == "green") 
+			rule.SetAlarmColor(GREEN);
+		else if (alarmcolor == "yellow")
+			rule.SetAlarmColor(YELLOW);
+		else if (alarmcolor == "red")
+			rule.SetAlarmColor(RED);
+	}
+	if (source.length() > 0)
+		rule.SetSource(source);
+	if (delay.length()) {
+		DWORD del = m_mgr.GetSeconds(delay.c_str());
+		if (del >= 60)
+			rule.SetDelay(del);
+	}
+	if (eventid.length() > 0)
+		rule.SetEventId(m_mgr.GetNbr(eventid.c_str()));
+	if (type.length() > 0)
+		rule.SetType(type);
+	rule.SetIgnore(ignore);
+	m_eventlog.AddRule(logfile, rule);
+}
 
 //
 // init function
@@ -211,14 +139,37 @@ bool AgentMsgs::Init() {
 	
 	if (conf == NULL)
 		return false;
+	m_mgr.ReportDebug("Begin Msgs Initialization");
 	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
 	for ( ; range->first != range->second; ++range->first) {
-		
+		string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
+		string  value = m_mgr.GetConfigurationRangeValue(range, "value");
+		if (name == "alwaysgreen" && value == "true")
+			m_alwaysgreen = true;
+		if (name == "summary" && value == "true")
+			m_summary = true;
+		if (name == "testname" && value.length() > 0)
+			m_testName = value;
+	}
+	m_mgr.FreeConfigurationRange(range);
+	range = m_mgr.GetConfigurationRange(conf, "match");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		AddRule(range, false);
+	}
+	m_mgr.FreeConfigurationRange(range);
+	range = m_mgr.GetConfigurationRange(conf, "ignore");
+	if (range == NULL)
+		return false;
+	for ( ; range->first != range->second; ++range->first) {
+		AddRule(range, true);
 	}
 	m_mgr.FreeConfigurationRange(range);
 	m_mgr.FreeConfiguration(conf);
+	m_mgr.ReportDebug("Ending Msgs Initialization");
 	return true;
 }
 
@@ -226,9 +177,15 @@ bool AgentMsgs::Init() {
 //
 // constructor 
 //
-AgentMsgs::AgentMsgs(IBBWinAgentManager & mgr) : m_mgr(mgr) {
-	
+AgentMsgs::AgentMsgs(IBBWinAgentManager & mgr) : 
+		m_mgr(mgr),
+		m_alwaysgreen(false),
+		m_summary(false),
+		m_testName("msgs")
+{
+
 }
+
 
 //
 // Destructor 

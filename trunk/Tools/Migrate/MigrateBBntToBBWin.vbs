@@ -19,10 +19,10 @@
 '*
 '* File:		MigrateBBntToBBWin.VBS
 '* Created:		March 17, 2006
-'* Last Modified:	April 18, 2006
-'* Version:		0.3
+'* Last Modified:	May 10, 2006
+'* Version:		0.5
 '*
-'* BBWin Version	0.6
+'* BBWin Version	0.7
 '*
 '* Main Function:  	Migrate BBnt registry to create the BBWin configuration file
 '* 
@@ -34,6 +34,9 @@
 '* History
 '* 2006/03/17      0.2          First try
 '* 2006/04/18      0.3          Svcs migration part added, Memory Virtual changed by Memory Page
+'* 2006/04/26     0.4           add bbpager support
+'* 2006/05/10      0.5           add msgs support and create a registry file for the hostname setting
+'*
 '***********************************************************************************
 
 ' use explicit declaration
@@ -85,8 +88,9 @@ Sub			buildBBWinConfiguration(byref confFile)
 	Dim		port
 	
 	confFile.WriteLine("<bbwin>")
-	val = shello.RegRead(C_BBntRegistry & "AliasName\")
-	confFile.WriteLine("<setting name=""hostname"" value=""" & val & """ />")
+	'* Old Configuration when hostname was configured inside the BBWin.cfg
+	'*val = shello.RegRead(C_BBntRegistry & "AliasName\")
+	'*confFile.WriteLine("<setting name=""hostname"" value=""" & val & """ />")
 	val = shello.RegRead(C_BBntRegistry & "Timer\")
 	confFile.WriteLine("<setting name=""timer"" value=""" & val & """ />")
 	disp = shello.RegRead(C_BBntRegistry & "BBDISPLAY\")
@@ -96,11 +100,27 @@ Sub			buildBBWinConfiguration(byref confFile)
 	For Each disp in BBDispArray
 		confFile.WriteLine("<setting name=""bbdisplay"" value=""" & disp & ":" & port & """ />")
 	Next
+	val = shello.RegRead(C_BBntRegistry & "SendPageAlerts\")
+	If val = "Y" Then
+		val = "true"
+	Else
+		val = "false"
+	End If
+	confFile.WriteLine("<setting name=""usepager"" value=""" & val & """ />")
+	disp = shello.RegRead(C_BBntRegistry & "BBPAGE\")
+	Dim BBPageArray
+	BBPageArray = Split(disp, ";")
+	For Each disp in BBPageArray
+		confFile.WriteLine("<setting name=""bbpager"" value=""" & disp & ":" & port & """ />")
+	Next
+	val = shello.RegRead(C_BBntRegistry & "PageLevels\")
+	confFile.WriteLine("<setting name=""pagerlevels"" value=""" & val & """ />")
 	confFile.WriteLine("<load name=""cpu"" value=""cpu.dll"" />")
 	confFile.WriteLine("<load name=""disk"" value=""disk.dll"" />")
 	confFile.WriteLine("<load name=""externals"" value=""externals.dll"" />")
 	confFile.WriteLine("<load name=""procs"" value=""procs.dll"" />")
 	confFile.WriteLine("<load name=""memory"" value=""memory.dll"" />")
+	confFile.WriteLine("<load name=""msgs"" value=""msgs.dll"" />")
 	confFile.WriteLine("<load name=""stats"" value=""stats.dll"" />")
 	confFile.WriteLine("<load name=""svcs"" value=""svcs.dll"" />")
 	confFile.WriteLine("<load name=""uptime"" value=""uptime.dll"" />")
@@ -281,9 +301,11 @@ Sub			buildCpuConfiguration(byref confFile)
 		confFile.WriteLine("<setting name=""alwaysgreen"" value=""true"" />")
 	End If
 	val = shello.RegRead(C_BBntRegistry & "Defaults\")
-	Set match = regEx.Execute(val)
-	confFile.WriteLine("<setting name=""default"" warnlevel=""" & match(0).SubMatches(0) & "%"" " & _ 
-						"paniclevel=""" & match(0).SubMatches(1) & "%"" />")
+	If regEx.Test(val) = true Then
+		Set match = regEx.Execute(val)
+		confFile.WriteLine("<setting name=""default"" warnlevel=""" & match(0).SubMatches(0) & "%"" " & _ 
+							"paniclevel=""" & match(0).SubMatches(1) & "%"" />")
+	End If
 	confFile.WriteLine("</cpu>")
 End Sub
 
@@ -318,9 +340,11 @@ Sub			buildDiskConfiguration(byref confFile)
 	DiskArray = split(val, " ")
 	regEx.Pattern = "^(.):([0-9]+):([0-9]+).*$"
 	For Each val In DiskArray
-		Set match = regEx.Execute(val)
-		confFile.WriteLine("<setting name=""" & match(0).SubMatches(0) & """ warnlevel=""" & match(0).SubMatches(1) & "%"" " & _
-							" paniclevel=""" & match(0).SubMatches(2) & "%"" />")
+		If regEx.Test(val) = true Then
+			Set match = regEx.Execute(val)
+			confFile.WriteLine("<setting name=""" & match(0).SubMatches(0) & """ warnlevel=""" & match(0).SubMatches(1) & "%"" " & _
+								" paniclevel=""" & match(0).SubMatches(2) & "%"" />")
+		End If
 	Next
 	confFile.WriteLine("</disk>")
 End Sub
@@ -348,18 +372,99 @@ Sub			buildMemoryConfiguration(byref confFile)
 	regEx.IgnoreCase = True
 	regEx.Global = True
 	For Each val In MemArray
-		Set match = regEx.Execute(val)
-		If match(0).SubMatches(0) = "COMMIT" Then
-			title = "page"
-		Else
-			title = "physical"
+		If regEx.Test(val) = true Then
+			Set match = regEx.Execute(val)
+			If match(0).SubMatches(0) = "COMMIT" Then
+				title = "page"
+			Else
+				title = "physical"
+			End If
+			confFile.WriteLine("<setting name=""" & title & """ warnlevel=""" & match(0).SubMatches(1) & "%"" " & _ 
+							"paniclevel=""" & match(0).SubMatches(2) & "%"" />")
 		End If
-		confFile.WriteLine("<setting name=""" & title & """ warnlevel=""" & match(0).SubMatches(1) & "%"" " & _ 
-						"paniclevel=""" & match(0).SubMatches(2) & "%"" />")
 	Next 
 	confFile.WriteLine("</memory>")
 End Sub
 
+
+'********************************************************************
+'*
+'* Sub buildMsgsConfiguration()
+'* Purpose: buildMsgsConfiguration entry point
+'* Input: confFile 		configuration file object
+'* Output:  
+'********************************************************************
+Sub			buildMsgsConfiguration(byref confFile)
+	Dim		val
+	Dim 	regEx ' regexp object 
+	Dim 	match ' match results
+	
+	confFile.WriteLine("<msgs>")
+	val = shello.RegRead(C_BBntRegistry & "MsgLevels\")
+	Dim MsgsArray 
+	MsgsArray = split(val, " ")
+	Set regEx = New RegExp
+   	regEx.Pattern = "^(.*):(.*):(.):([0-9]+)$"
+	regEx.IgnoreCase = True
+	regEx.Global = True
+	confFile.WriteLine("<setting name=""summary"" value=""true"" />")
+	For Each val In MsgsArray
+		If regEx.Test(val) = true Then
+			Dim 	color, evtype, delay
+			
+			Set match = regEx.Execute(val)
+			If match(0).SubMatches(2) = "Y" Then
+				color = "red"
+			Else
+				color = "yellow"
+			End If
+			evtype = LCase(match(0).SubMatches(1))
+			If evtype = "fail_audit" Then
+				evtype = "fail"
+			End If
+			If evtype = "success_audit" Then
+				evtype = "success"
+			End If
+			confFile.WriteLine("<match logfile=""" & LCase(match(0).SubMatches(0)) & _
+							""" " & "type=""" & evtype & """ alarmcolor=""" & color & """ " & " />")
+		End If
+	Next 
+	confFile.WriteLine("")
+	confFile.WriteLine("<!-- Ignore rules -->")
+	val = shello.RegRead(C_BBntRegistry & "IgnoreMsgs\")
+	MsgsArray = split(val, ";")
+	For Each val In MsgsArray
+		confFile.WriteLine("<ignore logfile=""Application"" value=""" & val & """/>")
+		confFile.WriteLine("<ignore logfile=""Security"" value=""" & val & """/>")
+		confFile.WriteLine("<ignore logfile=""System"" value=""" & val & """/>")
+	Next 
+	confFile.WriteLine("</msgs>")
+End Sub
+
+'********************************************************************
+'*
+'* Sub BuildRegistryFile()
+'* Purpose: BuildRegistryFile entry point
+'* Input: args 		arguments
+'* Output:  
+'********************************************************************
+Sub 	BuildRegistryFile(filename)
+	Dim		regFile, val
+	
+	On Error Resume Next
+	Err.Number = 0
+	Set regFile = fso.OpenTextFile(filename & ".reg", 2, true)
+	If Err.Number <> 0 Then
+		WScript.Echo "Can't create registry file " & args(0)
+	End If
+	On Error Goto 0
+	regFile.WriteLine("REGEDIT4")
+	regFile.WriteLine("")
+	regFile.WriteLine("[HKEY_LOCAL_MACHINE\SOFTWARE\BBWin]")
+	val = shello.RegRead(C_BBntRegistry & "AliasName\")
+	regFile.WriteLine("""hostname""=""" & val & """")
+	regFile.Close
+End Sub
 
 
 '********************************************************************
@@ -386,11 +491,13 @@ Sub 	MigrateBBntToBBWin(byref args)
 	buildDiskConfiguration(confFile)
 	buildExternalsConfiguration(confFile)
 	buildMemoryConfiguration(confFile)
+	buildMsgsConfiguration(confFile)
 	buildProcsConfiguration(confFile)
 	buildSvcsConfiguration(confFile)
 	buildUpTimeConfiguration(confFile)
 	confFile.WriteLine("</configuration>")
 	confFile.Close
+	BuildRegistryFile(args(0))
 End Sub
 
 '********************************************************************

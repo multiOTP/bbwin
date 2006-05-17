@@ -41,8 +41,8 @@ using namespace boost::gregorian;
 static const BBWinAgentInfo_t 		uptimeAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	1,              // agentMajVersion;
-	0,              // agentMinVersion;
+	0,              // agentMajVersion;
+	8,              // agentMinVersion;
 	"uptime",    // agentName;
 	"uptime agent : report uptime server",        // agentDescription;
 };                
@@ -63,7 +63,7 @@ void AgentUptime::Run() {
 	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] - uptime\n\n";
 	seconds = data.GetSystemUpTime();
 	if (seconds <= m_delay) {
-		reportData << "&yellow machine rebooted recently" << endl;
+		reportData << "&" << m_alarmColor << " machine rebooted recently" << endl;
 		reportData << endl;
 		alert = true;
 	}
@@ -75,9 +75,9 @@ void AgentUptime::Run() {
 	seconds -= min * 60;
 	reportData << day  << " days " << hour << " hours " << min << " minutes " << seconds << " seconds" << endl;
 	if (alert){
-		m_mgr.Status("uptime", m_alarmColor.c_str(), reportData.str().c_str());
+		m_mgr.Status(m_testName.c_str(), m_alarmColor.c_str(), reportData.str().c_str());
 	} else {
-		m_mgr.Status("uptime", "green", reportData.str().c_str());
+		m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
 	}
 }
 
@@ -100,6 +100,9 @@ bool AgentUptime::Init() {
 		if (name == "alarmcolor" && value != "") {
 			m_alarmColor = value;
 		}
+		if (name == "testname" && value != "") {
+			m_testName = value;
+		}
 	}	
 	m_mgr.FreeConfigurationRange(range);
 	m_mgr.FreeConfiguration(conf);
@@ -109,6 +112,7 @@ bool AgentUptime::Init() {
 AgentUptime::AgentUptime(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	m_delay = m_mgr.GetSeconds(UPTIME_DELAY);
 	m_alarmColor = "yellow";
+	m_testName = "uptime";
 }
 
 BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)

@@ -255,7 +255,7 @@ void AgentSvcs::Run() {
 	reportData << endl;
 	if (m_alwaysGreen)
 		m_pageColor = GREEN;
-	m_mgr.Status("svcs", bbcolors[m_pageColor], reportData.str().c_str());
+	m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
 }
 
 //
@@ -280,6 +280,9 @@ bool AgentSvcs::Init() {
 		} else if (name == "autoreset") {
 			if (value == "true")
 				m_autoReset = true;
+		} else if (name == "testname") {
+			if (value.length() > 0)
+				m_testName = value;
 		} else if (name == "alarmcolor") {
 			if (value.length() > 0) {
 				if (value == "red") 
@@ -337,7 +340,7 @@ AgentSvcs::AgentSvcs(IBBWinAgentManager & mgr) :
 		m_alwaysGreen(false),
 		m_autoReset(false)
 {
-	
+	m_testName = "svcs";
 }
 
 //

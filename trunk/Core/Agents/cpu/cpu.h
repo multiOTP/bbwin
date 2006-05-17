@@ -27,6 +27,8 @@
 #define	 CPU_DELAY		0
 #define	MAX_TABLE_PROC	512
 
+#define ACCOUNT_SIZE	128
+
 //
 // Default alerts values
 //
@@ -56,6 +58,8 @@ class UsageProc {
 		CCpuUsage		m_usage;
 		double			m_lastUsage;
 		size_t			m_mem;
+		std::string		m_owner;
+		LONG			m_priority;
 
 	public :
 		__stdcall UsageProc(DWORD pid);
@@ -68,6 +72,10 @@ class UsageProc {
 		size_t	__stdcall GetMemUsage() const { return m_mem; };
 		void	__stdcall SetName(const std::string & name) { m_name = name; };
 		const std::string &  __stdcall GetName() const { return m_name; };
+		void	__stdcall SetOwner(const std::string & owner) { m_owner = owner; };
+		const std::string &  __stdcall GetOwner() const { return m_owner; };
+		LONG	__stdcall GetPriority() const { return m_priority; };
+		void	__stdcall SetPriority (const LONG priority) { m_priority = priority; } ;
 };
 
 //  
@@ -87,6 +95,12 @@ typedef set<const UsageProc *, cpuusagecomp>::iterator	procs_sorted_itr_t;
 
 typedef std::map<DWORD, UsageProc *>::iterator 	procs_itr;
 
+typedef  BOOL	(__stdcall *WTSEnumerateProcesses_t)(HANDLE hServer, DWORD Reserved, 
+					DWORD Version, PWTS_PROCESS_INFO* ppProcessInfo,  DWORD* pCount);
+typedef  void	(__stdcall *WTSFreeMemory_t)(PVOID pMemory);
+//typedef  HANDLE (*WTSOpenServer_t)(LPTSTR pServerName);
+//typedef  void	(*WTSCloseServer_t)(HANDLE hServer);
+
 class AgentCpu : public IBBWinAgent
 {
 	private :
@@ -95,22 +109,32 @@ class AgentCpu : public IBBWinAgent
 		DWORD							m_procCount; // number of processors on the server
 		bool							m_alwaysgreen; // if no status check is done
 		bool							m_firstPass; // to know if it is the first passage
-		bool							m_psMode;
+		bool							m_psMode; // ps mode activated or not
 		DWORD							m_pageColor;
 		std::map<DWORD, UsageProc *>	m_procs;
 		procs_sorted_t					m_procsSorted; // set container with sorted procs
 		double							m_systemWideCpuUsage; //Cpu usage (sum of all proc usages)
-		
+		std::string						m_testName; // test column name
+		DWORD							m_limit; // limit the number of lines for ps
+
 		DWORD							m_warnPercent;
 		DWORD							m_panicPercent;
 		DWORD							m_delay;
 		DWORD							m_curDelay;
 		
+		// Terminal Service part (used to get process owner names)
+		bool							m_useWts;
+		HMODULE							m_mWts;
+		WTSEnumerateProcesses_t			m_WTSEnumerateProcesses;
+		WTSFreeMemory_t					m_WTSFreeMemory;
+
 	private :
+		void		InitWtsExtension();
 		void		GetProcsData();
 		void		GetCpuData();
 		void		DeleteOlderProcs();
 		void		InitProcs();
+		void		GetProcsOwners();
 
 		//void		ApplyRules();
 		void		SendStatusReport();

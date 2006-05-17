@@ -46,19 +46,24 @@ using namespace std;
 //
 BBWinAgentManager::BBWinAgentManager(const bbwinhandler_data_t & data) : 
 							m_bbdisplay (data.bbdisplay), 
+							m_bbpager (data.bbpager),
 							m_setting (data.setting),
 							m_agentName (data.agentName),
 							m_agentFileName (data.agentFileName),
 							m_hEvents (data.hEvents),
 							m_hCount (data.hCount),
 							m_timer (data.timer),
-							m_conf (NULL)
+							m_conf (NULL),
+							m_usepager (false)
 {
 		m_log = Logging::getInstancePtr();
+		assert(m_log != NULL);
 
 		m_logReportFailure = false;
 		if (m_setting["logreportfailure"] == "true")
 			m_logReportFailure = true;	
+		if (m_setting["usepager"] == "true")
+			m_usepager = true;
 }
 
 //
@@ -273,6 +278,45 @@ void 	BBWinAgentManager::ReportEventWarn(LPCTSTR str) {
 	m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
 }
 
+void			BBWinAgentManager::Pager(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime) {
+	bbpager_t::iterator	itr;
+	BBWinNet			hobNet;
+
+	assert(testName != NULL);
+	assert(color != NULL);
+	assert(text != NULL);
+	assert(lifeTime != NULL);
+	if (m_usepager == true && m_setting["pagerlevels"].length() > 0 && m_bbpager.size() > 0) {
+		istringstream	iss(m_setting["pagerlevels"]);
+		bool			matchColor = false;
+		string			word;
+
+		while ( std::getline(iss, word, ' ') ) {
+			if (word == color) {
+				matchColor = true;
+			}
+		}
+		if (matchColor) {
+			hobNet.SetHostName(m_setting["hostname"]);
+			for ( itr = m_bbpager.begin(); itr != m_bbpager.end(); ++itr) {
+				hobNet.SetBBPager((*itr));
+				try {
+					hobNet.Pager(testName, color, text, lifeTime);
+				} catch (BBWinNetException ex) {
+					if (m_logReportFailure) {
+						string mes;
+
+						mes = "Sending pager report to " + (*itr) + " failed.";
+						LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+						m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+					}
+					continue ; 
+				}
+			}
+		}
+	}
+}
+
 void 			BBWinAgentManager::Status(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet	hobNet;
@@ -281,6 +325,7 @@ void 			BBWinAgentManager::Status(LPCTSTR testName, LPCTSTR color, LPCTSTR text,
 	assert(color != NULL);
 	assert(text != NULL);
 	assert(lifeTime != NULL);
+	Pager(testName, color, text, lifeTime);
 	hobNet.SetHostName(m_setting["hostname"]);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
@@ -496,6 +541,43 @@ void		BBWinAgentManager::Message(LPCTSTR message, LPTSTR dest, DWORD size) {
 
 	assert(message != NULL);
 	assert(dest != NULL);
+	if (m_usepager == true && m_bbpager.size() > 0) { // extract the information needed to send pager notification
+		string		tmp, type, testName, color, text, lifeTime;
+		size_t		pos = 0;
+
+		tmp = message;
+		istringstream iss(tmp);
+		std::getline( iss, tmp);
+		size_t res = tmp.find_first_of(" ");
+		if (res > 0 && res < tmp.length()) {
+			
+			type = tmp.substr(0, res);
+			res = type.find_first_of("status");
+			if (res >= 0 && res < tmp.length()) {
+				size_t	end;
+				
+				tmp = tmp.substr(type.length() + 1);
+				pos += type.length() + 1;
+				res = type.find_first_of("+");
+				if (res > 0 && res < type.length()) {
+					lifeTime = type.substr(res + 1);
+				}
+				res = tmp.find_first_of(".");
+				end = tmp.find_first_of(" ");
+				testName = tmp.substr(res + 1, end - (res + 1));
+				tmp = tmp.substr(end + 1);
+				pos += end + 1;
+				end = tmp.find_first_of(" ");
+				color = tmp.substr(0, end);
+				if (tmp.length() > (end + 2)) {
+					pos += end + 2;
+					text = message;
+					text = text.substr(pos);
+					Pager(testName.c_str(), color.c_str(), text.c_str(), lifeTime.c_str());
+				}
+			}
+		}
+	}
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -511,7 +593,15 @@ void		BBWinAgentManager::Message(LPCTSTR message, LPTSTR dest, DWORD size) {
 			continue ; 
 		}
 	}
-	strncpy(dest, result.c_str(), size);
+	try
+	{
+		if (dest != NULL && size != 0)
+			strncpy(dest, result.c_str(), size);
+	}
+	catch (...)
+	{
+		// Failed to write
+	}
 }
 
 void		BBWinAgentManager::Config(LPCTSTR fileName, LPTSTR dest, DWORD size) {
@@ -536,7 +626,15 @@ void		BBWinAgentManager::Config(LPCTSTR fileName, LPTSTR dest, DWORD size) {
 			continue ; 
 		}
 	}
-	strncpy(dest, result.c_str(), size);
+	try
+	{
+		if (dest != NULL && size != 0)
+			strncpy(dest, result.c_str(), size);
+	}
+	catch (...)
+	{
+		// Failed to write
+	}
 }
 
 void		BBWinAgentManager::Query(LPCTSTR testName, LPTSTR dest, DWORD size) {
@@ -561,5 +659,13 @@ void		BBWinAgentManager::Query(LPCTSTR testName, LPTSTR dest, DWORD size) {
 			continue ; 
 		}
 	}
-	strncpy(dest, result.c_str(), size);
+	try
+	{
+		if (dest != NULL && size != 0)
+			strncpy(dest, result.c_str(), size);
+	}
+	catch (...)
+	{
+		// Failed to write
+	}
 }

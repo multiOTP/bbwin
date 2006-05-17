@@ -20,7 +20,6 @@
 
 #include <string>
 #include "IBBWinAgent.h"
-#include "Sample.h"
 
 class AgentSample : public IBBWinAgent
 {

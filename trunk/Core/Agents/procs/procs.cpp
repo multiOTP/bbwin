@@ -21,8 +21,6 @@
 #include <sstream>
 #include <fstream>
 
-#include <Psapi.h>
-
 #include <string>
 using namespace std;
 
@@ -34,13 +32,15 @@ using namespace std;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
+#include "ProcApi.h"
+
 #include "procs.h"
 
 static const BBWinAgentInfo_t 		procsAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	0,              // agentMajVersion;
-	2,              // agentMinVersion;
+	1,              // agentMajVersion;
+	1,              // agentMinVersion;
 	"procs",    // agentName;
 	"procs agent : check running processes",        // agentDescription;
 };                
@@ -94,33 +94,67 @@ const static Rule_t			globalRules[]  =
 // check if process is running
 // it will return the number of instances
 // 
-static DWORD 		CountProcesses(const DWORD *aProc, const DWORD cProc, const string & name) {
-    TCHAR 			szProcessName[MAX_PATH] = TEXT("<unknown>");
+static DWORD 		CountProcesses(const string & name) {
 	DWORD			count = 0;
-	
-	for (DWORD i = 0; i < cProc; ++i) {
-	    HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION |
-	                                   PROCESS_VM_READ,
-	                                   FALSE, aProc[i]);
-	    if (NULL != hProcess ) {
-	        HMODULE hMod;
-	        DWORD cbNeeded;
+	string			match = name;
+	string			procname;
 
-	        if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod), 
-	             &cbNeeded) )
-	        {
-				GetModuleBaseName( hProcess, hMod, szProcessName, 
-	                               sizeof(szProcessName)/sizeof(TCHAR) );
-				string 	curName = szProcessName;
-				std::transform( curName.begin(), curName.end(), curName.begin(), tolower ); 
-				size_t	res = curName.find(name);
-				if (res >= 0 && res < curName.size()) {
-					++count;
-				}
-			}
-	    }
-	    CloseHandle( hProcess );
+	std::transform( match.begin(), match.end(), match.begin(), tolower ); 
+	HINSTANCE hNtDll;
+	NTSTATUS (WINAPI * pZwQuerySystemInformation)(UINT, PVOID, ULONG, PULONG);
+	hNtDll = GetModuleHandle("ntdll.dll");
+	assert(hNtDll != NULL);
+	// find ZwQuerySystemInformation address
+	*(FARPROC *)&pZwQuerySystemInformation =
+		GetProcAddress(hNtDll, "ZwQuerySystemInformation");
+	if (pZwQuerySystemInformation == NULL)
+		return 0;
+	HANDLE hHeap = GetProcessHeap();
+	NTSTATUS Status;
+	ULONG cbBuffer = 0x8000;
+	PVOID pBuffer = NULL;
+	// it is difficult to predict what buffer size will be
+	// enough, so we start with 32K buffer and increase its
+	// size as needed
+	do
+	{
+		pBuffer = HeapAlloc(hHeap, 0, cbBuffer);
+		if (pBuffer == NULL)
+			return 0;
+		Status = pZwQuerySystemInformation(
+			SystemProcessesAndThreadsInformation,
+			pBuffer, cbBuffer, NULL);
+		if (Status == STATUS_INFO_LENGTH_MISMATCH) {
+			HeapFree(hHeap, 0, pBuffer);
+			cbBuffer *= 2;
+		}
+		else if (!NT_SUCCESS(Status)) {
+			HeapFree(hHeap, 0, pBuffer);
+			return 0;
+		}
 	}
+	while (Status == STATUS_INFO_LENGTH_MISMATCH);
+	PSYSTEM_PROCESS_INFORMATION pProcesses = 
+		(PSYSTEM_PROCESS_INFORMATION)pBuffer;
+	for (;;) {
+		PCWSTR pszProcessName = pProcesses->ProcessName.Buffer;
+		if (pszProcessName == NULL)
+			pszProcessName = L"Idle";
+		CHAR szProcessName[MAX_PATH];
+		WideCharToMultiByte(CP_ACP, 0, pszProcessName, -1,
+			szProcessName, MAX_PATH, NULL, NULL);
+		procname = szProcessName;
+		std::transform( procname.begin(), procname.end(), procname.begin(), tolower ); 
+		size_t	res = procname.find(match);
+		if (res >= 0 && res < procname.size()) {
+			++count;
+		}
+		if (pProcesses->NextEntryDelta == 0)
+			break ;
+		pProcesses = (PSYSTEM_PROCESS_INFORMATION)(((LPBYTE)pProcesses)
+			+ pProcesses->NextEntryDelta);
+	}
+	HeapFree(hHeap, 0, pBuffer);
 	return count;
 }
 
@@ -142,24 +176,24 @@ const BBWinAgentInfo_t & AgentProcs::About() {
 // 2 red
 // 
 BBAlarmType				AgentProcs::ExecProcRules(stringstream & reportData) {
-    DWORD 							aProcesses[MAX_TABLE_PROC], cbNeeded, cProcesses;
 	list<ProcRule_t *>::iterator 	itr;
 	stringstream					report;
 	BBAlarmType						state;
 
 	state = GREEN;
-    if ( !EnumProcesses( aProcesses, sizeof(aProcesses), &cbNeeded ) )
-        return state;
-    cProcesses = cbNeeded / sizeof(DWORD);
 	for (itr = m_rules.begin(); itr != m_rules.end(); ++itr) {
-		DWORD count = CountProcesses(aProcesses, cProcesses, (*itr)->name);
+		DWORD				count = CountProcesses((*itr)->name);
+		stringstream		comment;
+
+		if ((*itr)->comment.length() > 0)
+			comment << " (" << (*itr)->comment << ")";
 		if ((*itr)->apply_rule(count, (*itr)->count)) {
-			report << "&green " << (*itr)->name << " " << (*itr)->rule << " - " << count << " instance";
+			report << "&green " << (*itr)->name << comment.str() << " " << (*itr)->rule << " - " << count << " instance";
 			if (count > 1)
 				report << "s";
 			report << " running" << endl;
 		} else {
-			report << "&" << bbcolors[(*itr)->color] << " " << (*itr)->name << " " << (*itr)->rule << " - " << count << " instance";
+			report << "&" << bbcolors[(*itr)->color] << " " << (*itr)->name << comment.str() << " " << (*itr)->rule << " - " << count << " instance";
 			if (count > 1)
 				report << "s";
 			report << " running" << endl;
@@ -191,14 +225,14 @@ void AgentProcs::Run() {
 	else
 		finalState = ExecProcRules(reportData);
 	reportData << endl;
-	m_mgr.Status("procs", bbcolors[finalState], reportData.str().c_str());
+	m_mgr.Status(m_testName.c_str(), bbcolors[finalState], reportData.str().c_str());
 }
 
 //
 // Add rule method
 // called from init
 //
-void AgentProcs::AddRule(const string & name, const string & rule, const string & color) {
+void AgentProcs::AddRule(const string & name, const string & rule, const string & color, const string & comment) {
 	if (name.length() == 0 || rule.length() == 0) {
 		m_mgr.ReportEventWarn("some rules are incorrect. Please check your configuration.");
 		return ;
@@ -216,6 +250,9 @@ void AgentProcs::AddRule(const string & name, const string & rule, const string 
 	if (color.length() > 0) {
 		if (color == "red")
 			procRule->color = RED;
+	}
+	if (comment.length() > 0) {
+		procRule->comment = comment;
 	}
 	procRule->rule = rule;
 	procRule->apply_rule = NULL;
@@ -249,9 +286,18 @@ bool AgentProcs::Init() {
 	if (range == NULL)
 		return false;
 	for ( ; range->first != range->second; ++range->first) {
-		AddRule(m_mgr.GetConfigurationRangeValue(range, "name"), 
+		string		name = m_mgr.GetConfigurationRangeValue(range, "name");
+
+		if (name == "testname") {
+			string value = 	m_mgr.GetConfigurationRangeValue(range, "value");
+			if (value.length() > 0)
+				m_testName = value;
+		} else {
+			AddRule(name.c_str(), 
 				m_mgr.GetConfigurationRangeValue(range, "rule"), 
-				m_mgr.GetConfigurationRangeValue(range, "alarmcolor"));
+				m_mgr.GetConfigurationRangeValue(range, "alarmcolor"),
+				m_mgr.GetConfigurationRangeValue(range, "comment"));
+		}
 	}
 	m_mgr.FreeConfigurationRange(range);
 	m_mgr.FreeConfiguration(conf);
@@ -263,7 +309,7 @@ bool AgentProcs::Init() {
 // constructor 
 //
 AgentProcs::AgentProcs(IBBWinAgentManager & mgr) : m_mgr(mgr) {
-	
+	m_testName = "procs";
 }
 
 //

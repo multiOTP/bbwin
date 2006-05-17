@@ -57,12 +57,16 @@ class BBWinNet
 		const std::string 	& GetHostName();
 		void			SetBBDisplay(const std::string & bbDisp);
 		const std::string	& GetBBDisplay();
+		void			SetBBPager(const std::string & bbPager) { SetBBDisplay(bbPager); };
+		const std::string	& GetBBPager() {return GetBBDisplay();};	
+
 		void			SetPort(const std::string & port);
 		const string &	GetPort();
 		
 		void			SetDebug(bool debug);
 		
 		void 		Status(const std::string & testName, const std::string & color, const std::string & text, const std::string & lifetime = "");
+		void 		Pager(const std::string & testName, const std::string & color, const std::string & text, const std::string & lifetime = "");
 		void		Notify(const std::string & testName, const std::string & text);
 		void		Data(const std::string & dataName, const std::string & text);
 		void 		Disable(const std::string & testName, const std::string & duration, const std::string & text);

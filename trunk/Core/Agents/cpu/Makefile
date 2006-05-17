@@ -36,7 +36,7 @@ cpu.res: cpu.rc
 	$(rc) $(rcflags) $(rcvars) /fo cpu.res cpu.rc
 	
 cpu.dll: $(cpu_objs) cpu.res $(common_objs)
-    $(link) /DLL $(dllldebug) $(cpu_objs) $(common_objs) cpu.res -out:cpu.dll $(BOOST_LIB) Psapi.lib
+    $(link) /DLL $(dllldebug) $(cpu_objs) $(common_objs) cpu.res -out:cpu.dll $(BOOST_LIB)
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
 	copy /Y cpu.dll ..\..\..\Release
 

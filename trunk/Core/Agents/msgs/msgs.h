@@ -19,22 +19,28 @@
 #define		__MSGS_H__
 
 #include <string>
+#include <sstream>
 #include <list>
 
 #include "IBBWinAgent.h"
+
+#include "EventLog.h"
 
 #define	MAX_TABLE_PROC	1024
 
 enum BBAlarmType { GREEN, YELLOW, RED };
 
-
-
 class AgentMsgs : public IBBWinAgent
 {
 	private :
 		IBBWinAgentManager 			& m_mgr;
-				
+		EventLog::Manager			m_eventlog;
+		bool						m_alwaysgreen;
+		bool						m_summary;
+		std::string					m_testName;
+
 	private :
+		void	AddRule(bbwinconfig_range_t * elem, bool ignore);
 
 	public :
 		AgentMsgs(IBBWinAgentManager & mgr);
@@ -46,3 +52,4 @@ class AgentMsgs : public IBBWinAgent
 
 
 #endif 	// !__MSGS_H__
+

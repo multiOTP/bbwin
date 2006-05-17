@@ -33,6 +33,8 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 		DWORD				m_hCount;
 		Logging				*m_log;
 		bbdisplay_t			& m_bbdisplay;
+		bbpager_t			& m_bbpager;
+		bool				m_usepager;
 		setting_t			& m_setting;
 		DWORD				m_timer;
 		BBWinNet			m_net;
@@ -42,7 +44,8 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 
 	private :
 		void	LoadFileConfiguration(const std::string & filePath, const std::string & nameSpace, bbwinagentconfig_t & config);
-	
+		void	Pager(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime);
+
 	public :
 		BBWinAgentManager(const bbwinhandler_data_t & data);
 

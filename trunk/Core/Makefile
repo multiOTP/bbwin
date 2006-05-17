@@ -34,6 +34,11 @@ mc = mc.exe
 .cpp{$(OUTDIR)}.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) /Fo"$(OUTDIR)\\" /Fd"$(OUTDIR)\\" $**
 
+	
+tinyxml_objs = 	$(OUTDIR)\tinystr.obj \
+				$(OUTDIR)\tinyxml.obj \
+				$(OUTDIR)\tinyxmlerror.obj \
+				$(OUTDIR)\tinyxmlparser.obj
 
 ## BBWin dependencies
 
@@ -49,10 +54,7 @@ bbwin_objs = 	$(OUTDIR)\BBWin.obj \
 				$(OUTDIR)\BBWinConfig.obj \
 				$(OUTDIR)\BBWinNet.obj \
 				$(OUTDIR)\BBWinAgentManager.obj \
-				$(OUTDIR)\tinystr.obj \
-				$(OUTDIR)\tinyxml.obj \
-				$(OUTDIR)\tinyxmlerror.obj \
-				$(OUTDIR)\tinyxmlparser.obj
+				
 
 $(bbwinmessage_objs): BBWinMessages.mc
 			$(mc) -A BBWinMessages.mc			
@@ -63,9 +65,9 @@ $(OUTDIR)\BBWin.res: BBWin.rc
 $(OUTDIR)\BBWinMessages.res: $(bbwinmessage_objs)
 	$(rc) $(rcflags) $(rcvars) /fo $(OUTDIR)\BBWinMessages.res BBWinMessages.rc
 	
-$(OUTDIR)\BBWin.exe: $(OUTDIR)\BBWinMessages.res $(OUTDIR)\BBWin.res $(bbwin_objs)
+$(OUTDIR)\BBWin.exe: $(OUTDIR)\BBWinMessages.res $(OUTDIR)\BBWin.res $(bbwin_objs) $(tinyxml_objs)
     $(link) $(ldebug) $(bbwin_objs) $(OUTDIR)\BBWin.res $(OUTDIR)\BBWinMessages.res \
-    -out:$(OUTDIR)\BBWin.exe  $(conlibsmt) advapi32.lib User32.lib
+    -out:$(OUTDIR)\BBWin.exe  $(conlibsmt) advapi32.lib User32.lib  $(tinyxml_objs)
 	if not exist ..\Release mkdir ..\Release
 	copy /Y $(OUTDIR)\BBWin.exe ..\Release
 	

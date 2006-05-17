@@ -27,7 +27,7 @@ using namespace std;
 #define BB_DISP_LEN		512
 
 // Version
-static const string version = "0.6 - 2006/04/19";
+static const string version = "0.7 - 2006/05/15";
 
 typedef struct 	messageTable_s {
 	string		argument;

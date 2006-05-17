@@ -23,8 +23,6 @@
 #include <map>
 #include <string>
 #include "IBBWinAgent.h"
-#include "Disk.h"
-
 
 /*
 ** Defines
@@ -101,7 +99,7 @@ class AgentDisk : public IBBWinAgent
 		DWORD									m_pageColor;
 		std::map<std::string, disk_rule_t *>	m_rules;
 		std::list<disk_t *>						m_disks;
-		
+		std::string								m_testName;
 		
 	private :
 		void 		AddRule(const std::string & label, const std::string & warnlevel, 

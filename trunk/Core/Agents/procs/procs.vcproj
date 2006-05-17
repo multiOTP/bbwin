@@ -36,7 +36,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../.."
+				AdditionalIncludeDirectories="../common;../.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -52,7 +52,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Psapi.lib"
 				GenerateDebugInformation="true"
 			/>
 			<Tool
@@ -103,7 +102,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../.."
+				AdditionalIncludeDirectories="../common;../.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				WarningLevel="3"
 			/>
@@ -118,7 +117,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="Psapi.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"

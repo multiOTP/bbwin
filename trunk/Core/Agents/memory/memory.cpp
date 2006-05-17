@@ -28,8 +28,6 @@
 #include <sstream>
 #include <fstream>
 
-#include <Psapi.h>
-
 #include <string>
 using namespace std;
 
@@ -147,7 +145,7 @@ void		AgentMemory::SendStatusReport() {
 			m_memData[VIRT_MEM_TYPE].used % m_memData[VIRT_MEM_TYPE].total % m_memData[VIRT_MEM_TYPE].value;
 	reportData << format("&%s Page:      %6luM %6luM  %3lu%%\n") % bbcolors[m_memData[PAGE_MEM_TYPE].color] %
 			m_memData[PAGE_MEM_TYPE].used % m_memData[PAGE_MEM_TYPE].total % m_memData[PAGE_MEM_TYPE].value;
-	m_mgr.Status("memory", bbcolors[m_pageColor], reportData.str().c_str());
+	m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
 }
 
 void 		AgentMemory::Run() {
@@ -198,6 +196,10 @@ bool AgentMemory::Init() {
 			string value =  m_mgr.GetConfigurationRangeValue(range, "value");
 			if (value == "true")
 				m_alwaysgreen = true;
+		} else if (name == "testname") {
+			string value =  m_mgr.GetConfigurationRangeValue(range, "value");
+			if (value.length() > 0)
+				m_testName = value;
 		} else {
 			DWORD panic, warn;
 			string sPanic, sWarn;
@@ -235,6 +237,7 @@ AgentMemory::AgentMemory(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	m_memData[VIRT_MEM_TYPE].panic = DEF_VIRT_PANIC;
 	m_memData[PAGE_MEM_TYPE].warn = DEF_PAGE_WARN;
 	m_memData[PAGE_MEM_TYPE].panic = DEF_PAGE_PANIC;
+	m_testName = "memory";
 }
 
 BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)

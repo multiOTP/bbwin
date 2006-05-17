@@ -1,0 +1,171 @@
+<HTML>
+<HEAD>
+ <LINK rel="StyleSheet" href="../BBWin.css">
+ <TITLE>Disk</TITLE>
+ <meta name="copyright" value="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
+</HEAD>
+<BODY>
+ <H1>Disk</H1>
+  
+<H3>Description</H3>
+
+<p>
+Disk agent is used to monitor disk usage. 
+</p>
+
+<H3>Configuration</H3>
+
+
+<UL>
+ <LI class="OptionDirective"><b>setting</b> directive syntax :
+<p>
+<pre class="Config">
+&lt;setting name="" value="" /&gt;
+</pre>
+</p>
+<LI class="OptionDirective">generic settings
+<p>
+<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+	<tr>
+		<td class="OptionTitle" vAlign="top" >
+		name
+		</td>
+		<td class="OptionTitle">
+		value
+		</td>
+	</tr>
+	<tr>
+		<td class="OptionValue" vAlign="top" >
+		alwaysgreen
+		</td>
+		<td class="OptionValue" vAlign="top">
+		Possible values are "true" or "false". If true, it will always send green status.
+		<b>Default is false</b>.
+		</td>
+	</tr>
+		<tr>
+		<td class="OptionValue" vAlign="top" >
+		cdrom
+		</td>
+		<td class="OptionValue" vAlign="top">
+		Possible values are "true" or "false". If true, it will check than cdrom are empty. If a media is in, it will send an alert.
+		<b>Default is false</b>.
+		</td>
+	</tr>
+		</tr>
+		<tr>
+		<td class="OptionValue" vAlign="top" >
+		remote
+		</td>
+		<td class="OptionValue" vAlign="top">
+		Possible values are "true" or "false". If true, it will check network drive usagespace. It will send alarms as local drives.
+		<b>Default is false</b>.
+		</td>
+	</tr>
+	<tr>
+		<td class="OptionValue" vAlign="top" >
+		testname
+		</td>
+		<td class="OptionValue" vAlign="top">
+		You can set the testname that will be sent to the monitoring server (column name in
+		the bbdisplay)
+		<b>Default is "disk"</b></td>
+	</tr>
+
+</table>
+</p>
+ <LI class="OptionDirective"><b>rules</b> directive syntax :
+<p>
+<pre class="Config">
+&lt;setting name="" ignore="" warnlevel="" paniclevel="" /&gt;
+</pre>
+</p>
+<p>
+If the name value is not one of the generic settings, then, disk will understand that it is a disk custom rule.
+</p>
+<p>
+<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+	<tr>
+		<td class="OptionTitle" vAlign="top" >
+		ignore
+		</td>
+		<td class="OptionValue" vAlign="top">
+		Possible values are "true" or "false". If true, it will ignore checks on the drive specified in the name attribute.
+		<b>Default is false</b><br>
+	</td>
+	</tr>
+	<tr>
+		<td class="OptionTitle" vAlign="top" >
+		name
+		</td>
+		<td class="OptionValue" vAlign="top">
+		name attribute must be the drive letter of the drive to check.
+		If name is "default", it will be the default settings for all drives.
+		<b>This parameter is required</b><br>
+	</td>
+	</tr>
+	
+	<tr>
+		<td class="OptionTitle" vAlign="top" >
+		warnlevel
+		</td>
+		<td class="OptionValue" vAlign="top">
+		It must be a numeric value. It will warn yellow if the value is reached.
+		Size can be expressed in percentile with "%" or in size unit. ("m" for megabytes, "g" for gigabyte, "t" for terabyte)
+		
+		<b>If no letter is specified, default unit is percentile.
+		Default value is 90%.</b>
+		</td>
+	</tr>
+	<tr>                                                        
+		<td class="OptionTitle" vAlign="top" >
+		paniclevel
+		</td>
+		<td class="OptionValue" vAlign="top">
+		It must be a numeric value. It will warn red if the value is reached.
+		Size can be expressed in percentile with "%" or in size unit. ("m" for megabytes, "g" for gigabyte, "t" for terabyte)
+		
+		<b>If no letter is specified, default unit is percentile.
+		Default value is 95%.</b>
+		</td>
+	</tr>
+	
+</table>
+</p>
+
+</UL>
+
+
+
+<H3>Examples</H3>
+
+
+
+<UL>
+ <LI>
+<p>
+<pre class="Config">
+&lt;disk&gt;
+	&lt;setting name="alwaysgreen" value="false" /&gt;
+	&lt;setting name="default" warnlevel="85%" paniclevel="95%" /&gt;
+	&lt;setting name="C" warnlevel="70%" paniclevel="400mb" /&gt;
+	&lt;setting name="E" ignore="true" /&gt;
+	&lt;setting name="remote" value="false" /&gt;
+	&lt;setting name="cdrom" value="false" /&gt;
+&lt;/disk&gt;
+</pre>
+</p>
+</UL>
+
+
+
+<H3>Notes</H3>
+
+<UL>
+ <LI>no note
+
+</UL>
+
+
+</BODY>
+</HTML>
