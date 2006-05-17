@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
-	<Product Name='BBWin 0.6' Id='CDDF2D5B-ED67-4e3d-942B-E9BA8DA4D092'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
-		Language='1033' Codepage='1252' Version='0.6' Manufacturer='GNU'>
+	<Product Name='BBWin 0.7' Id='862029E0-B926-49db-AD6F-7FC342AB07A9'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
+		Language='1033' Codepage='1252' Version='0.7' Manufacturer='GNU'>
 
-    <Package Id='1BB5B649-A24A-4a4d-91CA-4DA652F5F2C2' Keywords='Installer'
-      Description="BBWin 0.6 Installer"
+    <Package Id='6B55F71D-9635-44c9-ADE2-BD28734C886A' Keywords='Installer'
+      Description="BBWin 0.7 Installer"
       Comments='BBWin : Big Brother Hobbit Windows Client' Manufacturer='GNU'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
@@ -38,10 +38,13 @@
 					</Component>
 					
 					<!-- Registry settings -->
-					<Component Id='BBWinRegistryC' Guid='DB4FACF9-43E5-4272-B90A-A1B9DD16B05D' >
-						<Registry Id='binPathReg' Root='HKLM' Key='SOFTWARE\BBWin' Name='binPath' Type="string" Value="[INSTALLDIR]bin" />
-						<Registry Id='etcPathReg' Root='HKLM' Key='SOFTWARE\BBWin' Name='etcPath' Type="string" Value="[INSTALLDIR]etc" />
-						<Registry Id='tmpPathReg' Root='HKLM' Key='SOFTWARE\BBWin' Name='tmpPath' Type="string" Value="[INSTALLDIR]tmp" />
+					<Component Id='BBWinRegistryC' Guid='DB4FACF9-43E5-4272-B90A-A1B9DD16B05D' NeverOverwrite="yes">
+						<Registry Id='binPathReg' Root='HKLM' Key='SOFTWARE\BBWin' Name='binpath' Type="string" Value="[INSTALLDIR]bin" />
+						<Registry Id='etcPathReg' Root='HKLM' Key='SOFTWARE\BBWin' Name='etcpath' Type="string" Value="[INSTALLDIR]etc" />
+						<Registry Id='tmpPathReg' Root='HKLM' Key='SOFTWARE\BBWin' Name='tmppath' Type="string" Value="[INSTALLDIR]tmp" />
+					</Component>
+					<Component Id='BBWinHostNameRegistryC' Guid='3AFB8C49-C2F6-44fc-BFE0-AC4B8FF39F4C' Permanent="yes" NeverOverwrite="yes">
+						<Registry Id='hostnameReg' Root='HKLM' Key='SOFTWARE\BBWin' Name='hostname' Type="string" />
 					</Component>
 					<Component Id='BBWinEventLogRegistryC' Guid='70F60756-8EAC-4502-8A96-50C94876031A'>
 						<Registry Id='CategoryCountReg' Root='HKLM' Key='SYSTEM\CurrentControlSet\Services\Eventlog\Application\BigBrotherHobbitClient' Name='CategoryCount' Type="integer" Value="2" />
@@ -68,6 +71,10 @@
 					
 					<Component Id='MemoryC' Guid='68FA599B-2FC7-42b2-A30E-242EE9FC71C9'>
 						<File Id='memory.dll' Name="mem.dll" LongName='memory.dll' DiskId='1' src='../Release/Memory.dll' />
+					</Component>
+					
+					<Component Id='MsgsC' Guid='F2632EF3-18F9-405c-B76D-543EFA180A30'>
+						<File Id='msgs.dll' Name="msgs.dll" LongName='msgs.dll' DiskId='1' src='../Release/Msgs.dll' />
 					</Component>
 					
 					<Component Id='ProcsC' Guid='051FD1F6-DC24-4c3e-8DD6-82DD7DBE92A2'>
@@ -114,6 +121,9 @@
 					<Component Id="CommonReadMeTextFilesC" Guid='B7889E96-1BB2-46f2-83FE-52EC721915CA'>
 						<File Id='ReadMe.txt' Name="ReadMe.txt" LongName='ReadMe.txt' DiskId='1' src='../ReadMe.txt' Vital='yes'/>
 						<File Id='BBWin.cfg.example' Name="BBWin.cfg" LongName='BBWin.cfg.example' DiskId='1' src='../Core/BBWin.cfg' Vital='yes'/>
+					</Component>
+					<Component Id="BBWinChmC" Guid='7D383A7B-8891-4077-A95A-D45C725E98D7'>
+						<File Id="BBWin.chm" Name="BBWinE.chm" LongName='BBWin_en.chm' DiskId='1' src='../Doc/en/BBWin.chm' Vital='yes'/>
 					</Component>
 				</Directory>
 				
@@ -170,16 +180,18 @@
         </Directory>
 	</Directory>
 						
-    <Feature Id='Complete' Title='BBWin 0.6' Description='The complete BBWin package.'
+    <Feature Id='Complete' Title='BBWin 0.7' Description='The complete BBWin package.'
       TypicalDefault='install' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
 		<Feature Id='BBWin' Title='BBWin' Description='The BBWin core service.'
 		TypicalDefault='install' Level='1' Absent='disallow' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR'>
 			<ComponentRef Id='BBWinServiceC' />
 			<ComponentRef Id='BBWinRegistryC' />
 			<ComponentRef Id='BBWinEventLogRegistryC' />
+			<ComponentRef Id='BBWinHostNameRegistryC' />
 			<ComponentRef Id='BBWinConfigC' />
 			<ComponentRef Id='CommonTextFilesC' />
 			<ComponentRef Id='CommonReadMeTextFilesC' />
+			<ComponentRef Id='BBWinChmC' />
 		</Feature>
 		<Feature Id='BBWinCmd' Title='BBWinCmd' Description='The BBWin command line utility.'
 			TypicalDefault='install' Level='1' ConfigurableDirectory='INSTALLDIR'>
@@ -198,6 +210,10 @@
 			<Feature Id='ExternalsAgent' Title='Externals' Description='Used to launch externals Big Brother scripts or executables.'
 			TypicalDefault='install' Level='1'>
 				<ComponentRef Id='ExternalsC' />
+			</Feature>
+			<Feature Id='Msgs' Title='Msgs' Description='Monitor the Windows Event Log.'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='MsgsC' />
 			</Feature>
 			<Feature Id='Memory' Title='Memory' Description='Monitor memory.'
 			TypicalDefault='install' Level='1'>

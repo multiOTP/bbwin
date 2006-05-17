@@ -34,6 +34,7 @@ struct ProcRule_s
 {
 	std::string 	name;
 	std::string		rule;
+	std::string		comment;
 	BBAlarmType		color;
 	DWORD			count;
 	bool			(*apply_rule)(DWORD cur, DWORD rule);
@@ -59,9 +60,10 @@ class AgentProcs : public IBBWinAgent
 	private :
 		IBBWinAgentManager 			& m_mgr;
 		std::list<ProcRule_t *>		m_rules;		
-		
+		std::string					m_testName;
+
 	private :
-		void			AddRule(const std::string & name, const std::string & rule, const std::string & color);
+		void			AddRule(const std::string & name, const std::string & rule, const std::string & color, const std::string & comment);
 		BBAlarmType  	ExecProcRules(std::stringstream & reportData);
 		
 	public :

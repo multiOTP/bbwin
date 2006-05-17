@@ -28,6 +28,7 @@ DIRS = \
     svcs\~   		\
     procs\~   		\
     sample\~   		\
+	bbwinupdate\~   \
 
 
 !include <sdkpropbld.mak>

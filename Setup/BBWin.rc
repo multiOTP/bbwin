@@ -27,7 +27,7 @@
 
 1 VERSIONINFO
  FILEVERSION 0,1,0,0
- PRODUCTVERSION 0,1,0,0
+ PRODUCTVERSION 0,7,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0xbL
@@ -51,7 +51,7 @@
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "\0"
             VALUE "ProductName", "BBWin\0"
-            VALUE "ProductVersion", "0.1\0"
+            VALUE "ProductVersion", "0.7\0"
           END
        END
     BLOCK "VarFileInfo"

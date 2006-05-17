@@ -394,6 +394,43 @@ void 				BBWinNet::Status(const string & testName, const string & color, const s
 }
 
 //
+//  FUNCTION: BBWinNet::Pager
+//
+//  PURPOSE: send a pager hobbit message
+//  For BigBrother back compatibility
+//
+//  PARAMETERS:
+//   testName 		hobbit testname ( appear as a column name in hobbit server)
+//   color			color used (no check is done on the color for the moment)
+//   text			text of the status
+//
+//  RETURN VALUE:
+//   none 
+//
+//  COMMENTS:
+//
+void 				BBWinNet::Pager(const string & testName, const string & color, const string & text, const string & lifeTime) {
+	ostringstream 	pager;
+	
+	try {
+		Open();
+	} catch (BBWinNetException ex) {
+		throw ex;
+	}
+	pager << "page";
+	if (lifeTime.length() > 0)
+		pager << "+" << lifeTime;
+	pager << " " << m_hostName << "." << testName << " " << color << " " << text;
+	string res = pager.str();
+		try {
+		Send(res);
+	} catch (BBWinNetException ex) {
+		throw ex;
+	}
+	Close();
+}
+
+//
 //  FUNCTION: BBWinNet::Notify
 //
 //  PURPOSE: send a notify hobbit message

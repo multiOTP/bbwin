@@ -23,7 +23,7 @@ BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
 BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
 
-cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
+cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
@@ -36,7 +36,7 @@ procs.res: procs.rc
 	$(rc) $(rcflags) $(rcvars) /fo procs.res procs.rc
 	
 procs.dll: $(procs_objs) procs.res
-    $(link) /DLL $(dllldebug) $(procs_objs) procs.res -out:procs.dll $(BOOST_LIB) Psapi.lib
+    $(link) /DLL $(dllldebug) $(procs_objs) procs.res -out:procs.dll $(BOOST_LIB)
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
 	copy /Y procs.dll ..\..\..\Release
 	

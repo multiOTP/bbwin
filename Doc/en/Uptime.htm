@@ -1,0 +1,101 @@
+<HTML>
+<HEAD>
+ <LINK rel="StyleSheet" href="../BBWin.css">
+ <TITLE>Uptime</TITLE>
+ <meta name="copyright" value="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
+</HEAD>
+<BODY>
+ <H1>Uptime</H1>
+  
+<H3>Description</H3>
+
+<p>
+Uptime agent is used to monitor the uptime of a server. 
+</p>
+
+<H3>Configuration</H3>
+
+
+<UL>
+ <LI class="OptionDirective"><b>setting</b> directive syntax :
+<p>
+<pre class="Config">
+&lt;setting name="" value="" /&gt;
+</pre>
+</p>
+<p>
+<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+	<tr>
+		<td class="OptionTitle" vAlign="top" >
+		name
+		</td>
+		<td class="OptionTitle">
+		value
+		</td>
+	</tr>
+	<tr>
+		<td class="OptionValue" vAlign="top" >
+		alarmcolor
+		</td>
+		<td class="OptionValue" vAlign="top">
+		You can set the alarm color you want to use if their is an alert.
+		It should be set to red or yellow.
+		<b>Default is yellow</b>.
+		</td>
+	</tr>
+
+	<tr>
+		<td class="OptionValue" vAlign="top" >
+		delay
+		</td>
+		<td class="OptionValue" vAlign="top">
+		You can set the delay used to compare with the last startup of the computer.
+		Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+		"h" for hours, "d" for days.
+		<b>Default is 30 minutes</b></td>
+	</tr>
+	
+	<tr>
+		<td class="OptionValue" vAlign="top" >
+		testname
+		</td>
+		<td class="OptionValue" vAlign="top">
+		You can set the testname that will be sent to the monitoring server (column name in
+		the bbdisplay)
+		<b>Default is "uptime"</b></td>
+	</tr>
+
+</table>
+</p>
+
+
+</UL>
+
+
+
+<H3>Examples</H3>
+
+
+<UL>
+ <LI>Uptime will warn during one hour with a red color :
+<p>
+<pre class="Config">
+&lt;uptime&gt;
+	&lt;setting name="delay" value="1h" alarmcolor="red" /&gt;
+	&lt;setting name="alarmcolor" value="red" /&gt;
+&lt;/uptime&gt;
+</pre>
+</p>
+</UL>
+
+
+<H3>Notes</H3>
+
+<UL>
+ <LI>no note
+
+</UL>
+
+
+</BODY>
+</HTML>

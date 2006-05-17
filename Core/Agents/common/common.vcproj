@@ -142,6 +142,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ProcApi.h"
+				>
+			</File>
+			<File
 				RelativePath=".\SystemCounters.h"
 				>
 			</File>

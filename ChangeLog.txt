@@ -2,6 +2,35 @@ ChangeLog file for BBWin
 ==============================================================
 
 
+BBWin 0.7 Preview version - 15 May 2006
+-------------------
+
+
++ New Features
+* Service:
+	- auto reload : a new option permit you to enable the auto reloading
+	for the BBWin.cfg file. (BBWin.cfg timestamp is checked every 5 seconds).
+	- bb pager : If you are using the pager feature from Big Brother servers,
+	you can enable the option to activate the alerts notifications.
+	Refer to the options : usepager, bbpager, and pagerlevels.
+* Agents :
+	- msgs (agent for the eventlog monitoring)
+* Documentation :
+	- The format is now chm instead of a big text file
+
+
++ Updates
+* BBWin + Agents : 	
+	- testname option is available for all agents (except externals) so
+	you can rename the column memory to mem for example if you need it
+	- procs agent rules can have an extra field "comment" so you can 
+	explain what is the process for if its name is not easy to understand
+	- cpu (improved, get the owner of the process and priority, it doesn't use psapi.dll anymore)
+			
+* BBWin + Tools : Migration tool can export the bbpagers and event log settings
+
+
+
 BBWin 0.6 Preview version - 19 April 2006
 -------------------
 

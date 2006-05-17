@@ -35,7 +35,11 @@ using namespace DesignPattern;
 
 #define BBWIN_LOG_DEFAULT_PATH		"C:\\BBWin.log"
 
-#define BBWIN_MAX_COUNT_HANDLE		1
+#define	BBWIN_STOP_HANDLE			0
+#define BBWIN_AUTORELOAD_HANDLE		1
+#define BBWIN_MAX_COUNT_HANDLE		2
+
+#define BBWIN_AUTORELOAD_INTERVAL	5
 
 #include "Logging.h"
 #include "BBWinHandler.h"
@@ -49,30 +53,43 @@ typedef void (BBWin::*load_simple_setting)(const std::string & name, const std::
 
 class BBWin : public Singleton< BBWin > {
 	private :
-		std::string 			m_tmpPath;
-		std::string				m_etcPath;
-		std::string				m_binPath;
-		std::string				m_bbwinConfigPath;
-		HANDLE					m_hEvents[BBWIN_MAX_COUNT_HANDLE];
-		DWORD					m_hCount;
+		// Configuration and Logs
 		Logging					*m_log;
 		bbwinconfig_t			m_configuration;
 		BBWinConfig				*m_conf;
 		
-		std::map< std::string, BBWinHandler * >			m_handler;
-		std::vector< std::string >						m_bbdisplay;
-		std::map< std::string, std::string >			m_setting;
-		std::map< std::string, load_simple_setting > 	m_defaultSettings;
+		// BBWin Handle 
+		HANDLE					m_hEvents[BBWIN_MAX_COUNT_HANDLE];
+		DWORD					m_hCount;
+
+		// Autoreload feature
+		FILETIME				m_confTime;
+		bool					m_autoReload;
+		DWORD					m_autoReloadInterval;
+
+		//
+		// STL Containers
+		//
+		std::map< std::string, BBWinHandler * >			m_handler; // handle the agents instances
+		std::vector< std::string >						m_bbdisplay; // handle the bbdisplay list
+		std::vector< std::string >						m_bbpager; // handle the bbpager list
+		std::map< std::string, std::string >			m_setting; // handle the general settings
+		std::map< std::string, load_simple_setting > 	m_defaultSettings; // handle the default settings ma
 		
 	private :
-		void				BBWinRegQueryValueEx(HKEY hKey, const std::string & key, std::string & dest);
+		void			BBWinRegQueryValueEx(HKEY hKey, const std::string & key, std::string & dest);
 		
-		void 				ReportEvent(DWORD dwEventID, WORD cInserts, LPCTSTR *szMsg);
-		void				Init(HANDLE h);
-		void				WaitFor();
+		void 			ReportEvent(DWORD dwEventID, WORD cInserts, LPCTSTR *szMsg);
+		void			Init(HANDLE h);
+		void			InitSettings();
+		void			WaitFor();
 		
-		void				addSimpleSetting(const std::string & name, const std::string & value);
-		void				addBBDisplay(const std::string & name, const std::string & value);
+		void			AddSimpleSetting(const std::string & name, const std::string & value);
+		void			AddBBDisplay(const std::string & name, const std::string & value);
+		void			AddBBPager(const std::string & name, const std::string & value);
+
+		void			SetAutoReload(const std::string & name, const std::string & value);
+		bool			GetConfFileChanged();
 		
 		void 			LoadRegistryConfiguration();
 		void			LoadConfiguration();
@@ -84,6 +101,7 @@ class BBWin : public Singleton< BBWin > {
 		BBWin();
 		~BBWin();
 		void Start(HANDLE h);
+		void Reload();
 		void Stop();
 };
 

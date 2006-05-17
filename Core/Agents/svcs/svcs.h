@@ -50,6 +50,7 @@ class AgentSvcs : public IBBWinAgent
 	private :
 		IBBWinAgentManager 			& m_mgr;
 		BBAlarmType					m_alarmColor;
+		std::string					m_testName;
 		BBAlarmType					m_pageColor;
 		bool						m_alwaysGreen;
 		bool						m_autoReset; // restart automatically automatic services that are stopped

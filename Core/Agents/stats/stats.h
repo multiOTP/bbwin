@@ -26,6 +26,7 @@ class AgentStats : public IBBWinAgent
 {
 	private :
 		IBBWinAgentManager 		& m_mgr;
+		std::string				m_testName;
 		
 	private :
 		void		Netstat();

@@ -98,6 +98,11 @@ Language        = English
 The agent %1 has been not instantiated. The reason was : %2
 .
 
+MessageId       = +1
+SymbolicName    = EVENT_SERVICE_RELOAD
+Language        = English
+The configuration file has changed. BBWin is reloading the configuration.
+.
 
 MessageId       = +1
 SymbolicName    = EVENT_SERVICE_STARTED

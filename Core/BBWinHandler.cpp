@@ -185,7 +185,6 @@ void BBWinHandler::run() {
 		for (;;) {
 			DWORD 		dwWait;
 			
-			
 			m_agent->Run();
 			dwWait = WaitForMultipleObjects(m_hCount, m_hEvents , FALSE, m_timer * 1000 );
 			if ( dwWait >= WAIT_OBJECT_0 && dwWait <= (WAIT_OBJECT_0 + m_hCount - 1) ) {    
@@ -195,8 +194,6 @@ void BBWinHandler::run() {
 			}
 		}
 	}
-	// be carefull with destroy call
-	// problem with this call for the moment
 	mess = "Agent " + m_agentName + " going to be destroyed.";
 	m_log->logDebug(mess);
 	m_destroy(m_agent);

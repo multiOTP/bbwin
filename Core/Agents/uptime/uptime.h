@@ -28,6 +28,7 @@ class AgentUptime : public IBBWinAgent
 		IBBWinAgentManager & m_mgr;
 		DWORD					m_delay;
 		std::string				m_alarmColor;
+		std::string				m_testName;
 		
 	public :
 		AgentUptime(IBBWinAgentManager & mgr);

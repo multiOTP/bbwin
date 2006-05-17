@@ -21,6 +21,7 @@
 #include <process.h>
 #include <tchar.h>
 #include <iostream>
+#include <assert.h>
 
 #include <map>
 #include <vector>
@@ -155,22 +156,33 @@ VOID ServiceStop() {
 //  COMMENTS:
 // Instantiate the logging class and set the default log path file
 //
-BBWin::BBWin() {
+BBWin::BBWin() : 
+	m_hCount(0),
+	m_autoReload(false),
+	m_autoReloadInterval(BBWIN_AUTORELOAD_INTERVAL)
+{
 	m_log = Logging::getInstancePtr();
 	m_conf = BBWinConfig::getInstancePtr();
 	m_log->setFileName(BBWIN_LOG_DEFAULT_PATH);
-	
+	ZeroMemory(&m_confTime, sizeof(m_confTime));
+	ZeroMemory(&m_hEvents, sizeof(m_hEvents));
+
+	assert(m_log != NULL);
+	assert(m_conf != NULL);
+
 	// set default setting known by BBWin
-	m_defaultSettings[ "bbdisplay" ] = &BBWin::addBBDisplay;
-	m_defaultSettings[ "hostname" ] = &BBWin::addSimpleSetting;
-	m_defaultSettings[ "timer" ] = &BBWin::addSimpleSetting;
-	m_defaultSettings[ "loglevel" ] = &BBWin::addSimpleSetting;
-	m_defaultSettings[ "logpath" ] = &BBWin::addSimpleSetting;
-	m_defaultSettings[ "logreportfailure" ] = &BBWin::addSimpleSetting;
-	m_setting[ "timer" ] = "300";
-	m_setting[ "loglevel" ] = "0";
-	m_setting[ "logpath" ] = BBWIN_LOG_DEFAULT_PATH;
-	m_setting[ "bbwinconfigfilename" ] = BBWIN_CONFIG_FILENAME;
+	m_defaultSettings[ "bbdisplay" ] = &BBWin::AddBBDisplay;
+	m_defaultSettings[ "bbpager" ] = &BBWin::AddBBPager;
+	m_defaultSettings[ "usepager" ] = &BBWin::AddSimpleSetting;
+	m_defaultSettings[ "timer" ] = &BBWin::AddSimpleSetting;
+	m_defaultSettings[ "loglevel" ] = &BBWin::AddSimpleSetting;
+	m_defaultSettings[ "logpath" ] = &BBWin::AddSimpleSetting;
+	m_defaultSettings[ "logreportfailure" ] = &BBWin::AddSimpleSetting;
+	m_defaultSettings[ "pagerlevels" ] = &BBWin::AddSimpleSetting;
+	m_defaultSettings[ "autoreload"] = &BBWin::SetAutoReload;
+	//m_defaultSettings[ "hostname" ] = &BBWin::AddSimpleSetting;
+	// call to the settings initialization
+	InitSettings();
 }
 
 
@@ -189,10 +201,99 @@ BBWin::BBWin() {
 // Free the logging class instance
 //
 BBWin::~BBWin() {
+	if (m_autoReload && m_hEvents[BBWIN_AUTORELOAD_HANDLE])
+		CloseHandle(m_hEvents[BBWIN_AUTORELOAD_HANDLE]);
 	BBWinConfig::freeInstance();
 	Logging::freeInstance();
 }
 
+
+//
+//  FUNCTION: BBWin::InitSettings
+//
+//  PURPOSE: init the general settings for BBWin
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//  
+//
+void			BBWin::InitSettings() {
+	m_setting[ "timer" ] = "300";
+	m_setting[ "loglevel" ] = "0";
+	m_setting[ "logpath" ] = BBWIN_LOG_DEFAULT_PATH;
+	m_setting[ "bbwinconfigfilename" ] = BBWIN_CONFIG_FILENAME;
+	m_setting[ "pagerlevels" ] = "red purple";
+}
+
+//
+//  FUNCTION: BBWin::SetAutoReload
+//
+//  PURPOSE: activate the autoreload function
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//  
+//
+void			BBWin::SetAutoReload(const std::string & name, const std::string & value) {
+	if (value == "true") {
+		m_autoReload = true;
+		m_hEvents[BBWIN_AUTORELOAD_HANDLE] = CreateEvent(NULL, TRUE, FALSE, NULL);
+		if ( m_hEvents[BBWIN_AUTORELOAD_HANDLE] == NULL) {
+			m_autoReload = false;
+			m_log->logError("can't create the autoreload event. Autoreload desactivated.");
+			return ;
+		}
+		m_hCount = 2;
+	}
+}
+
+
+//
+//  FUNCTION: BBWin::GetConfFileChanged
+//
+//  PURPOSE: check if the configuration file has changed
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    bool			if the file has changed, it return true
+//
+//  COMMENTS:
+//  
+//
+bool			BBWin::GetConfFileChanged() {
+	FILETIME	time;
+	bool		res = false;
+
+	HANDLE   file = CreateFile(m_setting["configpath"].c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                              NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if(file && GetFileTime(file, NULL, NULL, &time)) {
+		if (m_confTime.dwHighDateTime == 0 && m_confTime.dwLowDateTime == 0) {
+			m_confTime.dwHighDateTime = time.dwHighDateTime;
+			m_confTime.dwLowDateTime = time.dwLowDateTime;
+		} else {
+			if (m_confTime.dwHighDateTime != time.dwHighDateTime || m_confTime.dwLowDateTime != time.dwLowDateTime) {
+				m_confTime.dwHighDateTime = time.dwHighDateTime;
+				m_confTime.dwLowDateTime = time.dwLowDateTime;
+				res = true;
+			}
+		}
+		if( file ) 
+			CloseHandle( file ); 
+	}
+	return res;
+}
 
 //
 //  FUNCTION: BBWin::BBWinRegQueryValueEx
@@ -251,21 +352,48 @@ void				BBWin::BBWinRegQueryValueEx(HKEY hKey, const string & key, string & dest
 //
 void 				BBWin::LoadRegistryConfiguration() {
 	HKEY 			hKey;
-	
+	string			tmp;
+
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\BBWin"), 0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
 	{		
 		LPCTSTR		arg[] = {"HKEY_LOCAL_MACHINE\\SOFTWARE\\BBWin : can't open it", NULL};
-		
 		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_REGISTRY, 1, arg);
 		throw BBWinException("Can't open HKEY_LOCAL_MACHINE\\SOFTWARE\\BBWin");
 	}
 	try {
-		BBWinRegQueryValueEx(hKey, "tmpPath", m_tmpPath);
-		BBWinRegQueryValueEx(hKey, "binPath", m_binPath);
-		BBWinRegQueryValueEx(hKey, "etcPath", m_etcPath);
+		BBWinRegQueryValueEx(hKey, "tmppath", tmp);
+		m_setting["tmppath"] = tmp;
+		tmp.clear();
+	
 	} catch (BBWinException ex) {
-		LPCTSTR		arg[] = {ex.getMessage().c_str(), NULL};
-		
+		LPCTSTR		arg[] = {"tmppath", NULL};
+		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_REGISTRY, 1, arg);
+		throw ex;
+	}
+	try {
+		BBWinRegQueryValueEx(hKey, "binpath", tmp);
+		m_setting["binpath"] = tmp;
+		tmp.clear();
+	} catch (BBWinException ex) {
+		LPCTSTR		arg[] = {"binpath", NULL};
+		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_REGISTRY, 1, arg);
+		throw ex;
+	}
+	try {
+		BBWinRegQueryValueEx(hKey, "etcpath", tmp);
+		m_setting["etcpath"] = tmp;
+		tmp.clear();
+	} catch (BBWinException ex) {
+		LPCTSTR		arg[] = {"etcpath", NULL};
+		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_REGISTRY, 1, arg);
+		throw ex;
+	}
+	try {
+		BBWinRegQueryValueEx(hKey, "hostname", tmp);
+		m_setting["hostname"] = tmp;
+		tmp.clear();
+	} catch (BBWinException ex) {
+		LPCTSTR		arg[] = {"hostname", NULL};
 		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_REGISTRY, 1, arg);
 		throw ex;
 	}
@@ -289,7 +417,7 @@ void 				BBWin::LoadRegistryConfiguration() {
 //
 void			BBWin::Init(HANDLE h) {
 	m_hEvents[0] = h;
-	m_hCount = BBWIN_MAX_COUNT_HANDLE;
+	m_hCount = 1;
 	try {
 		LoadRegistryConfiguration();
 	} catch (BBWinException ex) {
@@ -298,7 +426,7 @@ void			BBWin::Init(HANDLE h) {
 }
 
 //
-//  FUNCTION: BBWin::addSimpleSetting
+//  FUNCTION: BBWin::AddSimpleSetting
 //
 //  PURPOSE: add a simple setting to the global setting map
 //
@@ -311,13 +439,12 @@ void			BBWin::Init(HANDLE h) {
 //
 //  COMMENTS:
 //
-void			BBWin::addSimpleSetting(const std::string & name, const std::string & value) {
-	//m_setting.insert(pair < string, string > (name, value));
+void			BBWin::AddSimpleSetting(const std::string & name, const std::string & value) {
 	m_setting[name] = value;
 }
 
 //
-//  FUNCTION: BBWin::addBBDisplay
+//  FUNCTION: BBWin::AddBBDisplay
 //
 //  PURPOSE:  add a BBDisplay to the BBDisplay vector
 //
@@ -331,10 +458,29 @@ void			BBWin::addSimpleSetting(const std::string & name, const std::string & val
 //  COMMENTS:
 //
 //
-void			BBWin::addBBDisplay(const string & name, const string & value) {
+void			BBWin::AddBBDisplay(const string & name, const string & value) {
 	m_bbdisplay.push_back(value);
 }
 
+
+//
+//  FUNCTION: BBWin::AddBBPager
+//
+//  PURPOSE:  add a BBPager to the BBPagersvector
+//
+//  PARAMETERS:
+//    name 		setting name
+//    value		value
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+//
+void			BBWin::AddBBPager(const string & name, const string & value) {
+	m_bbpager.push_back(value);
+}
 
 
 //
@@ -352,14 +498,18 @@ void			BBWin::addBBDisplay(const string & name, const string & value) {
 // Entry point to Load the configuration file
 //
 void							BBWin::LoadConfiguration() {
-	m_bbwinConfigPath = m_etcPath;
-	m_bbwinConfigPath += "\\";
-	m_bbwinConfigPath += BBWIN_CONFIG_FILENAME;
+	string						tmp;
+
+	tmp = m_setting["etcpath"];
+	tmp += "\\";
+	tmp += BBWIN_CONFIG_FILENAME;
+	m_setting["configpath"] = tmp;
+	m_configuration.clear();
 	try {	
-		m_conf->LoadConfiguration(m_bbwinConfigPath, BBWIN_NAMESPACE_CONFIG, m_configuration);
+		m_conf->LoadConfiguration(m_setting["configpath"], BBWIN_NAMESPACE_CONFIG, m_configuration);
 	} catch (BBWinConfigException ex) {
 		string		err = ex.getMessage();
-		LPCTSTR		arg[] = {m_bbwinConfigPath.c_str(), err.c_str(), NULL};
+		LPCTSTR		arg[] = {m_setting["configpath"].c_str(), err.c_str(), NULL};
 		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_CONFIGURATION, 2, arg);
 		throw ex;
 	}
@@ -393,12 +543,11 @@ void				BBWin::CheckConfiguration() {
 		}
 	}
 	if (m_bbdisplay.size() == 0) {
-		LPCTSTR		arg[] = {m_bbwinConfigPath.c_str(), NULL};
-		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_BB_DISPLAY, 1, arg);
-		throw BBWinConfigException("no bbdisplay configured");
+		LPCTSTR		arg[] = {m_setting["configpath"].c_str(), NULL};
+		m_log->reportWarnEvent(BBWIN_SERVICE, EVENT_NO_BB_DISPLAY, 1, arg);
 	}
 	if (m_setting["hostname"].size() == 0) {
-		LPCTSTR		arg[] = {m_bbwinConfigPath.c_str(), NULL};
+		LPCTSTR		arg[] = {m_setting["configpath"].c_str(), NULL};
 		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_HOSTNAME, 1, arg);
 		throw BBWinConfigException("no hostname configured");
 	}
@@ -408,9 +557,6 @@ void				BBWin::CheckConfiguration() {
 	if (m_setting[ "loglevel" ].size() != 0 ) {
 		m_log->setLogLevel(GetNbr(m_setting[ "loglevel" ]));
 	}
-	m_setting[ "tmppath" ] = m_tmpPath;
-	m_setting[ "etcpath" ] = m_etcPath;
-	m_setting[ "binpath" ] = m_binPath;
 	if (SetCurrentDirectory(m_setting[ "binpath" ].c_str()) == 0) {
 		LPCTSTR		arg[] = {m_setting[ "binpath" ].c_str(), NULL};
 		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_BAD_PATH, 1, arg);
@@ -452,7 +598,7 @@ void				BBWin::LoadAgents() {
 				timer = GetNbr(m_setting[ "timer" ]);
 			}
 		}
-		bbwinhandler_data_t		data = {m_hEvents, m_hCount, range.first->second["name"], range.first->second["value"], m_bbdisplay, m_setting, timer};
+		bbwinhandler_data_t		data = {m_hEvents, m_hCount, range.first->second["name"], range.first->second["value"], m_bbdisplay, m_bbpager, m_setting, timer};
 		
 		map< std::string, BBWinHandler * >::iterator itr;
 		
@@ -510,6 +656,49 @@ void				BBWin::UnloadAgents() {
 }
 
 //
+//  FUNCTION: BBWin::Reload
+//
+//  PURPOSE: Stop the agents, reload the BBWin configuration and restart the agents
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+void		BBWin::Reload() {
+	m_log->logInfo("bbwin is reloading the configuration.");
+	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_RELOAD, 0, NULL);
+	SetEvent(m_hEvents[BBWIN_AUTORELOAD_HANDLE]);
+	UnloadAgents();
+	m_setting.clear();
+	m_bbdisplay.clear();
+	m_bbpager.clear();
+	if (m_hEvents[BBWIN_AUTORELOAD_HANDLE]) {
+		CloseHandle(m_hEvents[BBWIN_AUTORELOAD_HANDLE]);
+		m_hEvents[BBWIN_AUTORELOAD_HANDLE] = NULL;
+		m_hCount = 1;
+	}
+	m_autoReload = false;
+	ZeroMemory(&m_confTime, sizeof(m_confTime));
+	InitSettings();
+	try {
+		LoadRegistryConfiguration();
+		LoadConfiguration();
+		CheckConfiguration();
+		LoadAgents();
+	} catch (BBWinConfigException _ex) {
+		BBWinException 		ex(_ex.getMessage().c_str());
+		throw ex;
+	}
+	m_log->logInfo("bbwin is started.");
+	LPCTSTR		argStart[] = {SZSERVICENAME, m_setting["hostname"].c_str(), NULL};
+	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_STARTED, 2, argStart);
+}
+
+//
 //  FUNCTION: BBWin::WaitFor
 //
 //  PURPOSE: Main loop : wait for service stopping  event
@@ -522,16 +711,28 @@ void				BBWin::UnloadAgents() {
 //
 //  COMMENTS:
 //
-
 void						BBWin::WaitFor() {
 	DWORD					dwWait;
-	
+	DWORD					waiting;
+
+	waiting = INFINITE;
+	if (m_autoReload)
+		waiting = m_autoReloadInterval;
 	for (;;) {
-		dwWait = WaitForMultipleObjects( 1, m_hEvents, FALSE, INFINITE );
-			if ( dwWait == WAIT_OBJECT_0 )    // service stop signaled
-				break;           
-			if (dwWait == WAIT_ABANDONED_0)
-				break ;
+		dwWait = WaitForMultipleObjects( 1, m_hEvents, FALSE, m_autoReloadInterval * 1000 );
+		if ( dwWait == WAIT_OBJECT_0 )    // service stop signaled
+			break;           
+		if (dwWait == WAIT_ABANDONED_0)
+			break ;
+		if (m_autoReload) {
+			if (GetConfFileChanged()) {
+				try {
+					Reload();
+				} catch (BBWinException ex) {
+					throw ex;
+				}
+			}
+		}
 	}
 }
 
@@ -571,7 +772,6 @@ void 			BBWin::Start(HANDLE h) {
 	} catch (BBWinException ex) {
 		throw ex;
 	}
-
 }
 
 //

@@ -55,7 +55,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="advapi32.lib Ws2_32.lib User32.lib &quot;$(InputDir)BBWinMessages.res&quot;"
+				AdditionalDependencies="advapi32.lib Ws2_32.lib User32.lib &quot;$(InputDir)BBWinMessages.res&quot; &quot;$(TargetDir)tinyxml.lib&quot;"
 				OutputFile="$(OutDir)\BBWin.exe"
 				AddModuleNamesToAssembly=""
 				GenerateDebugInformation="true"
@@ -125,7 +125,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="advapi32.lib Ws2_32.lib User32.lib &quot;$(InputDir)BBWinMessages.res&quot;"
+				AdditionalDependencies="advapi32.lib Ws2_32.lib User32.lib &quot;$(InputDir)BBWinMessages.res&quot; &quot;$(TargetDir)tinyxml.lib&quot;"
 				OutputFile="$(OutDir)\BBWin.exe"
 				AddModuleNamesToAssembly=""
 			/>
@@ -196,22 +196,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tinystr.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\tinyxml.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\tinyxmlerror.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\tinyxmlparser.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Utils.cpp"
 				>
 			</File>
@@ -275,14 +259,6 @@
 			</File>
 			<File
 				RelativePath=".\Singleton.hxx"
-				>
-			</File>
-			<File
-				RelativePath=".\tinystr.h"
-				>
-			</File>
-			<File
-				RelativePath=".\tinyxml.h"
 				>
 			</File>
 			<File

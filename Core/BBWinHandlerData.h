@@ -26,6 +26,7 @@
 #include <vector>
 
 typedef std::vector< std::string >					bbdisplay_t;
+typedef std::vector< std::string >					bbpager_t;
 typedef std::map< std::string, std::string >		setting_t;
 
 //
@@ -40,6 +41,7 @@ typedef struct 				bbwinhandler_data_s
 	std::string				& agentName;
 	std::string				& agentFileName;
 	bbdisplay_t				& bbdisplay;
+	bbpager_t				& bbpager;
 	setting_t				& setting;
 	DWORD					timer;
 }							bbwinhandler_data_t;

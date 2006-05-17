@@ -16,14 +16,13 @@
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <windows.h>
+#include <WtsApi32.h>
 
 #include <set>
 #include <list>
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
-#include <Psapi.h>
 
 #include <string>
 
@@ -41,6 +40,7 @@ using boost::format;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
+#include "ProcApi.h"
 
 #include "CpuUsage.h"
 #include "cpu.h"
@@ -53,7 +53,7 @@ static const BBWinAgentInfo_t 		cpuAgentInfo =
 {
 	BBWIN_AGENT_VERSION,					// bbwinVersion;
 	0,              						// agentMajVersion;
-	1,              						// agentMinVersion;
+	4,              						// agentMinVersion;
 	"cpu",    								// agentName;
 	"cpu agent : report cpu usage",        	// agentDescription;
 };                
@@ -87,12 +87,53 @@ static DWORD	CountProcessor() {
 // return count number
 //
 static DWORD 		countProcesses() {
-    DWORD 		aProcesses[MAX_TABLE_PROC], cbNeeded, cProcesses;
+	DWORD			count = 0;
 
-    if ( !EnumProcesses( aProcesses, sizeof(aProcesses), &cbNeeded ) )
-        return 0;
-    cProcesses = cbNeeded / sizeof(DWORD);
-	return cProcesses;
+	HINSTANCE hNtDll;
+	NTSTATUS (WINAPI * pZwQuerySystemInformation)(UINT, PVOID, ULONG, PULONG);
+	hNtDll = GetModuleHandle("ntdll.dll");
+	assert(hNtDll != NULL);
+	// find ZwQuerySystemInformation address
+	*(FARPROC *)&pZwQuerySystemInformation =
+		GetProcAddress(hNtDll, "ZwQuerySystemInformation");
+	if (pZwQuerySystemInformation == NULL)
+		return 0;
+	HANDLE hHeap = GetProcessHeap();
+	NTSTATUS Status;
+	ULONG cbBuffer = 0x8000;
+	PVOID pBuffer = NULL;
+	// it is difficult to predict what buffer size will be
+	// enough, so we start with 32K buffer and increase its
+	// size as needed
+	do
+	{
+		pBuffer = HeapAlloc(hHeap, 0, cbBuffer);
+		if (pBuffer == NULL)
+			return 0;
+		Status = pZwQuerySystemInformation(
+			SystemProcessesAndThreadsInformation,
+			pBuffer, cbBuffer, NULL);
+		if (Status == STATUS_INFO_LENGTH_MISMATCH) {
+			HeapFree(hHeap, 0, pBuffer);
+			cbBuffer *= 2;
+		}
+		else if (!NT_SUCCESS(Status)) {
+			HeapFree(hHeap, 0, pBuffer);
+			return 0;
+		}
+	}
+	while (Status == STATUS_INFO_LENGTH_MISMATCH);
+	PSYSTEM_PROCESS_INFORMATION pProcesses = 
+		(PSYSTEM_PROCESS_INFORMATION)pBuffer;
+	for (;;) {
+		++count;
+		if (pProcesses->NextEntryDelta == 0)
+			break ;
+		pProcesses = (PSYSTEM_PROCESS_INFORMATION)(((LPBYTE)pProcesses)
+			+ pProcesses->NextEntryDelta);
+	}
+	HeapFree(hHeap, 0, pBuffer);
+	return count;
 }
 
 //**********************************
@@ -107,6 +148,8 @@ UsageProc::UsageProc(DWORD pid) {
 	m_pid = pid;
 	m_exists = false;
 	m_lastUsage = 0.00;
+	m_mem = 0;
+	m_priority = 0;
 }
 
 //
@@ -124,58 +167,132 @@ double			UsageProc::ExecGetUsage() {
 //
 //**********************************
 
-void 		AgentCpu::GetProcsData() {
-	static DWORD 		aProcesses[MAX_TABLE_PROC], cbNeeded, cProcesses;
+void 		AgentCpu::GetProcsOwners() {
 	
-	ZeroMemory(aProcesses, sizeof(aProcesses));
-	m_mgr.ReportDebug("GetProcsData started");
-    if ( !EnumProcesses( aProcesses, sizeof(aProcesses), &cbNeeded ) )
-        return ;
-    cProcesses = cbNeeded / sizeof(DWORD);
-    for (DWORD inc = 0; inc < cProcesses; ++inc ) {
-		DWORD								pid = aProcesses[inc];
-		procs_itr							itr;
-		TCHAR 								szProcessName[MAX_PATH] = TEXT("<unknown>");
-		PROCESS_MEMORY_COUNTERS 			pmc;
-		UsageProc							*proc;
-		
-	    HANDLE hProcess = OpenProcess( PROCESS_QUERY_INFORMATION |
-	                                   PROCESS_VM_READ,
-	                                   FALSE, pid );
-	    if (NULL != hProcess ) {
-	        HMODULE hMod;
-	        DWORD cbNeeded;
-			
-	        if ( EnumProcessModules( hProcess, &hMod, sizeof(hMod), &cbNeeded)) {
-				itr = m_procs.find(pid);
-				if (itr == m_procs.end()) {
-					try {
-						proc = new UsageProc(pid);
-					} catch (std::bad_alloc ex) {
-						CloseHandle(hProcess);
-						m_mgr.ReportInfo("Can't alloc memory");
-						continue ;
-					}
-					if (proc == NULL) {
-						CloseHandle(hProcess);
-						m_mgr.ReportInfo("Can't alloc memory");
-						continue ;
-					}
-					GetModuleBaseName( hProcess, hMod, szProcessName, sizeof(szProcessName)/sizeof(TCHAR) );
-					proc->SetName(szProcessName);
-					m_procs.insert(pair<DWORD, UsageProc *> (pid, proc));
-				} else {
-					proc = itr->second;
-				}
-				if ( GetProcessMemoryInfo( hProcess, &pmc, sizeof(pmc)) ) {
-					proc->SetMemUsage(pmc.WorkingSetSize / 1024);
-				}
-				proc->ExecGetUsage();
-				proc->SetExists(true);
-	        }
-			CloseHandle( hProcess );
-	    } 
+	procs_itr			itr;
+	PWTS_PROCESS_INFO	ppProcessInfom = NULL;
+	DWORD				count;
+	TCHAR				userbuf[ACCOUNT_SIZE];
+	TCHAR				domainbuf[ACCOUNT_SIZE];
+	DWORD				userSize, domainSize;
+	SID_NAME_USE		type;
+	
+	if (m_useWts == false)
+		return;
+	count = 0;
+	BOOL res = m_WTSEnumerateProcesses(WTS_CURRENT_SERVER_HANDLE, 0, 1, &ppProcessInfom, &count);
+	if (res == 0) 
+		return ;
+	assert(ppProcessInfom != NULL);
+	for (DWORD inc = 0; inc < count; ++inc) {
+		userSize = ACCOUNT_SIZE;
+		domainSize = ACCOUNT_SIZE;
+		SecureZeroMemory(userbuf, ACCOUNT_SIZE);
+		SecureZeroMemory(domainbuf, ACCOUNT_SIZE);
+		BOOL res = LookupAccountSid(NULL, ppProcessInfom[inc].pUserSid, userbuf, &userSize,
+			  domainbuf, &domainSize, &type);
+		if (res) {
+			stringstream 		username;	
+
+			username << domainbuf << "\\" << userbuf;
+			itr = m_procs.find(ppProcessInfom[inc].ProcessId);
+			if (itr != m_procs.end()) {
+				(*itr).second->SetOwner(username.str().c_str());
+			}
+		} else {
+			itr = m_procs.find(ppProcessInfom[inc].ProcessId);
+			if (itr != m_procs.end()) {
+				(*itr).second->SetOwner("unknown");
+			}
+		}
 	}
+	m_WTSFreeMemory(ppProcessInfom);
+}
+
+void 		AgentCpu::GetProcsData() {
+	string				procname;
+	UsageProc			*proc;
+	procs_itr			itr;
+
+	m_mgr.ReportDebug("GetProcsData started");
+	HINSTANCE hNtDll;
+	NTSTATUS (WINAPI * pZwQuerySystemInformation)(UINT, PVOID, ULONG, PULONG);
+	hNtDll = GetModuleHandle("ntdll.dll");
+	assert(hNtDll != NULL);
+	// find ZwQuerySystemInformation address
+	*(FARPROC *)&pZwQuerySystemInformation =
+		GetProcAddress(hNtDll, "ZwQuerySystemInformation");
+	if (pZwQuerySystemInformation == NULL)
+		return ;
+	HANDLE hHeap = GetProcessHeap();
+	NTSTATUS Status;
+	ULONG cbBuffer = 0x8000;
+	PVOID pBuffer = NULL;
+	// it is difficult to predict what buffer size will be
+	// enough, so we start with 32K buffer and increase its
+	// size as needed
+	do
+	{
+		pBuffer = HeapAlloc(hHeap, 0, cbBuffer);
+		if (pBuffer == NULL)
+			return ;
+		Status = pZwQuerySystemInformation(
+			SystemProcessesAndThreadsInformation,
+			pBuffer, cbBuffer, NULL);
+		if (Status == STATUS_INFO_LENGTH_MISMATCH) {
+			HeapFree(hHeap, 0, pBuffer);
+			cbBuffer *= 2;
+		}
+		else if (!NT_SUCCESS(Status)) {
+			HeapFree(hHeap, 0, pBuffer);
+			return ;
+		}
+	}
+	while (Status == STATUS_INFO_LENGTH_MISMATCH);
+	PSYSTEM_PROCESS_INFORMATION pProcesses = 
+		(PSYSTEM_PROCESS_INFORMATION)pBuffer;
+	for (;;) {
+		PCWSTR pszProcessName = pProcesses->ProcessName.Buffer;
+		if (pszProcessName == NULL) {
+			if (pProcesses->NextEntryDelta == 0)
+				break ;
+			pProcesses = (PSYSTEM_PROCESS_INFORMATION)(((LPBYTE)pProcesses)
+			+ pProcesses->NextEntryDelta);
+			continue ;
+		}
+		if (pProcesses->NextEntryDelta == 0)
+			break ;
+		CHAR szProcessName[MAX_PATH];
+		WideCharToMultiByte(CP_ACP, 0, pszProcessName, -1,
+			szProcessName, MAX_PATH, NULL, NULL);
+		procname = szProcessName;
+		itr = m_procs.find(pProcesses->ProcessId);
+		if (itr == m_procs.end()) {
+			try {
+				proc = new UsageProc(pProcesses->ProcessId);
+			} catch (std::bad_alloc ex) {
+				m_mgr.ReportInfo("Can't alloc memory");
+				continue ;
+			}
+			if (proc == NULL) {
+				m_mgr.ReportInfo("Can't alloc memory");
+				continue ;
+			}
+			proc->SetName(procname);
+			m_procs.insert(pair<DWORD, UsageProc *> (pProcesses->ProcessId, proc));
+		} else {
+			proc = itr->second;
+		}
+		proc->SetMemUsage(pProcesses->VmCounters.WorkingSetSize / 1024);
+		proc->ExecGetUsage();
+		proc->SetPriority(pProcesses->BasePriority);
+		proc->SetExists(true);
+		if (pProcesses->NextEntryDelta == 0)
+			break ;
+		pProcesses = (PSYSTEM_PROCESS_INFORMATION)(((LPBYTE)pProcesses)
+			+ pProcesses->NextEntryDelta);
+	}
+	HeapFree(hHeap, 0, pBuffer);
 	m_mgr.ReportDebug("GetProcsData ended");
 }
 
@@ -196,14 +313,28 @@ void		AgentCpu::SendStatusReport() {
 	reportData << "load=" << (DWORD)m_systemWideCpuUsage << "%";
 	reportData << "\n\n" << endl;
 	if (m_psMode && m_firstPass == false) {
+		DWORD				count = 0;
 		procs_sorted_itr_t	itrSort;
 		
-		reportData << format("CPU    PID   %-16s  MemUsage") % "Image Name" << endl;
+		if (m_limit != 0)
+			reportData << "Information : ps mode is limited to " << m_limit << " lines\n" << endl;
+		reportData << format("CPU    PID   %-16s  Pri") % "Image Name";
+		if (m_useWts)
+			reportData << format(" %-35s") % "Owner";
+		reportData << " MemUsage" << endl;
 		for (itrSort = m_procsSorted.begin(); itrSort != m_procsSorted.end(); ++itrSort) {
 			if ((*itrSort)->GetUsage() < 10)
 				reportData << "0";
-			reportData << format("%02.01f%%  %-4u  %-16s  %luk") % (*itrSort)->GetUsage() %  (*itrSort)->GetPid() % (*itrSort)->GetName() 
-					% (*itrSort)->GetMemUsage() << endl;
+			reportData << format("%02.01f%%  %-4u  %-16s  %-3u") % (*itrSort)->GetUsage() %  (*itrSort)->GetPid() % (*itrSort)->GetName() 
+					% (*itrSort)->GetPriority();
+			if (m_useWts)
+				reportData << format(" %-35s") % (*itrSort)->GetOwner();
+			reportData << format(" %luk") % (*itrSort)->GetMemUsage() << endl;
+			if (m_limit != 0 && count > m_limit) {
+				reportData << "..." << endl;
+				break ;
+			}
+			++count;
 		}
 	}
 	reportData << endl;
@@ -220,7 +351,7 @@ void		AgentCpu::SendStatusReport() {
 	}
 	if (m_alwaysgreen)
 		m_pageColor = GREEN;
-	m_mgr.Status("cpu", bbcolors[m_pageColor], reportData.str().c_str());	
+	m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());	
 }
 
 //
@@ -277,6 +408,7 @@ void AgentCpu::Run() {
 			m_procsSorted.insert(itr->second);
 			m_systemWideCpuUsage += itr->second->GetUsage();
 		}
+		GetProcsOwners();
 	}
 	m_mgr.ReportDebug("SendReport started");
 	SendStatusReport();
@@ -296,6 +428,10 @@ AgentCpu::~AgentCpu() {
 		delete (itr->second);
 	}
 	m_procs.clear();
+	if (m_mWts) {
+		FreeLibrary(m_mWts);
+		m_mWts = NULL;
+	}
 }
 
 
@@ -322,6 +458,12 @@ bool AgentCpu::Init() {
 		if (name == "psmode" && value == "false") {
 			m_psMode = false;
 		}
+		if (name == "testname" && value.length() > 0) {
+			m_testName = value;
+		}
+		if (name == "limit" && value.length() >0) {
+			m_limit = m_mgr.GetNbr(value.c_str());
+		}
 		if (name == "default") {
 			string		warn, panic, delay;
 
@@ -337,8 +479,22 @@ bool AgentCpu::Init() {
 		}
 	}
 	m_mgr.FreeConfiguration(conf);
+	m_mgr.ReportDebug("Init Wts Extension ended");
+	InitWtsExtension();
 	m_mgr.ReportDebug("Init cpu ended");
 	return true;
+}
+
+void			AgentCpu::InitWtsExtension() {
+	m_mWts = LoadLibrary("Wtsapi32.dll");
+	if (m_mWts == NULL) {
+		// no use of the wts extension
+		return ;
+	}
+	m_WTSEnumerateProcesses = (WTSEnumerateProcesses_t)GetProcAddress(m_mWts, "WTSEnumerateProcessesA");
+	m_WTSFreeMemory = (WTSFreeMemory_t)GetProcAddress(m_mWts, "WTSFreeMemory");
+	if (m_WTSEnumerateProcesses && m_WTSFreeMemory)
+		m_useWts = true;
 }
 
 AgentCpu::AgentCpu(IBBWinAgentManager & mgr) : m_mgr(mgr) {
@@ -350,6 +506,11 @@ AgentCpu::AgentCpu(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	m_panicPercent = DEF_CPU_PANIC;
 	m_delay = DEF_CPU_DELAY;
 	m_curDelay = 0;
+	m_testName = "cpu";
+	m_useWts = false;
+	m_WTSEnumerateProcesses = NULL;
+	m_WTSFreeMemory = NULL;
+	m_limit = 0;
 }
 
 BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
