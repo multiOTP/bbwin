@@ -40,15 +40,11 @@ using namespace boost::gregorian;
 static const BBWinAgentInfo_t 		statsAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	0,              // agentMajVersion;
-	1,              // agentMinVersion;
-	"stats",    // agentName;
+	"stats",							// agentName;
 	"stats agent :  report general stats for trends purpose",        // agentDescription;
+	0									// flags
 };                
 
-const BBWinAgentInfo_t & AgentStats::About() {
-	return statsAgentInfo;
-}
 
 #define		TEMP_PATH_LEN		1024
 
@@ -105,14 +101,14 @@ void AgentStats::Run() {
 }
 
 bool AgentStats::Init() {
-		bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
 	if (conf == NULL)
 		return false;
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		string name, value;
 		
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
@@ -138,4 +134,8 @@ BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
 BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
+}
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &statsAgentInfo;
 }

@@ -26,17 +26,24 @@
 //
 #define			BBWIN_AGENT_VERSION			0x01
 
+//
+// Agent Flags
+// must be set to 0 if no flag is set
+//
+#define			BBWIN_AGENT_THREAD_SAFE					0x01
+#define			BBWIN_AGENT_HOBBIT_COMPATIBLE			0x02
+
+
 // 
 // agent information structure
 // used for future compatibility
 //
 typedef struct			BBWinAgentInfo_s
 {
-	DWORD				bbwinVersion;
-	DWORD				agentMajVersion;
-	DWORD				agentMinVersion;
-	const char			*agentName;
-	const char 			*agentDescription;
+	DWORD				bbwinVersion;			/* BBWin version to check the agent compatibilities */
+	const char			*agentName;				/* Agent Name */
+	const char 			*agentDescription;		/* Agent Description */
+	DWORD				agentFlags;				/* Agent Flags for its working mode */
 }						BBWinAgentInfo_t;
 
 //
@@ -46,8 +53,6 @@ class IBBWinAgent
 {
 	public :
 		virtual ~IBBWinAgent() {};
-		// about function return a reference to your static BBWinAgentInfo_t 
-		virtual const BBWinAgentInfo_t & About() = 0;
 		// init function called only once after loaded the agent, return true on success, Agent will be unloaded if false returned
 		virtual bool Init() = 0;
 		// run method executed repetitively depending the timer setting
@@ -62,6 +67,7 @@ class IBBWinAgent
 
 typedef  IBBWinAgent  *(*CREATEBBWINAGENT)(IBBWinAgentManager & mgr);
 typedef  void			(*DESTROYBBWINAGENT)(IBBWinAgent * agent);
+typedef  const BBWinAgentInfo_t * (*GETBBWINAGENTINFO)();
 
 extern "C" {
 	BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr);
@@ -69,6 +75,10 @@ extern "C" {
 
 extern "C" {
 	BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent);
+}
+
+extern "C" {
+	BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo();
 }
 
 #endif // !__IBBWINAGENT_H__

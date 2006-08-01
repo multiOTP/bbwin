@@ -30,8 +30,8 @@
 APPICON ICON bbwincmd.ico
 
 1 VERSIONINFO
- FILEVERSION 0,7,0,0
- PRODUCTVERSION 0,7,0,0
+ FILEVERSION 0,8,0,0
+ PRODUCTVERSION 0,8,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0xbL
@@ -48,10 +48,10 @@ APPICON ICON bbwincmd.ico
           BEGIN
             VALUE "CompanyName", "GNU\0"
             VALUE "FileDescription", "BBWin command line utility\0"
-            VALUE "FileVersion", "0.7\0"
+            VALUE "FileVersion", "0.8.0\0"
             VALUE "LegalCopyright", "Copyright 2005-2006 Etienne Grignon\0"
             VALUE "ProductName", "BBWin\0"
-            VALUE "ProductVersion", "0.7\0"
+            VALUE "ProductVersion", "0.8\0"
           END
        END
     BLOCK "VarFileInfo"

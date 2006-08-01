@@ -31,15 +31,10 @@ using namespace std;
 static const BBWinAgentInfo_t 		sampleAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	1,              					// agentMajVersion;
-	0,              					// agentMinVersion;
 	"sample",    					// agentName;
 	"this is a sample bbwin agent for example purpose",        // agentDescription;
+	0									// flags
 };                
-
-const BBWinAgentInfo_t & AgentSample::About() {
-	return sampleAgentInfo;
-}
 
 void 		AgentSample::Run() {
 	stringstream 	reportData;	
@@ -55,14 +50,14 @@ AgentSample::AgentSample(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 }
 
 bool		AgentSample::Init() {
-	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
 	if (conf == NULL)
 		return false;
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		string name, value;
 		
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
@@ -87,4 +82,8 @@ BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
 BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
+}
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &sampleAgentInfo;
 }

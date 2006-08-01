@@ -39,10 +39,9 @@ using namespace boost::gregorian;
 static const BBWinAgentInfo_t 		procsAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	1,              // agentMajVersion;
-	1,              // agentMinVersion;
-	"procs",    // agentName;
+	"procs",							// agentName;
 	"procs agent : check running processes",        // agentDescription;
+	0									// flags
 };                
 
 
@@ -160,12 +159,6 @@ static DWORD 		CountProcesses(const string & name) {
 
 
 
-//
-// Agent functions
-
-const BBWinAgentInfo_t & AgentProcs::About() {
-	return procsAgentInfo;
-}
 
 
 //
@@ -278,14 +271,14 @@ void AgentProcs::AddRule(const string & name, const string & rule, const string 
 // init function
 //
 bool AgentProcs::Init() {
-	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 	
 	if (conf == NULL)
 		return false;
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		string		name = m_mgr.GetConfigurationRangeValue(range, "name");
 
 		if (name == "testname") {
@@ -337,4 +330,8 @@ BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
 BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
+}
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &procsAgentInfo;
 }

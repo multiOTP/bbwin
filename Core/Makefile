@@ -54,6 +54,8 @@ bbwin_objs = 	$(OUTDIR)\BBWin.obj \
 				$(OUTDIR)\BBWinConfig.obj \
 				$(OUTDIR)\BBWinNet.obj \
 				$(OUTDIR)\BBWinAgentManager.obj \
+				$(OUTDIR)\BBWinCentralHandler.obj \
+				$(OUTDIR)\BBWinLocalHandler.obj \
 				
 
 $(bbwinmessage_objs): BBWinMessages.mc
@@ -65,9 +67,12 @@ $(OUTDIR)\BBWin.res: BBWin.rc
 $(OUTDIR)\BBWinMessages.res: $(bbwinmessage_objs)
 	$(rc) $(rcflags) $(rcvars) /fo $(OUTDIR)\BBWinMessages.res BBWinMessages.rc
 	
-$(OUTDIR)\BBWin.exe: $(OUTDIR)\BBWinMessages.res $(OUTDIR)\BBWin.res $(bbwin_objs) $(tinyxml_objs)
+$(OUTDIR)\tinyxml.lib: $(tinyxml_objs)
+	$(link) /LIB /OUT:$@ $**
+
+$(OUTDIR)\BBWin.exe: $(OUTDIR)\BBWinMessages.res $(OUTDIR)\BBWin.res $(bbwin_objs) $(OUTDIR)\tinyxml.lib
     $(link) $(ldebug) $(bbwin_objs) $(OUTDIR)\BBWin.res $(OUTDIR)\BBWinMessages.res \
-    -out:$(OUTDIR)\BBWin.exe  $(conlibsmt) advapi32.lib User32.lib  $(tinyxml_objs)
+    -out:$(OUTDIR)\BBWin.exe  $(conlibsmt) advapi32.lib User32.lib  $(OUTDIR)\tinyxml.lib
 	if not exist ..\Release mkdir ..\Release
 	copy /Y $(OUTDIR)\BBWin.exe ..\Release
 	

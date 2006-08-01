@@ -40,16 +40,12 @@ using namespace boost::gregorian;
 
 static const BBWinAgentInfo_t 		uptimeAgentInfo =
 {
-	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	0,              // agentMajVersion;
-	8,              // agentMinVersion;
-	"uptime",    // agentName;
-	"uptime agent : report uptime server",        // agentDescription;
+	BBWIN_AGENT_VERSION,						// bbwinVersion;
+	"uptime",									// agentName;
+	"uptime agent : report uptime server",		// agentDescription;
+	0											// flags
 };                
 
-const BBWinAgentInfo_t & AgentUptime::About() {
-	return uptimeAgentInfo;
-}
 
 void AgentUptime::Run() {
 	DWORD				seconds;
@@ -82,13 +78,13 @@ void AgentUptime::Run() {
 }
 
 bool AgentUptime::Init() {
-	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	PBBWINCONFIG conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 	if (conf == NULL)
 		return false;
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		string name, value;
 		
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
@@ -103,7 +99,7 @@ bool AgentUptime::Init() {
 		if (name == "testname" && value != "") {
 			m_testName = value;
 		}
-	}	
+	}
 	m_mgr.FreeConfigurationRange(range);
 	m_mgr.FreeConfiguration(conf);
 	return true;
@@ -123,4 +119,9 @@ BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
 BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
+}
+
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &uptimeAgentInfo;
 }

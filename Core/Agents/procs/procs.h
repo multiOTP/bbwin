@@ -69,7 +69,6 @@ class AgentProcs : public IBBWinAgent
 	public :
 		AgentProcs(IBBWinAgentManager & mgr);
 		~AgentProcs();
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 };

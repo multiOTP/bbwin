@@ -7,6 +7,9 @@
 #include <atlbase.h>	// for CRegKey use
 #include "CpuUsage.h"
 
+#include <iostream>
+#include <sstream> 
+
 #pragma pack(push,8)
 #include "PerfCounters.h"
 #pragma pack(pop)
@@ -77,6 +80,7 @@ CCpuUsage::CCpuUsage()
 	m_bFirstTime = true;
 	m_lnOldValue = 0;
 	memset(&m_OldPerfTime100nSec, 0, sizeof(m_OldPerfTime100nSec));
+	m_proc = TOTAL_CPU_USAGE_PROC;
 }
 
 CCpuUsage::~CCpuUsage()
@@ -111,7 +115,7 @@ BOOL CCpuUsage::EnablePerformaceCounters(BOOL bEnable)
 //	sampling.
 //  Read the comment at the beginning of this file for the formula.
 //
-int CCpuUsage::GetCpuUsage()
+double CCpuUsage::GetCpuUsage()
 {
 	static PLATFORM Platform = GetPlatform();
 
@@ -143,13 +147,19 @@ int CCpuUsage::GetCpuUsage()
 	case WIN2K_XP:
 		dwObjectIndex = PROCESSOR_OBJECT_INDEX;
 		dwCpuUsageIndex = PROCESSOR_TIME_COUNTER_INDEX;
-		szInstance = L"_Total";
+		if (m_proc == TOTAL_CPU_USAGE_PROC)
+			szInstance = L"_Total";
+		else { 
+			std::wostringstream oss;
+		    oss << m_proc;
+			szInstance = oss.str();
+		}
 		break;
 	default:
 		return -1;
 	}
 
-	int				CpuUsage = 0;
+	double			CpuUsage = 0;
 	LONGLONG		lnNewValue = 0;
 	PPERF_DATA_BLOCK pPerfData = NULL;
 	LARGE_INTEGER	NewPerfTime100nSec = {0};
@@ -171,10 +181,13 @@ int CCpuUsage::GetCpuUsage()
 	m_lnOldValue = lnNewValue;
 	m_OldPerfTime100nSec = NewPerfTime100nSec;
 
+	if (DeltaPerfTime100nSec == 0)
+		return 0;
+
 	double a = (double)lnValueDelta / DeltaPerfTime100nSec;
 
 	double f = (1.0 - a) * 100.0;
-	CpuUsage = (int)(f + 0.5);	// rounding the result
+	CpuUsage = (double)(f + 0.5);	// rounding the result
 	if (CpuUsage < 0)
 		return 0;
 	return CpuUsage;
@@ -215,6 +228,9 @@ double CCpuUsage::GetCpuUsage(DWORD dwProcessID)
 
 	m_lnOldValue = lnNewValue;
 	m_OldPerfTime100nSec = NewPerfTime100nSec;
+
+	if (DeltaPerfTime100nSec == 0)
+		return 0;
 
 	double a = (double)lnValueDelta / DeltaPerfTime100nSec;
 

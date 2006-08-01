@@ -53,8 +53,9 @@ BBWinAgentManager::BBWinAgentManager(const bbwinhandler_data_t & data) :
 							m_hEvents (data.hEvents),
 							m_hCount (data.hCount),
 							m_timer (data.timer),
-							m_conf (NULL),
-							m_usepager (false)
+							m_usepager (false),
+							m_centralMode (false),
+							m_clientdata_callback (NULL)
 {
 		m_log = Logging::getInstancePtr();
 		assert(m_log != NULL);
@@ -136,78 +137,118 @@ void			BBWinAgentManager::LoadFileConfiguration(const string & filePath, const s
 	}
 }
 
-bbwinagentconfig_t * BBWinAgentManager::LoadConfiguration(LPCTSTR nameSpace) {
-	string		filePath;
-	
+PBBWINCONFIG	 BBWinAgentManager::LoadConfiguration(LPCTSTR nameSpace) {
+	string				filePath;
+	_bbwinconfig_t		*_conf;
+
 	assert(nameSpace != NULL);
-	if (m_conf != NULL) {
-		return m_conf;
-	}
-	m_conf = new bbwinagentconfig_t;
-	if (m_conf == NULL)
+	try {
+		_conf = new _bbwinconfig_t;
+	} catch (std::bad_alloc ex) {
+		// can't create memory
 		return NULL;
+	}
 	filePath = m_setting[ "etcpath" ];
 	filePath += "\\";
 	filePath += m_setting[ "bbwinconfigfilename" ]; 
 	try {
-		LoadFileConfiguration(filePath, nameSpace, *m_conf);
+		LoadFileConfiguration(filePath, nameSpace, _conf->conf);
 	} catch (BBWinConfigException ex) {
-		return m_conf;
 	}
-	return m_conf;
+	return (PBBWINCONFIG)_conf;
 }
 
 
 
-bbwinagentconfig_t * BBWinAgentManager::LoadConfiguration(LPCTSTR fileName, LPCTSTR nameSpace) {
-	string		filePath;
-	
+PBBWINCONFIG BBWinAgentManager::LoadConfiguration(LPCTSTR fileName, LPCTSTR nameSpace) {
+	string				filePath;
+	_bbwinconfig_t		*_conf;
+
 	assert(nameSpace != NULL);
-	if (m_conf != NULL) {
-		return m_conf;
-	}
-	m_conf = new bbwinagentconfig_t;
-	if (m_conf == NULL)
+	assert(fileName != NULL);
+	try {
+		_conf = new _bbwinconfig_t;
+	} catch (std::bad_alloc ex) {
+		// no more memory
 		return NULL;
+	}
 	filePath = m_setting[ "etcpath" ];
 	filePath += "\\";
 	filePath += fileName; 
 	try {
-		LoadFileConfiguration(filePath, nameSpace, *m_conf);
+		LoadFileConfiguration(filePath, nameSpace, _conf->conf);
 	} 	catch (BBWinConfigException ex) {
-		return m_conf;
+		
 	}
-	return m_conf;
+	return (PBBWINCONFIG)_conf;
 }
 
-void			BBWinAgentManager::FreeConfiguration(bbwinagentconfig_t * conf) {
-	// conf argument not used for the moment because we only handle loading configuration one by one
-	if (m_conf != NULL) {
-		delete m_conf;
-		m_conf = NULL;
-	}
-}
+void			BBWinAgentManager::FreeConfiguration(PBBWINCONFIG conf) {
+	_bbwinconfig_t		*_conf;
 
-
-bbwinconfig_range_t * BBWinAgentManager::GetConfigurationRange(bbwinagentconfig_t * conf, LPCTSTR name) {
-	// range configuration one by one for the moment
 	assert(conf != NULL);
-	assert(m_conf != NULL);
-	m_range = m_conf->equal_range(name);
-	return &m_range;
+	_conf = (_bbwinconfig_t *)conf;
+	delete _conf;
 }
 
-LPCTSTR				BBWinAgentManager::GetConfigurationRangeValue(bbwinconfig_range_t *range, LPCTSTR name) {
+
+PBBWINCONFIGRANGE	 BBWinAgentManager::GetConfigurationRange(PBBWINCONFIG conf, LPCTSTR name) {
+	_bbwinconfig_range_t *_range;
+	_bbwinconfig_t		*_conf;
+
+	assert(conf != NULL);
+	assert(name != NULL);
+	_conf = (_bbwinconfig_t *)conf;
+	try {
+		_range = new _bbwinconfig_range_t;
+	} catch (std::bad_alloc ex) {
+		return NULL;
+	}
+	_range->range = _conf->conf.equal_range(name);
+	return (PBBWINCONFIGRANGE)_range;
+}
+
+LPCTSTR				BBWinAgentManager::GetConfigurationRangeValue(PBBWINCONFIGRANGE range, LPCTSTR name) {
 	assert(range != NULL);
 	assert(name != NULL);
-	if (range->first->second[name].size() == 0)
+	_bbwinconfig_range_t *_range;
+
+	_range = (_bbwinconfig_range_t *)range;
+	
+	if (_range->range.first->second[name].size() == 0)
 		return "";
-	return range->first->second[name].c_str();
+	return _range->range.first->second[name].c_str();
 }
 
-void				BBWinAgentManager::FreeConfigurationRange(bbwinconfig_range_t *range) {
-	// range configuration one by one for the moment
+bool				BBWinAgentManager::IterateConfigurationRange(PBBWINCONFIGRANGE range) {
+	_bbwinconfig_range_t *_range;
+
 	assert(range != NULL);
+	_range = (_bbwinconfig_range_t *)range;
+	if (_range->range.first == _range->range.second)
+		return false;
+	++(_range->range.first);
+	if (_range->range.first == _range->range.second)
+		return false;
+	return true;
+}
+
+bool				BBWinAgentManager::AtEndConfigurationRange(PBBWINCONFIGRANGE range) {
+	_bbwinconfig_range_t *_range;
+
+	assert(range != NULL);
+	_range = (_bbwinconfig_range_t *)range;
+	if (_range->range.first != _range->range.second)
+		return true;
+	return false;
+}
+
+void				BBWinAgentManager::FreeConfigurationRange(PBBWINCONFIGRANGE range) {
+	assert(range != NULL);
+	_bbwinconfig_range_t *_range;
+
+	_range = (_bbwinconfig_range_t *)range;
+	delete _range;
 }
 
 
@@ -667,5 +708,19 @@ void		BBWinAgentManager::Query(LPCTSTR testName, LPTSTR dest, DWORD size) {
 	catch (...)
 	{
 		// Failed to write
+	}
+}
+
+
+void		BBWinAgentManager::Download(LPCTSTR fileName, LPTSTR dest, DWORD size) {
+	//
+	// not yet implemented
+	//
+}
+
+
+void		BBWinAgentManager::ClientData(LPCTSTR dataName, LPCTSTR text) {
+	if (m_clientdata_callback != NULL) {
+		m_clientdata_callback(dataName, text);
 	}
 }

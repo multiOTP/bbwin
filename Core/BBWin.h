@@ -36,17 +36,18 @@ using namespace DesignPattern;
 #define BBWIN_LOG_DEFAULT_PATH		"C:\\BBWin.log"
 
 #define	BBWIN_STOP_HANDLE			0
-#define BBWIN_AUTORELOAD_HANDLE		1
-#define BBWIN_MAX_COUNT_HANDLE		2
+#define BBWIN_MAX_COUNT_HANDLE		1
 
 #define BBWIN_AUTORELOAD_INTERVAL	5
 
 #include "Logging.h"
 #include "BBWinHandler.h"
+#include "BBWinLocalHandler.h"
+#include "BBWinCentralHandler.h"
 #include "BBWinConfig.h"
 
+// declaration for the pointer function
 class BBWin;
-
 // pointer treatment function 
 typedef void (BBWin::*load_simple_setting)(const std::string & name, const std::string & value);
 
@@ -57,7 +58,11 @@ class BBWin : public Singleton< BBWin > {
 		Logging					*m_log;
 		bbwinconfig_t			m_configuration;
 		BBWinConfig				*m_conf;
-		
+
+		// stop variables
+		bool					m_do_stop; 
+		void					(*m_report_stop)(void);
+
 		// BBWin Handle 
 		HANDLE					m_hEvents[BBWIN_MAX_COUNT_HANDLE];
 		DWORD					m_hCount;
@@ -66,15 +71,23 @@ class BBWin : public Singleton< BBWin > {
 		FILETIME				m_confTime;
 		bool					m_autoReload;
 		DWORD					m_autoReloadInterval;
-
+		
+		// Hobbit client mode
+		bool					m_centralMode;
+		
 		//
 		// STL Containers
 		//
-		std::map< std::string, BBWinHandler * >			m_handler; // handle the agents instances
+		std::map< std::string, BBWinHandler * >			m_handler; // handle the agents instance
+		std::map< std::string, BBWinLocalHandler *>		m_localHandlers; // handle to the
+		BBWinCentralHandler								*m_centralClient; // central handler for hobbit client
+
+		// list of the local handler threads
+
 		std::vector< std::string >						m_bbdisplay; // handle the bbdisplay list
 		std::vector< std::string >						m_bbpager; // handle the bbpager list
 		std::map< std::string, std::string >			m_setting; // handle the general settings
-		std::map< std::string, load_simple_setting > 	m_defaultSettings; // handle the default settings ma
+		std::map< std::string, load_simple_setting > 	m_defaultSettings; // handle the default settings
 		
 	private :
 		void			BBWinRegQueryValueEx(HKEY hKey, const std::string & key, std::string & dest);
@@ -84,25 +97,35 @@ class BBWin : public Singleton< BBWin > {
 		void			InitSettings();
 		void			WaitFor();
 		
-		void			AddSimpleSetting(const std::string & name, const std::string & value);
-		void			AddBBDisplay(const std::string & name, const std::string & value);
-		void			AddBBPager(const std::string & name, const std::string & value);
+		void			callback_AddSimpleSetting(const std::string & name, const std::string & value);
+		void			callback_AddBBDisplay(const std::string & name, const std::string & value);
+		void			callback_AddBBPager(const std::string & name, const std::string & value);
+		void			callback_SetAutoReload(const std::string & name, const std::string & value);
+		void			callback_SetBBWinMode(const std::string & name, const std::string & value);
 
-		void			SetAutoReload(const std::string & name, const std::string & value);
+		void			SetAutoReload(bool value);
+
 		bool			GetConfFileChanged();
 		
 		void 			LoadRegistryConfiguration();
 		void			LoadConfiguration();
 		void			CheckConfiguration();
+		
+		void			StartAgents();
+		void			StopAgents();
+
 		void			LoadAgents();
 		void			UnloadAgents();
 		
+		// private start function used at startup and reloading
+		void			_Start();
+
 	public :
 		BBWin();
 		~BBWin();
 		void Start(HANDLE h);
 		void Reload();
-		void Stop();
+		void Stop(void (*report_stop)(void));
 };
 
 

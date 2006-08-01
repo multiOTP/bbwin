@@ -2,6 +2,41 @@ ChangeLog file for BBWin
 ==============================================================
 
 
+BBWin 0.8 Preview version - 01 August 2006
+-------------------
+
++ New Features
+* svcs agent has now a delay setting which tell the agent to do not 
+  monitor the Windows services for a short time after the startup 
+  of the computer
+* Msgs agent have priority and count options
+* You may use environment variables for hostname and paths settings (registry and BBWin.cfg)
+* Cpu agent can monitor uptime like the original Big Brother client. It is off by default.
+* Cpu agent reports usage for each cpu
+* ext directory is now created at the installation so the tree really looks like hobbit tree.
+* hostname, logpath, binpath, etcpath, tmppath, extpath registry settings can be environment variables (e.g.: %VARNAME%)
+* default hostname is %COMPUTERNAME%
+
+
++ Updates
+* cpu agent on multi processor computers is now sending the correct cpu
+  usage
+* disk is now reporting correctly disk which had a size smaller than 1 mb
+* autoreload is now on by default
+* BBWin doesn't exits any more on errors
+* Msgs default delay for matchs rules may be overridden by a generic setting
+* Msgs now reports date with 24h time format
+
++ Important note :
+* A memory leak has been discovered in BBWin 0.7 due to a bug in the CRT library shipped
+with Visual C++ 2005. I'm forced to use the Visual ToolKit 2003 since not update
+is available yet for this bug. (SP1 public download not yet available)
+Here the page that explain the bug :
+http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=129031&SiteID=1&PageID=0
+http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=98861
+
+
+
 BBWin 0.7 Preview version - 15 May 2006
 -------------------
 
@@ -35,7 +70,7 @@ BBWin 0.6 Preview version - 19 April 2006
 -------------------
 
 + New Features
-* Agents:
+* Agents: 
 	- svcs : monitor Windows Services
 
 + Updates

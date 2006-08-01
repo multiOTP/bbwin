@@ -16,6 +16,8 @@
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 #include <windows.h>
+#include <assert.h>
+
 
 #include <string>
 #include <vector>
@@ -56,17 +58,88 @@ BBWinHandler::BBWinHandler(bbwinhandler_data_t & data) :
 							m_agentFileName (data.agentFileName),
 							m_hEvents (data.hEvents),
 							m_hCount (data.hCount),
-							m_timer (data.timer)
+							m_timer (data.timer),
+							m_create (NULL),
+							m_destroy (NULL),
+							m_getinfo (NULL),
+							m_initSucceed (false),
+							m_loadSucceed (false)
 {
-		Thread::setName(m_agentFileName.c_str());
-		m_log = Logging::getInstancePtr();
-		try {
-			m_mgr = new BBWinAgentManager(data);
-		} catch (std::bad_alloc ex) {
-			throw ex;
-		}
-		if (m_mgr == NULL)
-			throw std::bad_alloc("no more memory");
+	m_log = Logging::getInstancePtr();
+	try {
+		m_mgr = new BBWinAgentManager(data);
+	} catch (std::bad_alloc ex) {
+		throw ex;
+	}
+	if (m_mgr == NULL)
+		throw std::bad_alloc("no more memory");
+	try {
+		init();
+	} catch (BBWinHandlerException ex) {
+		m_log->logDebug("Init for agent failed.");
+		return ;
+	}
+	m_loadSucceed = true;
+	checkAgentCompatibility();
+	m_initSucceed = m_agent->Init();
+}
+
+//
+//  FUNCTION: BBWinHandler
+//
+//  PURPOSE: destructor
+//
+//  PARAMETERS:
+//    
+//    
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+//
+BBWinHandler::~BBWinHandler() {
+	string		mess;
+
+	if (m_loadSucceed) {
+		mess = "Agent " + m_agentName + " going to be destroyed.";
+		m_log->logDebug(mess);
+		m_destroy(m_agent);
+		mess = "Agent " + m_agentName + " destroyed.";
+		m_log->logDebug(mess);
+		FreeLibrary(m_hm);
+		mess = "Agent DLL " + m_agentName + " Unloaded.";
+		m_log->logDebug(mess);
+		delete m_mgr;
+		mess = "Thread for agent " + m_agentName + " stopped.";
+		m_log->logDebug(mess);
+	}
+}
+
+
+
+//
+//  FUNCTION: BBWinHandler
+//
+//  PURPOSE: GetAgentFlags
+//
+//  PARAMETERS:
+//    
+//    
+//
+//  RETURN VALUE:
+//    return the flags of the agent
+//
+//  COMMENTS:
+//
+//
+DWORD				BBWinHandler::GetAgentFlags() {
+	if (m_getinfo != NULL) {
+		const BBWinAgentInfo_t 	* info = m_getinfo();
+		return info->agentFlags;
+	}
+	return 0;
 }
 
 //
@@ -98,7 +171,7 @@ void		BBWinHandler::init() {
 		LPCTSTR		arg[] = { m_agentFileName.c_str(), err.c_str(), NULL};
 		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_LOAD_AGENT_ERROR, 2, arg);
 		FreeLibrary(m_hm);
-		throw BBWinHandlerException("can't get proc");
+		throw BBWinHandlerException("can't get proc CreateBBWinAgent");
 	}
 	if ((m_destroy = (DESTROYBBWINAGENT)GetProcAddress(m_hm, "DestroyBBWinAgent")) == NULL) {
 		string err;
@@ -106,7 +179,15 @@ void		BBWinHandler::init() {
 		LPCTSTR		arg[] = { m_agentFileName.c_str(), err.c_str(), NULL};
 		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_LOAD_AGENT_ERROR, 2, arg);
 		FreeLibrary(m_hm);
-		throw BBWinHandlerException("can't get proc");
+		throw BBWinHandlerException("can't get proc DestroyBBWinAgent");
+	}
+	if ((m_getinfo = (GETBBWINAGENTINFO)GetProcAddress(m_hm, "GetBBWinAgentInfo")) == NULL) {
+		string err;
+		GetLastErrorString(err);
+		LPCTSTR		arg[] = { m_agentFileName.c_str(), err.c_str(), NULL};
+		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_LOAD_AGENT_ERROR, 2, arg);
+		FreeLibrary(m_hm);
+		throw BBWinHandlerException("can't get proc GetBBWinAgentInfo");
 	}
 	m_agent = m_create(*m_mgr);
 	if (m_agent == NULL) {
@@ -136,17 +217,18 @@ void		BBWinHandler::init() {
 // in future, this function will also check agent compatibility
 //
 void		BBWinHandler::checkAgentCompatibility() {
-	const BBWinAgentInfo_t 	& info = m_agent->About();
+	const BBWinAgentInfo_t 	* info = m_getinfo();
 	ostringstream 			oss;
 	
-	if (info.bbwinVersion != BBWIN_AGENT_VERSION) {
+	if (info == NULL) {
+		// error
+	}
+	if (info->bbwinVersion != BBWIN_AGENT_VERSION) {
 		// for future use
 	}
     oss << endl;
-	oss << "Agent name : " << info.agentName << endl;
-	oss << "Agent version : " << info.agentMajVersion << "." << info.agentMinVersion << endl;
-	oss << "BBWin agent version : " << info.bbwinVersion << endl;
-	oss << "Agent description : " << info.agentDescription << endl;
+	oss << "Agent name : " << info->agentName << endl;
+	oss << "Agent description : " << info->agentDescription << endl;
 	string result = oss.str();
 	LPCTSTR		arg[] = {m_agentFileName.c_str(), result.c_str(), NULL};
 	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_LOAD_AGENT_SUCCESS, 2, arg);
@@ -165,47 +247,66 @@ void		BBWinHandler::checkAgentCompatibility() {
 //    none
 //
 //  COMMENTS:
-//  thread run function. Thread is terminated at the end of this function
 //
-void BBWinHandler::run() {
-	bool		initSuccess;
-	string		mess;
-	
-	mess = "Thread for agent " + m_agentName + " started.";
-	m_log->logDebug(mess);
-	try {
-		init();
-	} catch (BBWinHandlerException ex) {
-		m_log->logDebug("Init for agent failed.");
-		return ;
-	}
-	checkAgentCompatibility();
-	initSuccess = m_agent->Init();
-	if (initSuccess) {
-		for (;;) {
-			DWORD 		dwWait;
-			
+void BBWinHandler::Run() {
+	if (m_initSucceed) {
+		if (m_mgr->IsCentralModeEnabled()) { // central configuration
 			m_agent->Run();
-			dwWait = WaitForMultipleObjects(m_hCount, m_hEvents , FALSE, m_timer * 1000 );
-			if ( dwWait >= WAIT_OBJECT_0 && dwWait <= (WAIT_OBJECT_0 + m_hCount - 1) ) {    
-				break ;
-			} else if (dwWait >= WAIT_ABANDONED_0 && dwWait <= (WAIT_ABANDONED_0 + m_hCount - 1) ) {
-				break ;
+		} else { // local configuration
+			for (;;) {
+				DWORD 		dwWait;
+
+				m_agent->Run();
+				dwWait = WaitForMultipleObjects(m_hCount, m_hEvents , FALSE, m_timer * 1000 );
+				if ( dwWait >= WAIT_OBJECT_0 && dwWait <= (WAIT_OBJECT_0 + m_hCount - 1) ) {    
+					break ;
+				} else if (dwWait >= WAIT_ABANDONED_0 && dwWait <= (WAIT_ABANDONED_0 + m_hCount - 1) ) {
+					break ;
+				}
 			}
 		}
 	}
-	mess = "Agent " + m_agentName + " going to be destroyed.";
-	m_log->logDebug(mess);
-	m_destroy(m_agent);
-	mess = "Agent " + m_agentName + " destroyed.";
-	m_log->logDebug(mess);
-	FreeLibrary(m_hm);
-	mess = "Agent DLL " + m_agentName + " Unloaded.";
-	m_log->logDebug(mess);
-	delete m_mgr;
-	mess = "Thread for agent " + m_agentName + " stopped.";
-	m_log->logDebug(mess);
 }
+
+//
+//  FUNCTION: BBWinHandler::SetCentralMode
+//
+//  PURPOSE: set the BBWin mode
+//
+//  PARAMETERS:
+//    mode		central mode if true
+//    
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+void				BBWinHandler::SetCentralMode(bool mode) {
+	assert(m_mgr != NULL);
+	m_mgr->SetCentralMode(mode);
+}
+
+
+//
+//  FUNCTION: BBWinHandler::SetClientDataCallBack
+//
+//  PURPOSE: set the client data callback for the Agent Manager
+//
+//  PARAMETERS:
+//    none
+//    
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+void				BBWinHandler::SetClientDataCallBack(clientdata_callback_t callback) {
+	assert(m_mgr != NULL);
+	m_mgr->SetCallBackClientData(callback);
+}
+
 
 // BBWinHandlerException
 BBWinHandlerException::BBWinHandlerException(const char* m) {

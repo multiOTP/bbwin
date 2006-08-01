@@ -23,6 +23,9 @@
 
 #include "IBBWinAgent.h"
 
+
+#define 	MAX_SERVICE_LENGTH		1024
+
 enum BBAlarmType { GREEN, YELLOW, RED };
 
 class SvcRule {
@@ -54,6 +57,7 @@ class AgentSvcs : public IBBWinAgent
 		BBAlarmType					m_pageColor;
 		bool						m_alwaysGreen;
 		bool						m_autoReset; // restart automatically automatic services that are stopped
+		DWORD						m_delay; // time to wait before the svcs start if a computer restart has been done
 		std::map<string, SvcRule>	m_rules;
 		
 	private :
@@ -63,7 +67,6 @@ class AgentSvcs : public IBBWinAgent
 	public :
 		AgentSvcs(IBBWinAgentManager & mgr);
 		~AgentSvcs();
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 };

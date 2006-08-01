@@ -30,7 +30,7 @@
 // inherit from the nice thread class written by Vijay Mathew Pandyalakal
 // this class handle each agent and execute agent code
 // 
-class BBWinHandler : public Thread {
+class BBWinHandler {
 
 private:
 	std::string			m_agentName;
@@ -46,6 +46,9 @@ private:
 	BBWinAgentManager	*m_mgr;
 	CREATEBBWINAGENT 	m_create;
 	DESTROYBBWINAGENT 	m_destroy;
+	GETBBWINAGENTINFO	m_getinfo;
+	bool				m_initSucceed;
+	bool				m_loadSucceed;
 
 private:
 	void	init();
@@ -53,11 +56,24 @@ private:
 	
 public:
 	BBWinHandler(bbwinhandler_data_t & data);
-	const std::string &	GetName() { return m_agentName; };
-	void run();
+	~BBWinHandler();
+
+	// accessors
+	const std::string & GetAgentName() const { return m_agentName; }
+	void				SetAgentName(const std::string & agentName) { m_agentName = agentName; }
+	const std::string & GetAgentFileName() const { return m_agentFileName; }
+	void				SetAgentFileName(const std::string & agentFileName) { m_agentFileName = agentFileName; }
+	DWORD				GetTimer() const { return m_timer; }
+	void				SetTimer(const DWORD timer) { m_timer = timer; }
+
+	DWORD				GetAgentFlags();
+	void				SetCentralMode(bool mode);
+	void				SetClientDataCallBack(clientdata_callback_t callback);
+
+	void				Run();
 };
 
-
+	
 /** class LoggingException 
 */
 class BBWinHandlerException : IBBWinException {

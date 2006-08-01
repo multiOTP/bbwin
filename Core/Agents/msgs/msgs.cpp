@@ -38,10 +38,9 @@ using namespace boost::gregorian;
 static const BBWinAgentInfo_t 		msgsAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	0,              // agentMajVersion;
-	1,              // agentMinVersion;
-	"msgs",    // agentName;
+	"msgs",								// agentName;
 	"msgs agent : check the event logs",        // agentDescription;
+	0									// flags
 };                
 
 using namespace EventLog;
@@ -57,14 +56,6 @@ static const char	*bbcolors[] = {"green", "yellow", "red", NULL};
 // AgentMsgs methods
 //
 //
-
-
-//
-// Agent functions
-
-const BBWinAgentInfo_t & AgentMsgs::About() {
-	return msgsAgentInfo;
-}
 
 
 //
@@ -93,19 +84,22 @@ void AgentMsgs::Run() {
 	m_mgr.Status(m_testName.c_str(), bbcolors[finalState], reportData.str().c_str());
 }
 
-void	AgentMsgs::AddRule(bbwinconfig_range_t * elem, bool ignore) {
+void	AgentMsgs::AddRule(PBBWINCONFIGRANGE range, bool ignore) {
 	string		logfile, source, delay, type, alarmcolor, value, eventid;
+	string		count, priority;
 	EventLog::Rule		rule;
 	
-	logfile = m_mgr.GetConfigurationRangeValue(elem, "logfile");
+	logfile = m_mgr.GetConfigurationRangeValue(range, "logfile");
 	if (logfile.length() == 0)
 		return ;
-	alarmcolor = m_mgr.GetConfigurationRangeValue(elem, "alarmcolor");
-	source = m_mgr.GetConfigurationRangeValue(elem, "source");
-	value = m_mgr.GetConfigurationRangeValue(elem, "value");
-	delay = m_mgr.GetConfigurationRangeValue(elem, "delay");
-	type = m_mgr.GetConfigurationRangeValue(elem, "type");
-	eventid = m_mgr.GetConfigurationRangeValue(elem, "eventid");
+	alarmcolor = m_mgr.GetConfigurationRangeValue(range, "alarmcolor");
+	source = m_mgr.GetConfigurationRangeValue(range, "source");
+	value = m_mgr.GetConfigurationRangeValue(range, "value");
+	delay = m_mgr.GetConfigurationRangeValue(range, "delay");
+	type = m_mgr.GetConfigurationRangeValue(range, "type");
+	eventid = m_mgr.GetConfigurationRangeValue(range, "eventid");
+	count = m_mgr.GetConfigurationRangeValue(range, "count");
+	priority = m_mgr.GetConfigurationRangeValue(range, "priority");
 	if (value.length() > 0)
 		rule.SetValue(value);
 	if (alarmcolor.length() > 0) {
@@ -118,13 +112,18 @@ void	AgentMsgs::AddRule(bbwinconfig_range_t * elem, bool ignore) {
 	}
 	if (source.length() > 0)
 		rule.SetSource(source);
-	if (delay.length()) {
+	rule.SetDelay(m_delay);
+	if (delay.length() > 0) {
 		DWORD del = m_mgr.GetSeconds(delay.c_str());
 		if (del >= 60)
 			rule.SetDelay(del);
 	}
 	if (eventid.length() > 0)
 		rule.SetEventId(m_mgr.GetNbr(eventid.c_str()));
+	if (priority.length() > 0)
+		rule.SetPriority(m_mgr.GetNbr(priority.c_str()));
+	if (count.length() > 0)
+		rule.SetCount(m_mgr.GetNbr(count.c_str()));
 	if (type.length() > 0)
 		rule.SetType(type);
 	rule.SetIgnore(ignore);
@@ -135,15 +134,15 @@ void	AgentMsgs::AddRule(bbwinconfig_range_t * elem, bool ignore) {
 // init function
 //
 bool AgentMsgs::Init() {
-	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 	
 	if (conf == NULL)
 		return false;
 	m_mgr.ReportDebug("Begin Msgs Initialization");
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
 		string  value = m_mgr.GetConfigurationRangeValue(range, "value");
 		if (name == "alwaysgreen" && value == "true")
@@ -152,19 +151,24 @@ bool AgentMsgs::Init() {
 			m_summary = true;
 		if (name == "testname" && value.length() > 0)
 			m_testName = value;
+		if (name == "delay" && value.length() > 0) {
+			DWORD del = m_mgr.GetSeconds(value.c_str());
+			if (del >= 60)
+				m_delay = del;
+		}
 	}
 	m_mgr.FreeConfigurationRange(range);
 	range = m_mgr.GetConfigurationRange(conf, "match");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		AddRule(range, false);
 	}
 	m_mgr.FreeConfigurationRange(range);
 	range = m_mgr.GetConfigurationRange(conf, "ignore");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		AddRule(range, true);
 	}
 	m_mgr.FreeConfigurationRange(range);
@@ -179,6 +183,7 @@ bool AgentMsgs::Init() {
 //
 AgentMsgs::AgentMsgs(IBBWinAgentManager & mgr) : 
 		m_mgr(mgr),
+		m_delay(30 * 60),
 		m_alwaysgreen(false),
 		m_summary(false),
 		m_testName("msgs")
@@ -207,4 +212,8 @@ BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
 BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
+}
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &msgsAgentInfo;
 }

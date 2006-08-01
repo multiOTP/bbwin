@@ -54,6 +54,9 @@ class Rule {
 		bool			m_useValue; // true if value specified
 		std::string		m_value; // value to match
 		DWORD			m_delay; // delay in seconds
+		DWORD			m_count; // Maximum number of matches for the rules. Default is 0 which mean rule is checked all time
+		DWORD			m_countTmp; // Current number of matches
+		DWORD			m_priority; // priority of the rule. Default is 0
 
 	public :
 		Rule();
@@ -75,6 +78,13 @@ class Rule {
 		void				SetValue(const std::string & value);
 		DWORD				GetDelay() const { return m_delay; }
 		void				SetDelay(DWORD delay) { m_delay = delay; }
+		DWORD				GetCount() const { return m_count; }
+		void				SetCount(DWORD count) { m_count = count; }
+		void				IncrementCurrentCount() { m_countTmp++; }
+		DWORD				GetCurrentCount() const { return m_countTmp; }
+		void				SetCurrentCount(DWORD currentCount) { m_countTmp = currentCount; }
+		DWORD				GetPriority() const { return m_priority; }
+		void				SetPriority(DWORD priority) { m_priority = priority; }
 };
 
 typedef std::multimap < std::string, HMODULE > 					eventlog_mod_t;

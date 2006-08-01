@@ -42,17 +42,18 @@ static const char *bbcolors[] = { "green", "yellow", "red", NULL };
 static const BBWinAgentInfo_t 		diskAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	0,              					// agentMajVersion;
-	1,              					// agentMinVersion;
-	"disk",    					// agentName;
-	"disk agent : report disk usage",        // agentDescription;
+	"disk",    							// agentName;
+	"disk agent : report disk usage",	// agentDescription;
+	0									// flags
 };                
 
 static const disk_unit_t		disk_unit_table[] = 
 {
+	{"kb", 1024},
 	{"mb", 1048576},
 	{"gb", 1073741824},
 	{"tb", 1099511627776},
+	{"kb", 1024},
 	{"m", 1048576},
 	{"g", 1073741824},
 	{"t", 1099511627776},
@@ -69,9 +70,7 @@ static const disk_type_t		disk_type_table[] =
 	{NULL, 0},
 };
 
-const BBWinAgentInfo_t & AgentDisk::About() {
-	return diskAgentInfo;
-}
+
 
 static const char * GetDiskTypeStr(DWORD type) {
 	DWORD		inc;
@@ -217,13 +216,36 @@ void		AgentDisk::FreeDisksData() {
 	m_disks.clear();
 }
 
-//
-// used to get only 2 digits
-// not very efficient for the moment
-//
-static	void		formatNumber(__int64 & avag) {
-	while (avag > 100) {
-		avag /= 10;
+static void		FormatDiskData(__int64 & size, __int64 & avail, string & unit) {
+	__int64		sizeSave;
+
+	sizeSave = size;
+	unit = "b";
+	avail = 0;
+	if ((sizeSave / 1024) > 0) {
+		size = sizeSave / 1024;
+		avail = (sizeSave - (1024 * size));
+		unit = "kb";
+	}
+	if ((sizeSave / 1048576) > 0) {
+		size = sizeSave / 1048576;
+		avail = (sizeSave - (1048576 * size)) / 1024;
+		unit = "mb";
+	}
+	if ((sizeSave / 1073741824) > 0) {
+		size = sizeSave / 1073741824;
+		avail = (sizeSave - (1073741824 * size)) / 1048576;
+		unit = "gb";
+	}
+	if ((sizeSave / 1099511627776) > 0) {
+		size = sizeSave / 1099511627776;
+		avail = (sizeSave - (1099511627776 * size)) / 1073741824;
+		unit = "tb";
+	}	
+	// used to get only 2 digits
+	// not very efficient for the moment
+	while (avail > 100) {
+		avail /= 10;
 	}
 }
 
@@ -232,46 +254,12 @@ void		AgentDisk::GenerateSummary(const disk_t & disk, stringstream & summary) {
 	__int64		avag;
 	string		unit;
 	
-	unit = "b";
 	size = disk.i64TotalBytes;
-	avag = 0;
-	if ((disk.i64TotalBytes / 1048576) > 0) {
-		size = disk.i64TotalBytes / 1048576;
-		avag = (disk.i64TotalBytes - (1048576 * size)) / 1024;
-		unit = "mb";
-	}
-	if ((disk.i64TotalBytes / 1073741824) > 0) {
-		size = disk.i64TotalBytes / 1073741824;
-		avag = (disk.i64TotalBytes - (1073741824 * size)) / 1048576;
-		unit = "gb";
-	}
-	if ((disk.i64TotalBytes / 1099511627776) > 0) {
-		size = disk.i64TotalBytes / 1099511627776;
-		avag = (disk.i64TotalBytes - (1099511627776 * size)) / 1073741824;
-		unit = "tb";
-	}	
-	formatNumber(avag);
+	FormatDiskData(size, avag, unit);
 	summary << format("%f.%02u%s") % size % avag % unit;
 	summary << "\\";
-	unit = "b";
 	size = disk.i64FreeBytes;
-	avag = 0;
-	if ((disk.i64FreeBytes / 1048576) > 0) {
-		size = disk.i64FreeBytes / 1048576;
-		avag = (disk.i64FreeBytes - (1048576 * size)) / 1024;
-		unit = "mb";
-	}
-	if ((disk.i64FreeBytes / 1073741824) > 0) {
-		size = disk.i64FreeBytes / 1073741824;
-		avag = (disk.i64FreeBytes - (1073741824 * size)) / 1048576;
-		unit = "gb";
-	}
-	if ((disk.i64FreeBytes / 1099511627776) > 0) {
-		size = disk.i64FreeBytes / 1099511627776;
-		avag = (disk.i64FreeBytes - (1099511627776 * size)) / 1073741824;
-		unit = "tb";
-	}
-	formatNumber(avag);
+	FormatDiskData(size, avag, unit);
 	summary << format("%f.%02u%s") % size % avag % unit;
 }
 
@@ -386,14 +374,14 @@ void		AgentDisk::AddRule(const string & label, const string & warnlevel, const s
 }
 
 bool		AgentDisk::Init() {
-	bbwinagentconfig_t		* conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 	
 	if (conf == NULL)
 		return false;
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		string		name, value;
 
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
@@ -416,7 +404,7 @@ bool		AgentDisk::Init() {
 					m_mgr.GetConfigurationRangeValue(range, "paniclevel"), 
 					m_mgr.GetConfigurationRangeValue(range, "ignore"));	
 		}
-	}	
+	}
 	// if no default, create the default rule
 	if (m_rules.find(DEFAULT_RULE_NAME) == m_rules.end()) {
 		AddRule(DEFAULT_RULE_NAME, DEF_DISK_WARN, DEF_DISK_PANIC, "false");
@@ -442,4 +430,8 @@ BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
 BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
+}
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &diskAgentInfo;
 }

@@ -1,29 +1,25 @@
-<HTML>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML lang="en">
 <HEAD>
  <LINK rel="StyleSheet" href="../BBWin.css">
  <TITLE>Msgs</TITLE>
- <meta name="copyright" value="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <meta name="copyright" content="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
 </HEAD>
 <BODY>
  <H1>Msgs</H1>
-  
 <H3>Description</H3>
-
 <p>
 Msgs agent is used to monitor the Windows Event Logs. It has to be configured via rules. Its syntax is explained bellow.
 If no rules is specified, msgs will do nothing.
 </p>
-
 <H3>Configuration</H3>
-
-
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
 <p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-</p>
 <LI class="OptionDirective">generic settings
 <p>
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
@@ -44,7 +40,19 @@ If no rules is specified, msgs will do nothing.
 		<b>Default is false</b>.
 		</td>
 	</tr>
-		<tr>
+	<tr>
+		<td class="OptionValue" vAlign="top" >
+		delay
+		</td>
+		<td class="OptionValue" vAlign="top">
+		You can set the elapsed time of the events for all rules.
+		Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+		"h" for hours, "d" for days.
+		<b>Default is 30 minutes</b>.
+		<b>Delay has no effect on ignore rules</b>.
+		</td>
+	</tr>
+	<tr>
 		<td class="OptionValue" vAlign="top" >
 		summary
 		</td>
@@ -63,32 +71,24 @@ If no rules is specified, msgs will do nothing.
 		the bbdisplay)
 		<b>Default is "msgs"</b></td>
 	</tr>
-
 </table>
-</p>
  <LI class="OptionDirective"><b>rules</b> directive syntax :
 <p>
 <pre class="Config">
-<p>
 &lt;match logfile="" eventid="" source="" type="" value="" delay="" alarmcolor="" /&gt;
-</p>
-<p>
 &lt;ignore logfile="" eventid="" source="" type="" value="" /&gt;
-</p>
 </pre>
-</p>
 <p>
 Match and ignore rules have almost similar attributes.
 You can combine the different matching attributes to improve your rules.
 </p>
-
 <p>
 If the name value is not one of the generic settings, then, disk will understand that it is a disk custom rule.
 </p>
 <p>
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
-		<td class="OptionValue" vAlign="top" >
+		<td class="OptionTitle" vAlign="top" >
 		alarmcolor
 		</td>
 		<td class="OptionValue" vAlign="top">
@@ -100,13 +100,23 @@ If the name value is not one of the generic settings, then, disk will understand
 	</tr>
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
+		count
+		</td>
+		<td class="OptionValue" vAlign="top">
+		You can set a counter so you may only receive alert if several events on the same rule are matched.
+		<b>Default is 0 which means that the first event matched will generate an alert.</b> count must be a positive number.
+		<b>count has no effect on ignore rules</b>.
+		</td>
+	</tr>
+	<tr>
+		<td class="OptionTitle" vAlign="top" >
 		delay
 		</td>
 		<td class="OptionValue" vAlign="top">
 		You can set the elapsed time of the events to match.
 		Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
 		"h" for hours, "d" for days.
-		<b>Default is 30 minutes</b>.
+		<b>Default is herited from the delay generic setting</b>.
 		<b>Delay has no effect on ignore rules</b>.
 	</td>
 	<tr>
@@ -126,6 +136,16 @@ If the name value is not one of the generic settings, then, disk will understand
 		HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Eventlog
 		<b>This parameter is required</b><br>
 	</td>
+	</tr>
+		<tr>
+		<td class="OptionTitle" vAlign="top" >
+		priority
+		</td>
+		<td class="OptionValue" vAlign="top">
+		You can set a priority to your rules. If an ignore rule and a match rule are conflicting, you may use the priority option to 
+		resolve the conflict. Both of the conflicting rules need the priority set.
+		<b>Default is 0 which means no priority is set.</b> Priority must be a positive number.
+		</td>
 	</tr>
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -151,10 +171,8 @@ If the name value is not one of the generic settings, then, disk will understand
 		</UL>
 		You may just specify the beginning of the type, it will match the all word.
 		Example : type="info" will match information event type, type="err" will match error event type.
-		
 		<b>This parameter is optionnal</b><br>
 	</td>
-	
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		value
@@ -165,18 +183,9 @@ If the name value is not one of the generic settings, then, disk will understand
 		<b>This parameter is optional</b><br>
 	</td>
 	</tr>
-	
 </table>
-</p>
-
 </UL>
-
-
-
 <H3>Examples</H3>
-
-
-
 <UL>
  <LI>
 <p>
@@ -200,19 +209,11 @@ If the name value is not one of the generic settings, then, disk will understand
 <LI>Security logfile will be check during 30 minutes (default) for fail events
 <LI>Application events with eventid 1030 will be ignored
 <LI>System events with source "W32Time" will be ignored
-</p>
 </UL>
-
-
-
 <H3>Notes</H3>
-
 <UL>
  <LI>Msgs can work on any eventlog that is available in the Windows Event Viewer. It is not limited to the common Application, Security 
  and System log files because it may have more than 3 events logs files. (On domain controlers for example)
-
 </UL>
-
-
 </BODY>
 </HTML>

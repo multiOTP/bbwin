@@ -1,28 +1,24 @@
-<HTML>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML lang="en">
 <HEAD>
  <LINK rel="StyleSheet" href="../BBWin.css">
  <TITLE>Cpu</TITLE>
- <meta name="copyright" value="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <meta name="copyright" content="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
 </HEAD>
 <BODY>
  <H1>Cpu</H1>
-  
-<H3>Description</H3>
-
+ <H3>Description</H3>
 <p>
 Cpu agent is used to monitor CPU Usage. 
 </p>
-
 <H3>Configuration</H3>
-
-
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
 <p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-</p>
 <LI class="OptionDirective">generic settings
 <p>
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
@@ -70,18 +66,16 @@ Cpu agent is used to monitor CPU Usage.
 	</tr>
 
 </table>
-</p>
  <LI class="OptionDirective"><b>rules</b> directive syntax :
 <p>
 <pre class="Config">
 &lt;setting name="" rule="" alarmcolor="" comment=""/&gt;
 </pre>
-</p>
 <p>
 If the name value is not one of the generic settings, then, cpu will understand that it is the cpu default rule.
 </p>
 <p>
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		delay
@@ -100,9 +94,16 @@ If the name value is not one of the generic settings, then, cpu will understand 
 		<td class="OptionValue" vAlign="top">
 		Must be "default".
 		<br>
-		</p></td>
+		</td>
 	</tr>
-
+	<tr>
+		<td class="OptionTitle" vAlign="top" >
+		paniclevel
+		</td>
+		<td class="OptionValue" vAlign="top">
+		It must be a numeric value. It will warn red if the value is reached.
+		<b>Default is 95%</b></td>
+	</tr>
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		warnlevel
@@ -113,24 +114,19 @@ If the name value is not one of the generic settings, then, cpu will understand 
 	</tr>
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
-		paniclevel
+		uptime
 		</td>
 		<td class="OptionValue" vAlign="top">
-		It must be a numeric value. It will warn red if the value is reached.
-		<b>Default is 95%</b></td>
+		This option is used to monitor the uptime via the cpu report like the original Big Brother client.
+		This option is not activated by default. To turn it on, you may specify the uptime setting with a time value
+		corresponding to the delay you want to warn for a reboot which has been done recently.
+		Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+		"h" for hours, "d" for days.
+		</td>
 	</tr>
-	
 </table>
-</p>
-
 </UL>
-
-
-
 <H3>Examples</H3>
-
-
-
 <UL>
  <LI>
 <p>
@@ -140,18 +136,10 @@ If the name value is not one of the generic settings, then, cpu will understand 
 	&lt;setting name="default" warnlevel="90" paniclevel="95" delay="3" /&gt;
 &lt;/cpu&gt;
 </pre>
-</p>
 </UL>
-
-
-
 <H3>Notes</H3>
-
 <UL>
  <LI>Owner doesn't appear in the status report on Windows NT4
-
 </UL>
-
-
 </BODY>
 </HTML>

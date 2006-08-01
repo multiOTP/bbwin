@@ -41,7 +41,6 @@ class AgentExternals : public IBBWinAgent
 		
 	public :
 		AgentExternals(IBBWinAgentManager & mgr);
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 		
