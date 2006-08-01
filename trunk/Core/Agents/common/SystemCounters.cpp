@@ -68,6 +68,8 @@ DWORD CSystemCounters::GetSystemUpTime()
 	LONGLONG y = pPerfObj->PerfTime.QuadPart;
 	LONGLONG tb = pPerfObj->PerfFreq.QuadPart;
 
+	if (tb == 0)
+		return 0;
 	DWORD UpTime = (DWORD)((y-x) / tb);
 	if (UpTime < 0)
 		return 0;

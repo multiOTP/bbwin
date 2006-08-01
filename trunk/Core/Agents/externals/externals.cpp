@@ -31,15 +31,10 @@ using namespace std;
 static const BBWinAgentInfo_t 		extAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	1,              					// agentMajVersion;
-	1,              					// agentMinVersion;
 	"externals",    					// agentName;
 	"externals agent : execute independant big brother hobbit scripts",        // agentDescription;
+	0									// flags
 };                
-
-const BBWinAgentInfo_t & AgentExternals::About() {
-	return extAgentInfo;
-}
 
 void 			AgentExternals::SendExternalReport(const string & reportName, const string & reportPath) {
 	ifstream 	report(reportPath.c_str());
@@ -155,16 +150,16 @@ AgentExternals::AgentExternals(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 }
 
 bool		AgentExternals::Init() {
-	 bbwinagentconfig_t		* conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	 PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 	
 	if (conf == NULL)
 		return false;
 	if (m_hEvents == NULL)
 		return false;
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	do {
 		string		name, value;
 
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
@@ -184,9 +179,10 @@ bool		AgentExternals::Init() {
 				m_logsTimer = m_mgr.GetSeconds(value.c_str());
 		}
 	}	
+	while (m_mgr.IterateConfigurationRange(range));
 	m_mgr.FreeConfigurationRange(range);
 	range = m_mgr.GetConfigurationRange(conf, "load");
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		string		timer, value;
 		
 		timer = m_mgr.GetConfigurationRangeValue(range, "timer");
@@ -239,4 +235,8 @@ BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
 BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
+}
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &extAgentInfo;
 }

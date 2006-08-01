@@ -116,7 +116,6 @@ class AgentDisk : public IBBWinAgent
 	public :
 		AgentDisk(IBBWinAgentManager & mgr);
 		~AgentDisk();
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 };

@@ -65,7 +65,7 @@ No bbdisplay value has been specified in the configuration file %1. At least one
 MessageId       = +1
 SymbolicName    = EVENT_NO_HOSTNAME
 Language        = English
-No hostname value has been specified in the configuration file %1. This setting is necessary
+An empty hostname value has been specified. This setting is necessary.
 .
 
 MessageId       = +1
@@ -107,7 +107,7 @@ The configuration file has changed. BBWin is reloading the configuration.
 MessageId       = +1
 SymbolicName    = EVENT_SERVICE_STARTED
 Language        = English
-The service %1 has been successfully started. The hostname setting is set to %2
+The service %1 has been successfully started. The hostname setting is set to "%2"
 .
 
 MessageId       = +1
@@ -126,6 +126,12 @@ MessageId       = +1
 SymbolicName    = EVENT_INVALID_TIMER
 Language        = English
 The personnalized timer for agent %1 is incorrect. Minimum value is 5 seconds and maximum value is 31 days. It will use default value %2 seconds
+.
+
+MessageId       = +1
+SymbolicName    = EVENT_HOBBIT_MODE_NOT_SUPPORTED
+Language        = English
+The agent does'nt support hobbit centralized mode. It will be launched as a classical BBWin agent.
 .
 
 

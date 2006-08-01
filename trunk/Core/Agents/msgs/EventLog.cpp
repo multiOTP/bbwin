@@ -180,7 +180,10 @@ Rule::Rule() :
 		m_useType(false),
 		m_type(0),
 		m_useValue(false),
-		m_delay(30 * 60)
+		m_delay(30 * 60),
+		m_count(0),
+		m_countTmp(0),
+		m_priority(0)
 {
 
 }
@@ -210,6 +213,9 @@ Rule::Rule(const Rule & rule) {
 	if (m_value.length() > 0)
 		m_useValue = true;
 	m_delay = rule.GetDelay();
+	m_count = rule.GetCount();
+	m_countTmp = 0;
+	m_priority = rule.GetPriority();
 }
 
 void		Rule::SetSource(const std::string & source) { 
@@ -421,7 +427,9 @@ void				Session::GetEventDescription(const EVENTLOGRECORD * ev, std::string & de
 	}
 }
 
-
+//
+// return true if the event matched the rule
+//
 bool			Session::ApplyRule(const Rule & rule, const EVENTLOGRECORD * ev) {
 	if (rule.GetEventId() != 0 && rule.GetEventId() != (ev->EventID & MSG_ID_MASK))
 		return false;
@@ -450,18 +458,23 @@ bool			Session::ApplyRule(const Rule & rule, const EVENTLOGRECORD * ev) {
 }
 
 void			Session::InitCounters() {
+	std::list<Rule>::iterator			itr;
+
 	m_total = 0;
 	m_match = 0;
 	m_ignore = 0;
 	m_numberOfRecords = 0;
 	m_oldestRecord = 0;
-
+	for (itr = m_matchRules.begin(); itr != m_matchRules.end(); ++itr) {
+		(*itr).SetCurrentCount(0);
+	}
 }
 
 
 // analyze a simple event with the match rules then the ignore rules
 // return the status color
 DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportData) {
+	DWORD		priority = 0;
 	std::list<Rule>::iterator			itr;
 	bool		result;
 	DWORD		color = BB_GREEN;	
@@ -473,6 +486,10 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 		if (ApplyRule((*itr), ev)) {
 			result = true;
 			color = (*itr).GetAlarmColor();
+			priority = (*itr).GetPriority();
+			(*itr).IncrementCurrentCount();
+			if ((*itr).GetCount() != 0 && (*itr).GetCount() > (*itr).GetCurrentCount())
+				result = false;
 			break ;
 		}
 	}
@@ -482,6 +499,9 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	// if one of the ignore rules matches, then the event if ignored
 	for (itr = m_ignoreRules.begin(); itr != m_ignoreRules.end(); ++itr) {
 		if (ApplyRule((*itr), ev)) {
+			if ((*itr).GetPriority() != 0 && priority != 0 && (*itr).GetPriority() < priority) {
+				break ;
+			}
 			m_ignore++;
 			m_match--;
 			result = false;
@@ -500,7 +520,7 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	TimeToSystemTime(ev->TimeGenerated, &stime);
 	SystemTimeToTzSpecificLocalTime(NULL, &stime, &ltime);
 	string				time, date;
-	if (GetTimeFormat(LOCALE_SYSTEM_DEFAULT, 0, &ltime, "hh':'mm':'ss", timebuf, TIME_BUF) != 0) {
+	if (GetTimeFormat(LOCALE_SYSTEM_DEFAULT, TIME_FORCE24HOURFORMAT, &ltime, "hh':'mm':'ss", timebuf, TIME_BUF) != 0) {
 		time = timebuf;
 	} else {
 		time = "00:00:00";

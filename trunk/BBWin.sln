@@ -35,6 +35,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "stats", "Core\Agents\stats\stats.vcproj", "{E8F7E4D3-C0DF-4D76-A754-B6B6DB70D797}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "svcs", "Core\Agents\svcs\svcs.vcproj", "{FC692CA9-FCBB-4161-A104-FD7C5C269B95}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FD05B63-7A8C-4563-91C7-8E481F35BFED} = {5FD05B63-7A8C-4563-91C7-8E481F35BFED}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msgs", "Core\Agents\msgs\msgs.vcproj", "{AB3AF868-F5E9-406F-AF02-A73FE6FEE3D6}"
 EndProject
@@ -44,6 +47,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbwinupdate", "Core\Agents\
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxml", "Core\tinyxml.vcproj", "{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crypto", "Core\crypto\crypto.vcproj", "{50006BAE-7E93-428A-9B13-14B5B31BB6E4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hobbitclient", "Core\hobbitclient\hobbitclient.vcproj", "{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -115,6 +122,14 @@ Global
 		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}.Debug|Win32.Build.0 = Debug|Win32
 		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}.Release|Win32.ActiveCfg = Release|Win32
 		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}.Release|Win32.Build.0 = Release|Win32
+		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Debug|Win32.ActiveCfg = Debug|Win32
+		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Debug|Win32.Build.0 = Debug|Win32
+		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Release|Win32.ActiveCfg = Release|Win32
+		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Release|Win32.Build.0 = Release|Win32
+		{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}.Debug|Win32.Build.0 = Debug|Win32
+		{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}.Release|Win32.ActiveCfg = Release|Win32
+		{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

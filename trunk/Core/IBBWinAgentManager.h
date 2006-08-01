@@ -23,10 +23,15 @@
 
 #include "IBBWinException.h"
 
-typedef std::map < std::string, std::string > 						bbwinagentconfig_attr_t;
-typedef std::multimap < std::string, bbwinagentconfig_attr_t > 		bbwinagentconfig_t;
-typedef bbwinagentconfig_t::iterator bbwinagentconfig_iter_t;
-typedef std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t >	bbwinconfig_range_t;
+
+//
+// BBWin Configuration types
+//
+struct BBWINCONFIG;
+struct BBWINCONFIGRANGE;
+typedef BBWINCONFIG *		PBBWINCONFIG;
+typedef BBWINCONFIGRANGE *		PBBWINCONFIGRANGE;
+
 
 //
 // BBWinAgentManager is from the simple design pattern facade 
@@ -58,24 +63,31 @@ class   IBBWinAgentManager {
 		virtual void	GetHandles(HANDLE * hEvents) = 0;
 		virtual DWORD	GetHandlesCount() = 0;
 		
+		// Hobbit Centralized Mode
+		// if it returns true, then the agent will have to use ClientData instead of Status
+		// 
+		virtual bool	IsCentralModeEnabled() = 0;
+
 		//
 		//
 		// Configuration Loading Abstration Tools
-		// (not very good, will be improved in future version of BBWin)
 		//
 		// loading configuration functions on default bbwin configuration file bbwin.cfg : return true if success
-		virtual bbwinagentconfig_t * LoadConfiguration(LPCTSTR nameSpace) = 0;
+		virtual PBBWINCONFIG LoadConfiguration(LPCTSTR nameSpace) = 0;
 		// loading configuration functions on custom configuration file 
-		virtual bbwinagentconfig_t * LoadConfiguration(LPCTSTR fileName, LPCTSTR nameSpace) = 0;
+		virtual PBBWINCONFIG LoadConfiguration(LPCTSTR fileName, LPCTSTR nameSpace) = 0;
 		// free the configuration instance
-		virtual void	FreeConfiguration(bbwinagentconfig_t * conf) = 0;
+		virtual void	FreeConfiguration(PBBWINCONFIG conf) = 0;
 		// get a range of configuration settings
-		virtual bbwinconfig_range_t * GetConfigurationRange(bbwinagentconfig_t * conf, LPCTSTR name) = 0;
+		virtual PBBWINCONFIGRANGE   GetConfigurationRange(PBBWINCONFIG conf, LPCTSTR name) = 0;
+		// iterate the range of configuration settings : return true until the end of the range is reached
+		virtual bool				IterateConfigurationRange(PBBWINCONFIGRANGE range) = 0;
+		// return true if the end of the configuration range has been reached
+		virtual bool				AtEndConfigurationRange(PBBWINCONFIGRANGE range) = 0;
 		// get a value from a bbwin_config_range
-		virtual LPCTSTR				GetConfigurationRangeValue(bbwinconfig_range_t *range, LPCTSTR name) = 0;
+		virtual LPCTSTR				GetConfigurationRangeValue(PBBWINCONFIGRANGE range, LPCTSTR name) = 0;
 		// free the range of configuration settings
-		virtual void				FreeConfigurationRange(bbwinconfig_range_t *range) = 0;
-
+		virtual void				FreeConfigurationRange(PBBWINCONFIGRANGE range) = 0;
 
 		// Report Functions : report in the bbwin log file
 		virtual void 	ReportError(LPCTSTR str) = 0;
@@ -101,6 +113,8 @@ class   IBBWinAgentManager {
 		virtual void	Message(LPCTSTR message, LPTSTR dest, DWORD size) = 0;
 		virtual void	Config(LPCTSTR fileName, LPTSTR dest, DWORD size) = 0;
 		virtual void	Query(LPCTSTR testName, LPTSTR dest, DWORD size) = 0;
+		virtual void	Download(LPCTSTR fileName, LPTSTR dest, DWORD size) = 0;
+		virtual void	ClientData(LPCTSTR dataName, LPCTSTR text) = 0;
 
 		// virtual destructor 
 		virtual ~IBBWinAgentManager() {};

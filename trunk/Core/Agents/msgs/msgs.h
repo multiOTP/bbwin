@@ -34,18 +34,18 @@ class AgentMsgs : public IBBWinAgent
 {
 	private :
 		IBBWinAgentManager 			& m_mgr;
-		EventLog::Manager			m_eventlog;
-		bool						m_alwaysgreen;
-		bool						m_summary;
-		std::string					m_testName;
+		EventLog::Manager			m_eventlog;			// event log manager
+		DWORD						m_delay;			// default delay used for match rules
+		bool						m_alwaysgreen;		// no alerts if true
+		bool						m_summary;			// show a summary at the end of the report
+		std::string					m_testName;			// testname for the column
 
 	private :
-		void	AddRule(bbwinconfig_range_t * elem, bool ignore);
+		void	AddRule(PBBWINCONFIGRANGE range, bool ignore);
 
 	public :
 		AgentMsgs(IBBWinAgentManager & mgr);
 		~AgentMsgs();
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 };

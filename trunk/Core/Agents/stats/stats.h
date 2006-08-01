@@ -32,7 +32,6 @@ class AgentStats : public IBBWinAgent
 		void		Netstat();
 	public :
 		AgentStats(IBBWinAgentManager & mgr);
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 };

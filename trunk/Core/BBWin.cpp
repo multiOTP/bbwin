@@ -50,6 +50,22 @@ using namespace utils;
 HANDLE  hServiceStopEvent = NULL;
 BBWin	* bbw = NULL;
 
+
+//
+//  FUNCTION: myReportStopPendingToSCMgr
+//
+//  PURPOSE: report the stop pending status to the SCS Manager
+//
+//  PARAMETERS:
+//
+//  RETURN VALUE:
+//    none
+//
+static void		myReportStopPendingToSCMgr() {
+	ReportStatusToSCMgr(SERVICE_STOP_PENDING, NO_ERROR, 3000);
+}
+
+
 //
 //  FUNCTION: ServiceStart
 //
@@ -107,13 +123,14 @@ VOID ServiceStart (DWORD dwArgc, LPTSTR *lpszArgv) {
 		hServiceStopEvent = NULL;
 	}
 
-	ReportStatusToSCMgr(SERVICE_STOP_PENDING, NO_ERROR, 3000);
-	bbw->Stop();
+	myReportStopPendingToSCMgr();
+	bbw->Stop(myReportStopPendingToSCMgr);
 	BBWin::freeInstance();
 	
 	if (hServiceStopEvent)
 		CloseHandle(hServiceStopEvent);
 }
+
 
 
 //
@@ -159,28 +176,34 @@ VOID ServiceStop() {
 BBWin::BBWin() : 
 	m_hCount(0),
 	m_autoReload(false),
-	m_autoReloadInterval(BBWIN_AUTORELOAD_INTERVAL)
+	m_autoReloadInterval(BBWIN_AUTORELOAD_INTERVAL),
+	m_do_stop(false)
 {
 	m_log = Logging::getInstancePtr();
 	m_conf = BBWinConfig::getInstancePtr();
 	m_log->setFileName(BBWIN_LOG_DEFAULT_PATH);
-	ZeroMemory(&m_confTime, sizeof(m_confTime));
+	
 	ZeroMemory(&m_hEvents, sizeof(m_hEvents));
 
 	assert(m_log != NULL);
 	assert(m_conf != NULL);
 
 	// set default setting known by BBWin
-	m_defaultSettings[ "bbdisplay" ] = &BBWin::AddBBDisplay;
-	m_defaultSettings[ "bbpager" ] = &BBWin::AddBBPager;
-	m_defaultSettings[ "usepager" ] = &BBWin::AddSimpleSetting;
-	m_defaultSettings[ "timer" ] = &BBWin::AddSimpleSetting;
-	m_defaultSettings[ "loglevel" ] = &BBWin::AddSimpleSetting;
-	m_defaultSettings[ "logpath" ] = &BBWin::AddSimpleSetting;
-	m_defaultSettings[ "logreportfailure" ] = &BBWin::AddSimpleSetting;
-	m_defaultSettings[ "pagerlevels" ] = &BBWin::AddSimpleSetting;
-	m_defaultSettings[ "autoreload"] = &BBWin::SetAutoReload;
-	//m_defaultSettings[ "hostname" ] = &BBWin::AddSimpleSetting;
+	m_defaultSettings[ "bbdisplay" ] = &BBWin::callback_AddBBDisplay;
+	m_defaultSettings[ "bbpager" ] = &BBWin::callback_AddBBPager;
+	m_defaultSettings[ "usepager" ] = &BBWin::callback_AddSimpleSetting;
+	m_defaultSettings[ "timer" ] = &BBWin::callback_AddSimpleSetting;
+	m_defaultSettings[ "loglevel" ] = &BBWin::callback_AddSimpleSetting;
+	m_defaultSettings[ "logpath" ] = &BBWin::callback_AddSimpleSetting;
+	m_defaultSettings[ "logreportfailure" ] = &BBWin::callback_AddSimpleSetting;
+	m_defaultSettings[ "pagerlevels" ] = &BBWin::callback_AddSimpleSetting;
+	m_defaultSettings[ "autoreload"] = &BBWin::callback_SetAutoReload;
+	m_defaultSettings[ "hostname" ] = &BBWin::callback_AddSimpleSetting;
+	
+	// not used in BBWin 0.8
+	//m_defaultSettings[ "mode" ] = &BBWin::callback_SetBBWinMode;
+	//m_defaultSettings[ "configclass" ] = &BBWin::callback_AddSimpleSetting;
+
 	// call to the settings initialization
 	InitSettings();
 }
@@ -201,8 +224,6 @@ BBWin::BBWin() :
 // Free the logging class instance
 //
 BBWin::~BBWin() {
-	if (m_autoReload && m_hEvents[BBWIN_AUTORELOAD_HANDLE])
-		CloseHandle(m_hEvents[BBWIN_AUTORELOAD_HANDLE]);
 	BBWinConfig::freeInstance();
 	Logging::freeInstance();
 }
@@ -223,17 +244,45 @@ BBWin::~BBWin() {
 //  
 //
 void			BBWin::InitSettings() {
+	SetAutoReload(true);
+	m_centralClient = NULL;
+	m_centralMode = false;
+	ZeroMemory(&m_confTime, sizeof(m_confTime));
 	m_setting[ "timer" ] = "300";
 	m_setting[ "loglevel" ] = "0";
 	m_setting[ "logpath" ] = BBWIN_LOG_DEFAULT_PATH;
 	m_setting[ "bbwinconfigfilename" ] = BBWIN_CONFIG_FILENAME;
 	m_setting[ "pagerlevels" ] = "red purple";
+	m_setting[ "hostname" ] = "%COMPUTERNAME%";
+	m_setting[ "configclass" ] = "win32";
+}
+
+
+//  FUNCTION: BBWin::callback_SetAutoReload
+//
+//  PURPOSE: enable or disable the autoreload function (callback)
+//
+//  PARAMETERS:
+//    call back parameters
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//  
+//
+void			BBWin::callback_SetAutoReload(const std::string & name, const std::string & value) {
+	if (value == "true") {
+		SetAutoReload(true);
+	} else if (value == "false") {
+		SetAutoReload(false);
+	}
 }
 
 //
 //  FUNCTION: BBWin::SetAutoReload
 //
-//  PURPOSE: activate the autoreload function
+//  PURPOSE: enable or disable the autoreload function
 //
 //  PARAMETERS:
 //    none
@@ -244,16 +293,35 @@ void			BBWin::InitSettings() {
 //  COMMENTS:
 //  
 //
-void			BBWin::SetAutoReload(const std::string & name, const std::string & value) {
-	if (value == "true") {
+void			BBWin::SetAutoReload(bool value) {
+	// enable autoreload
+	if (value == true && m_autoReload == false) {
 		m_autoReload = true;
-		m_hEvents[BBWIN_AUTORELOAD_HANDLE] = CreateEvent(NULL, TRUE, FALSE, NULL);
-		if ( m_hEvents[BBWIN_AUTORELOAD_HANDLE] == NULL) {
-			m_autoReload = false;
-			m_log->logError("can't create the autoreload event. Autoreload desactivated.");
-			return ;
-		}
-		m_hCount = 2;
+	}
+	// disable autoreload
+	else if (value == false && m_autoReload == true) {
+		m_autoReload = false;
+	}
+}
+
+//  FUNCTION: BBWin::callback_SetBBWinMode
+//
+//  PURPOSE: set the mode of working for BBWin : local configuration or centralized (hobbit mode)
+//
+//  PARAMETERS:
+//    call back parameters
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//  
+//
+void			BBWin::callback_SetBBWinMode(const std::string & name, const std::string & value) {
+	if (value == "central") {
+		m_centralMode = true;
+	} else if (value == "local") {
+		m_centralMode = false;
 	}
 }
 
@@ -417,7 +485,7 @@ void 				BBWin::LoadRegistryConfiguration() {
 //
 void			BBWin::Init(HANDLE h) {
 	m_hEvents[0] = h;
-	m_hCount = 1;
+	m_hCount++;
 	try {
 		LoadRegistryConfiguration();
 	} catch (BBWinException ex) {
@@ -426,7 +494,7 @@ void			BBWin::Init(HANDLE h) {
 }
 
 //
-//  FUNCTION: BBWin::AddSimpleSetting
+//  FUNCTION: BBWin::callback_AddSimpleSetting
 //
 //  PURPOSE: add a simple setting to the global setting map
 //
@@ -439,12 +507,12 @@ void			BBWin::Init(HANDLE h) {
 //
 //  COMMENTS:
 //
-void			BBWin::AddSimpleSetting(const std::string & name, const std::string & value) {
+void			BBWin::callback_AddSimpleSetting(const std::string & name, const std::string & value) {
 	m_setting[name] = value;
 }
 
 //
-//  FUNCTION: BBWin::AddBBDisplay
+//  FUNCTION: BBWin::callback_AddBBDisplay
 //
 //  PURPOSE:  add a BBDisplay to the BBDisplay vector
 //
@@ -458,13 +526,13 @@ void			BBWin::AddSimpleSetting(const std::string & name, const std::string & val
 //  COMMENTS:
 //
 //
-void			BBWin::AddBBDisplay(const string & name, const string & value) {
+void			BBWin::callback_AddBBDisplay(const string & name, const string & value) {
 	m_bbdisplay.push_back(value);
 }
 
 
 //
-//  FUNCTION: BBWin::AddBBPager
+//  FUNCTION: BBWin::callback_AddBBPager
 //
 //  PURPOSE:  add a BBPager to the BBPagersvector
 //
@@ -478,7 +546,7 @@ void			BBWin::AddBBDisplay(const string & name, const string & value) {
 //  COMMENTS:
 //
 //
-void			BBWin::AddBBPager(const string & name, const string & value) {
+void			BBWin::callback_AddBBPager(const string & name, const string & value) {
 	m_bbpager.push_back(value);
 }
 
@@ -546,9 +614,13 @@ void				BBWin::CheckConfiguration() {
 		LPCTSTR		arg[] = {m_setting["configpath"].c_str(), NULL};
 		m_log->reportWarnEvent(BBWIN_SERVICE, EVENT_NO_BB_DISPLAY, 1, arg);
 	}
+	ReplaceEnvironmentVariableStr(m_setting["hostname"]);
+	ReplaceEnvironmentVariableStr(m_setting["logpath"]);
+	ReplaceEnvironmentVariableStr(m_setting["binpath"]);
+	ReplaceEnvironmentVariableStr(m_setting["etcpath"]);
+	ReplaceEnvironmentVariableStr(m_setting["tmppath"]);
 	if (m_setting["hostname"].size() == 0) {
-		LPCTSTR		arg[] = {m_setting["configpath"].c_str(), NULL};
-		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_HOSTNAME, 1, arg);
+		m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_NO_HOSTNAME, 0, NULL);
 		throw BBWinConfigException("no hostname configured");
 	}
 	if (m_setting[ "logpath" ].size() != 0) {
@@ -564,7 +636,91 @@ void				BBWin::CheckConfiguration() {
 	}
 }
 
+//
+//  FUNCTION: BBWin::StartAgents
+//
+//  PURPOSE: Starts the agent with their own threads if they need it
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+void			BBWin::StartAgents() {
+	map<string, BBWinHandler * >::iterator	itr;
 	
+	// first start local agents
+	for (itr = m_handler.begin(); itr != m_handler.end(); ++itr) {
+		BBWinHandler		& handler = *((*itr).second);
+		BBWinLocalHandler	* localHandler = NULL;
+
+		try {
+			localHandler = new BBWinLocalHandler(handler);
+		} catch (std::bad_alloc ex) {
+			continue ;
+		}
+		m_localHandlers.insert(pair< std::string, BBWinLocalHandler * >(handler.GetAgentName(), localHandler));
+		localHandler->start();
+	}
+	// second start 
+	if (m_centralMode) {
+		m_log->logDebug("Starting hobbit client agent.");
+		m_centralClient->start();
+	}
+}
+
+
+//
+//  FUNCTION: BBWin::StopAgents
+//
+//  PURPOSE: Stop the agents threads
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+void			BBWin::StopAgents() {
+	map<string, BBWinLocalHandler * >::iterator itr;
+
+	// first stop the agents with local configuration which have their own threads
+	m_log->logDebug("Listing Agents Threads to terminate.");
+	for (itr = m_localHandlers.begin(); itr != m_localHandlers.end(); ++itr) {
+		//		string mes = "will stop " + (*itr).second->GetAgentName();
+		//		m_log->logDebug(mes);
+	}
+	m_log->logDebug("Agents Threads Terminating.");
+	for (itr = m_localHandlers.begin(); itr != m_localHandlers.end(); ++itr) {
+		//		string mes = "wait for " + (*itr).second->GetAgentName();
+		//		m_log->logDebug(mes);
+		if (m_do_stop == true && m_report_stop != NULL) {
+			m_report_stop();
+		}
+		(*itr).second->stop();
+	}
+	m_log->logDebug("Agents Threads Terminated.");
+	for (itr = m_localHandlers.begin(); itr != m_localHandlers.end(); ++itr) {
+		delete (*itr).second;
+	}
+	m_log->logDebug("Agents Threads Deleted.");
+	m_localHandlers.clear();
+	m_log->logDebug("Agents Threads Table Clear Done.");
+	// second : we stop the thread for the centralized agent part
+	if (m_centralMode) {
+		m_log->logDebug("Stopping hobbit client agent.");
+		m_centralClient->stop();
+		delete m_centralClient;
+		
+	}
+}
+
+
 //
 //  FUNCTION: BBWin::LoadAgents
 //
@@ -598,7 +754,14 @@ void				BBWin::LoadAgents() {
 				timer = GetNbr(m_setting[ "timer" ]);
 			}
 		}
-		bbwinhandler_data_t		data = {m_hEvents, m_hCount, range.first->second["name"], range.first->second["value"], m_bbdisplay, m_bbpager, m_setting, timer};
+		bbwinhandler_data_t		data = {m_hEvents, 
+										m_hCount, 
+										range.first->second["name"], 
+										range.first->second["value"], 
+										m_bbdisplay, 
+										m_bbpager, 
+										m_setting, 
+										timer};
 		
 		map< std::string, BBWinHandler * >::iterator itr;
 		
@@ -607,13 +770,34 @@ void				BBWin::LoadAgents() {
 			try {
 				hand = new BBWinHandler(data);
 			} catch (std::bad_alloc ex) {
+				m_log->logError("no more memory");
 				continue ;
 			}
-			hand->start();
 			m_handler.insert(pair< std::string, BBWinHandler * >(range.first->second["name"], hand));
 		} else {
 			LPCTSTR		arg[] = {range.first->second["name"].c_str(), NULL};
 			m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_ALREADY_LOADED_AGENT, 1, arg);
+		}
+	}
+	//
+	// If the central mode is created then, the environment for the 
+	// central mode is created
+	//
+	if (m_centralMode) {
+		try {
+			string title = "centralclient";
+			bbwinhandler_data_t		data = {m_hEvents, 
+										m_hCount, 
+										title, 
+										title, 
+										m_bbdisplay, 
+										m_bbpager, 
+										m_setting, 
+										GetSeconds(m_setting[ "timer" ])};
+			m_centralClient = new BBWinCentralHandler(data);
+		} catch (std::bad_alloc ex) {
+			m_log->logError("no more memory");
+			m_centralMode = false;
 		}
 	}
 }
@@ -633,70 +817,16 @@ void				BBWin::LoadAgents() {
 //  just delete the BBWinHandlers objects 
 //
 void				BBWin::UnloadAgents() {
-	map<string, BBWinHandler * >::iterator itr;
-
-	m_log->logDebug("Listing Agents Threads before Terminating.");
-	for (itr = m_handler.begin(); itr != m_handler.end(); ++itr) {
-		string mes = "will stop " + (*itr).second->GetName();
-		m_log->logDebug(mes);
-	}
-	m_log->logDebug("Agents Threads Terminating.");
-	for (itr = m_handler.begin(); itr != m_handler.end(); ++itr) {
-		string mes = "wait for " + (*itr).second->GetName();
-		m_log->logDebug(mes);
-		(*itr).second->stop();
-	}
-	m_log->logDebug("Agents Threads Terminated.");
+	map<string, BBWinHandler * >::iterator	itr;
+	
+	m_log->logDebug("Listing Agents to unload.");
 	for (itr = m_handler.begin(); itr != m_handler.end(); ++itr) {
 		delete (*itr).second;
 	}
-	m_log->logDebug("Agents Threads Stopped.");
+	m_log->logDebug("Agents deleted.");
 	m_handler.clear();
-	m_log->logDebug("Agents Table Clear Done.");
 }
 
-//
-//  FUNCTION: BBWin::Reload
-//
-//  PURPOSE: Stop the agents, reload the BBWin configuration and restart the agents
-//
-//  PARAMETERS:
-//    none
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//
-void		BBWin::Reload() {
-	m_log->logInfo("bbwin is reloading the configuration.");
-	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_RELOAD, 0, NULL);
-	SetEvent(m_hEvents[BBWIN_AUTORELOAD_HANDLE]);
-	UnloadAgents();
-	m_setting.clear();
-	m_bbdisplay.clear();
-	m_bbpager.clear();
-	if (m_hEvents[BBWIN_AUTORELOAD_HANDLE]) {
-		CloseHandle(m_hEvents[BBWIN_AUTORELOAD_HANDLE]);
-		m_hEvents[BBWIN_AUTORELOAD_HANDLE] = NULL;
-		m_hCount = 1;
-	}
-	m_autoReload = false;
-	ZeroMemory(&m_confTime, sizeof(m_confTime));
-	InitSettings();
-	try {
-		LoadRegistryConfiguration();
-		LoadConfiguration();
-		CheckConfiguration();
-		LoadAgents();
-	} catch (BBWinConfigException _ex) {
-		BBWinException 		ex(_ex.getMessage().c_str());
-		throw ex;
-	}
-	m_log->logInfo("bbwin is started.");
-	LPCTSTR		argStart[] = {SZSERVICENAME, m_setting["hostname"].c_str(), NULL};
-	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_STARTED, 2, argStart);
-}
 
 //
 //  FUNCTION: BBWin::WaitFor
@@ -715,11 +845,11 @@ void						BBWin::WaitFor() {
 	DWORD					dwWait;
 	DWORD					waiting;
 
-	waiting = INFINITE;
-	if (m_autoReload)
-		waiting = m_autoReloadInterval;
 	for (;;) {
-		dwWait = WaitForMultipleObjects( 1, m_hEvents, FALSE, m_autoReloadInterval * 1000 );
+		waiting = INFINITE;
+		if (m_autoReload)
+			waiting = m_autoReloadInterval * 1000;
+		dwWait = WaitForMultipleObjects( 1, m_hEvents, FALSE, waiting);
 		if ( dwWait == WAIT_OBJECT_0 )    // service stop signaled
 			break;           
 		if (dwWait == WAIT_ABANDONED_0)
@@ -735,6 +865,75 @@ void						BBWin::WaitFor() {
 		}
 	}
 }
+
+
+//
+//  FUNCTION: BBWin::_Start
+//
+//  PURPOSE: Private starting function
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+void		BBWin::_Start() {
+	bool	confLoaded = true;
+
+	try {
+		LoadRegistryConfiguration();
+		LoadConfiguration();
+		CheckConfiguration();
+	} catch (BBWinConfigException _ex) {
+		// no fatal error
+		// we do not exit the program anymore
+		confLoaded = false;
+	}
+	if (confLoaded) {
+		try {
+			LoadAgents();
+			StartAgents();
+		} catch (BBWinConfigException _ex) {
+			// no fatal error
+			// we do not exit the program anymore
+		}
+	}
+	m_log->logInfo("bbwin is started.");
+	LPCTSTR		argStart[] = {SZSERVICENAME, m_setting["hostname"].c_str(), NULL};
+	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_STARTED, 2, argStart);
+}
+
+
+//
+//  FUNCTION: BBWin::Reload
+//
+//  PURPOSE: Stop the agents, reload the BBWin configuration and restart the agents
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+void		BBWin::Reload() {
+	m_log->logInfo("bbwin is reloading the configuration.");
+	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_RELOAD, 0, NULL);
+	SetEvent(m_hEvents[BBWIN_STOP_HANDLE]);
+	StopAgents();
+	UnloadAgents();
+	m_setting.clear();
+	m_bbdisplay.clear();
+	m_bbpager.clear();
+	ResetEvent(m_hEvents[BBWIN_STOP_HANDLE]);
+	InitSettings();
+	_Start();
+}
+
 
 //
 //  FUNCTION: BBWin::Start
@@ -756,17 +955,7 @@ void 			BBWin::Start(HANDLE h) {
 	} catch (BBWinException ex) {
 		throw ex;
 	}
-	try {
-		LoadConfiguration();
-		CheckConfiguration();
-		LoadAgents();
-	} catch (BBWinConfigException _ex) {
-		BBWinException 		ex(_ex.getMessage().c_str());
-		throw ex;
-	}
-	m_log->logInfo("bbwin is started.");
-	LPCTSTR		argStart[] = {SZSERVICENAME, m_setting["hostname"].c_str(), NULL};
-	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_STARTED, 2, argStart);
+	_Start();
 	try {
 		WaitFor();
 	} catch (BBWinException ex) {
@@ -788,7 +977,10 @@ void 			BBWin::Start(HANDLE h) {
 //  COMMENTS:
 // public entry point to stop the BBWin engine
 //
-void 			BBWin::Stop() {
+void 			BBWin::Stop(void (*report_stop)(void)) {
+	m_do_stop = true;
+	m_report_stop = report_stop;
+	StopAgents();
 	UnloadAgents();
 	m_log->logInfo("bbwin is stopped.");
 	LPCTSTR		argStop[] = {SZSERVICENAME, NULL};

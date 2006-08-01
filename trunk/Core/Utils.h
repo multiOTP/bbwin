@@ -31,7 +31,7 @@ LPTSTR 			GetLastErrorText( LPTSTR lpszBuf, DWORD dwSize );
 void			GetLastErrorString(std::string & str);
 DWORD			GetNbr(const std::string & str );
 void			GetEnvironmentVariable(const std::string & varname, std::string & dest);
-
+void			ReplaceEnvironmentVariableStr(std::string & str);
 
 }
 

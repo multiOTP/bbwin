@@ -1,28 +1,24 @@
-<HTML>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML lang="en">
 <HEAD>
  <LINK rel="StyleSheet" href="../BBWin.css">
  <TITLE>Memory</TITLE>
- <meta name="copyright" value="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <meta name="copyright" content="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
 </HEAD>
 <BODY>
  <H1>Memory</H1>
-  
-<H3>Description</H3>
-
+ <H3>Description</H3>
 <p>
 Memory agent is used to monitor RAM. 
 </p>
-
 <H3>Configuration</H3>
-
-
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
 <p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-</p>
 <LI class="OptionDirective">generic settings
 <p>
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
@@ -52,21 +48,18 @@ Memory agent is used to monitor RAM.
 		the bbdisplay)
 		<b>Default is "memory"</b></td>
 	</tr>
-
 </table>
-</p>
  <LI class="OptionDirective"><b>rules</b> directive syntax :
 <p>
 <pre class="Config">
 &lt;setting name="" warnlevel="" paniclevel=""/&gt;
 </pre>
-</p>
 <p>
 If the name value is not one of the generic settings, then, memory will understand that it is a memory custom rule.
 To create a custom memory rule, you may use one of the available memory type in the name attribute.
 </p>
 <p>
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		name
@@ -84,7 +77,6 @@ To create a custom memory rule, you may use one of the available memory type in 
 		Default virtual panic 99%<br>
 		</p></td>
 	</tr>
-	
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		warnlevel
@@ -101,18 +93,9 @@ To create a custom memory rule, you may use one of the available memory type in 
 		It must be a numeric value. It will warn red if the value is reached.
 		</td>
 	</tr>
-	
 </table>
-</p>
-
 </UL>
-
-
-
 <H3>Examples</H3>
-
-
-
 <UL>
  <LI>
 <p>
@@ -124,18 +107,10 @@ To create a custom memory rule, you may use one of the available memory type in 
 	&lt;setting name="virtual" warnlevel="78" paniclevel="90" /&gt;
 &lt;/memory&gt;
 </pre>
-</p>
 </UL>
-
-
-
 <H3>Notes</H3>
-
 <UL>
  <LI>You may only configure memory rules to override the default settings.
-
 </UL>
-
-
 </BODY>
 </HTML>

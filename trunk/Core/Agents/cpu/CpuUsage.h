@@ -10,6 +10,8 @@
 
 #include <windows.h>
 
+#define TOTAL_CPU_USAGE_PROC		1024
+
 class CCpuUsage
 {
 public:
@@ -17,16 +19,18 @@ public:
 	virtual ~CCpuUsage();
 
 // Methods
-	int GetCpuUsage();
+	double GetCpuUsage();
 	double GetCpuUsage(DWORD dwProcessID);
 
 	BOOL EnablePerformaceCounters(BOOL bEnable = TRUE);
+	void	SetProcessorIndex(DWORD index) { m_proc = index; };
 
 // Attributes
 private:
 	bool			m_bFirstTime;
 	LONGLONG		m_lnOldValue ;
 	LARGE_INTEGER	m_OldPerfTime100nSec;
+	DWORD			m_proc;
 };
 
 

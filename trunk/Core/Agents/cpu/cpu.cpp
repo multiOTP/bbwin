@@ -52,16 +52,10 @@ static const char *bbcolors[] = { "green", "yellow", "red", NULL };
 static const BBWinAgentInfo_t 		cpuAgentInfo =
 {
 	BBWIN_AGENT_VERSION,					// bbwinVersion;
-	0,              						// agentMajVersion;
-	4,              						// agentMinVersion;
 	"cpu",    								// agentName;
 	"cpu agent : report cpu usage",        	// agentDescription;
+	0										// flags
 };                
-
-const BBWinAgentInfo_t & AgentCpu::About() {
-	return cpuAgentInfo;
-}
-
 
 
 //
@@ -287,6 +281,7 @@ void 		AgentCpu::GetProcsData() {
 		proc->ExecGetUsage();
 		proc->SetPriority(pProcesses->BasePriority);
 		proc->SetExists(true);
+		proc->SetCpuTime(((int)((pProcesses->KernelTime.QuadPart / 10000000) + (pProcesses->UserTime.QuadPart / 10000000))));
 		if (pProcesses->NextEntryDelta == 0)
 			break ;
 		pProcesses = (PSYSTEM_PROCESS_INFORMATION)(((LPBYTE)pProcesses)
@@ -296,37 +291,64 @@ void 		AgentCpu::GetProcsData() {
 	m_mgr.ReportDebug("GetProcsData ended");
 }
 
+static const std::string BuildCpuTimeString(int time) {
+	int					h, m, s;
+	stringstream 		stime;	
+
+	h = time / 3600;
+	time -= h * 3600;
+	m = time / 60;
+	time -= m * 60;
+	s = time;
+	stime << format("%u:%02u:%02u") % h % m % s;
+	return stime.str();
+}
+
 //
 // report sending method
 //
 void		AgentCpu::SendStatusReport() {
 	stringstream 		reportData;	
 	CSystemCounters		data;
-	
+	DWORD				totalUsage = 0;
+
 	m_pageColor = GREEN;
+	totalUsage = ceil(m_usage.usageVal);
+	if (totalUsage > 100) 
+		totalUsage = 100;
 	ptime now = second_clock::local_time();
     date today = now.date();
 	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
 	reportData << "up: " << (data.GetSystemUpTime() / 86400) << " days, ";
 	reportData << data.GetServerSessions() << " users, ";
 	reportData << countProcesses() << " procs, ";
-	reportData << "load=" << (DWORD)m_systemWideCpuUsage << "%";
+	reportData << "load=" << totalUsage << "%";
 	reportData << "\n\n" << endl;
-	if (m_psMode && m_firstPass == false) {
+	if (m_uptimeMonitoring && m_uptimeDelay >= data.GetSystemUpTime()) {
+		reportData << "&yellow Warning: Machine recently rebooted\n\n" << endl;
+		m_pageColor = YELLOW;
+	}
+	if (m_psMode) {
 		DWORD				count = 0;
 		procs_sorted_itr_t	itrSort;
 		
+		reportData << "CPU states: " << endl;
+		reportData << "     total" << "  " << format("%02u%%") % totalUsage << endl;
+		for (int pc = 0; pc < m_procCount; ++pc) {
+			reportData << "     cpu" << format("%02u") % pc << "  " << format("%02.01f%%") % m_usageProc[pc].usageVal << endl;
+		}
+		reportData << endl;
 		if (m_limit != 0)
 			reportData << "Information : ps mode is limited to " << m_limit << " lines\n" << endl;
-		reportData << format("CPU    PID   %-16s  Pri") % "Image Name";
+		reportData << format("CPU    PID   %-16s  Pri  %-8s") % "Image Name" % "Time";
 		if (m_useWts)
 			reportData << format(" %-35s") % "Owner";
 		reportData << " MemUsage" << endl;
 		for (itrSort = m_procsSorted.begin(); itrSort != m_procsSorted.end(); ++itrSort) {
 			if ((*itrSort)->GetUsage() < 10)
 				reportData << "0";
-			reportData << format("%02.01f%%  %-4u  %-16s  %-3u") % (*itrSort)->GetUsage() %  (*itrSort)->GetPid() % (*itrSort)->GetName() 
-					% (*itrSort)->GetPriority();
+			reportData << format("%02.01f%%  %-4u  %-16s  %-3u  %-8s") % ((*itrSort)->GetUsage() / m_procCount) %  (*itrSort)->GetPid() % (*itrSort)->GetName() 
+					% (*itrSort)->GetPriority() % BuildCpuTimeString((*itrSort)->GetCpuTime());
 			if (m_useWts)
 				reportData << format(" %-35s") % (*itrSort)->GetOwner();
 			reportData << format(" %luk") % (*itrSort)->GetMemUsage() << endl;
@@ -338,11 +360,11 @@ void		AgentCpu::SendStatusReport() {
 		}
 	}
 	reportData << endl;
-	if ((DWORD)m_systemWideCpuUsage >= m_warnPercent && (DWORD)m_systemWideCpuUsage < m_panicPercent) {
+	if (totalUsage >= m_warnPercent && totalUsage < m_panicPercent) {
 		if (m_curDelay >= m_delay)
 			m_pageColor = YELLOW;
 		++m_curDelay;
-	} else if ((DWORD)m_systemWideCpuUsage >= m_panicPercent) {
+	} else if (totalUsage >= m_panicPercent) {
 		if (m_curDelay >= m_delay)
 			m_pageColor = RED;
 		++m_curDelay;
@@ -384,8 +406,21 @@ void		AgentCpu::InitProcs() {
 void		AgentCpu::GetCpuData() {
 	if (m_psMode) {
 		GetProcsData();
-	} else {
-		m_systemWideCpuUsage = m_usage.GetCpuUsage();
+	}
+	// total cpu usage
+	m_usage.usageVal = m_usage.usageObj.GetCpuUsage() / m_procCount;
+	// cpu usage by processor
+	for (int pc = 0; pc < m_procCount; ++pc) {
+		m_usageProc[pc].usageVal = m_usageProc[pc].usageObj.GetCpuUsage();
+	}
+	// if processor count is different than 1, then we used values from other processors 
+	// to calculate the total cpu usage
+	if (m_procCount > 1) {
+		m_usage.usageVal = 0.00;
+		for (int pc = 0; pc < m_procCount; ++pc) {
+			m_usage.usageVal += m_usageProc[pc].usageVal;
+		}
+		m_usage.usageVal /= m_procCount;
 	}
 }
 
@@ -403,10 +438,8 @@ void AgentCpu::Run() {
 	m_mgr.ReportDebug("GetCpuData ended");
 	if (m_psMode) {
 		DeleteOlderProcs();
-		m_systemWideCpuUsage = 0.00;
 		for (itr = m_procs.begin(); itr != m_procs.end(); ++itr) {
 			m_procsSorted.insert(itr->second);
-			m_systemWideCpuUsage += itr->second->GetUsage();
 		}
 		GetProcsOwners();
 	}
@@ -432,11 +465,12 @@ AgentCpu::~AgentCpu() {
 		FreeLibrary(m_mWts);
 		m_mWts = NULL;
 	}
+	delete [] m_usageProc;
 }
 
 
 bool AgentCpu::Init() {
-	bbwinagentconfig_t		*conf;
+	PBBWINCONFIG		conf;
 	
 	m_mgr.ReportDebug("Init cpu started");
 	conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
@@ -444,10 +478,10 @@ bool AgentCpu::Init() {
 		m_mgr.ReportDebug("Init cpu failed");
 		return false;
 	}
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		string		name, value;
 
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
@@ -464,6 +498,10 @@ bool AgentCpu::Init() {
 		if (name == "limit" && value.length() >0) {
 			m_limit = m_mgr.GetNbr(value.c_str());
 		}
+		if (name == "uptime" && value.length()) {
+			m_uptimeMonitoring = true;
+			m_uptimeDelay = m_mgr.GetSeconds(value.c_str());
+		}
 		if (name == "default") {
 			string		warn, panic, delay;
 
@@ -478,6 +516,7 @@ bool AgentCpu::Init() {
 				m_delay = m_mgr.GetNbr(delay.c_str());
 		}
 	}
+	m_mgr.FreeConfigurationRange(range);
 	m_mgr.FreeConfiguration(conf);
 	m_mgr.ReportDebug("Init Wts Extension ended");
 	InitWtsExtension();
@@ -499,6 +538,14 @@ void			AgentCpu::InitWtsExtension() {
 
 AgentCpu::AgentCpu(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	m_procCount = CountProcessor();
+	try {
+		m_usageProc = new myCCpuUsage[m_procCount];
+		for (int count = 0; count < m_procCount; ++count) {
+			m_usageProc[count].usageObj.SetProcessorIndex(count);
+		}
+	} catch (std::bad_alloc ex) {
+		m_mgr.ReportInfo("Can't alloc memory");
+	}
 	m_alwaysgreen = false;
 	m_firstPass = true;
 	m_psMode = true;
@@ -511,6 +558,8 @@ AgentCpu::AgentCpu(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	m_WTSEnumerateProcesses = NULL;
 	m_WTSFreeMemory = NULL;
 	m_limit = 0;
+	m_uptimeMonitoring = false;
+	m_uptimeDelay = 30 * 60;
 }
 
 BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
@@ -521,4 +570,8 @@ BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)
 BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
+}
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &cpuAgentInfo;
 }

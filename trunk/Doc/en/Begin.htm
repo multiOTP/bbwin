@@ -1,29 +1,26 @@
-<HTML>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML lang="en">
 <HEAD>
  <LINK rel="StyleSheet" href="../BBWin.css">
  <TITLE>Begin with BBWin</TITLE>
- <meta name="copyright" value="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <meta name="copyright" content="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
 </HEAD>
 <BODY>
  <H1>Begin with BBWin</H1>
-
-<H3>Installation</H3>
-
+ <H3>Installation</H3>
  <P>To install BBWin, go to the <a href="http://sourceforge.net/projects/bbwin" target="_blank">BBWin sourceforge page</a> to download the lastest release of BBWin.
  You can then launch it and choose where you want to install the BBWin 
  tree and choose the components you want to use. Installation is really easy thanks to the native Windows Installer package available.
 It permits you to deploy the BBWin software automatically on many servers if you 
 are using active directory policies. Installation doesn't need any computer restart.
 </P>
-
 <H3>BBWin installation tree</H3>
-
 <p>
 The table bellow lists you the different important folders of the BBWin installation tree.
 By default, BBWin is installed on C:\Program Files\BBWin.
 </p>
 <br>
-
 <p style="margin-right: 35.25pt">
 <table class="MsoTableGrid" style="border-collapse: collapse; border: medium none; margin-left: -0.4pt" cellSpacing="0" cellPadding="0" border="1" id="table1">
 	<tr>
@@ -77,13 +74,10 @@ By default, BBWin is installed on C:\Program Files\BBWin.
 		</td>
 	</tr>
 </table>
-
 <br>
 <img src="../greensep.png" alt="Green Separator">
 <br>
-
 <H3>BBWin Registry</H3>
-
 <p>
 BBWin requires some registry settings to work. The installer will create them but you may need to change
 some values. Registry setting is very short because the major part of the configuration is located
@@ -91,9 +85,8 @@ in the BBWin configuration file to facilitate backups and configuration manipula
 </p>
 <p>The table bellow lists the different keys :
 </p>
-
 <p style="margin-right: 35.25pt">
-<table class="MsoTableGrid" style="border-collapse: collapse; border: medium none; margin-left: -0.4pt" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="MsoTableGrid" style="border-collapse: collapse; border: medium none; margin-left: -0.4pt" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td style="width: 2.25in; border: 1pt solid windowtext; padding-left: 5.4pt; padding-right: 5.4pt; padding-top: 0in; padding-bottom: 0in; background: #e0e0e0" vAlign="top" width="216">
 		<p style="margin-right: 0.5in"><b>
@@ -130,38 +123,27 @@ is created empty at the first installation. <b>You must configure it manually</b
 		folder for temporary files. It may be used for your externals scripts.</td>
 	</tr>
 </table>
-
 <p>
 Note : BBWin can't start if one of these keys are deleted.
 </p>
-
 <br>
 <img src="../greensep.png" alt="Green Separator">
 <br>
-
 <H3>Running BBWin</H3>
-
 <p>
 BBWin is installed as a native service. You can start it from the 
 Services Management console or via a command line window by
 typing the command :
-
 <p class="Command">
 net start bbwin
-</p>
-
 </p>
 <p>BBWin service has the display name :  <b> Big Brother Hobbit Client </b> and is installed
 on automatic for the startup type.
 </p>
-
-
 <br>
 <img src="../greensep.png" alt="Green Separator">
 <br>
-
 <H3>BBWin configuration</H3>
-
 <p>
 BBWin configuration is located in the etc directory of the BBWin installation tree.
 </p>
@@ -169,10 +151,7 @@ BBWin configuration is located in the etc directory of the BBWin installation tr
 </p>
 <p>BBWin can't start if the BBWin file is not present or is invalid.
 </p>
-
 <p>Here is a small BBWin.cfg example :</p>
-
-
 <p>
 <pre class="Config">
 &lt;?xml version="1.0" encoding="utf-8" ?&gt;
@@ -215,8 +194,5 @@ BBWin configuration is located in the etc directory of the BBWin installation tr
 &lt;/uptime&gt;
 &lt;/configuration&gt;
 </pre>
-</p>
-
-
 </BODY>
 </HTML>

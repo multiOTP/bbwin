@@ -60,6 +60,7 @@ class UsageProc {
 		size_t			m_mem;
 		std::string		m_owner;
 		LONG			m_priority;
+		int				m_cputime;
 
 	public :
 		__stdcall UsageProc(DWORD pid);
@@ -76,6 +77,8 @@ class UsageProc {
 		const std::string &  __stdcall GetOwner() const { return m_owner; };
 		LONG	__stdcall GetPriority() const { return m_priority; };
 		void	__stdcall SetPriority (const LONG priority) { m_priority = priority; } ;
+		int		__stdcall GetCpuTime() const { return m_cputime; } ;
+		void	__stdcall SetCpuTime(const int cputime) { m_cputime = cputime; } ;
 };
 
 //  
@@ -98,14 +101,21 @@ typedef std::map<DWORD, UsageProc *>::iterator 	procs_itr;
 typedef  BOOL	(__stdcall *WTSEnumerateProcesses_t)(HANDLE hServer, DWORD Reserved, 
 					DWORD Version, PWTS_PROCESS_INFO* ppProcessInfo,  DWORD* pCount);
 typedef  void	(__stdcall *WTSFreeMemory_t)(PVOID pMemory);
-//typedef  HANDLE (*WTSOpenServer_t)(LPTSTR pServerName);
-//typedef  void	(*WTSCloseServer_t)(HANDLE hServer);
+
+
+// small aggregation structure to couple obj and value
+struct _myCCpuUsage {
+	CCpuUsage			usageObj;
+	double				usageVal;
+};
+typedef struct _myCCpuUsage		myCCpuUsage;
 
 class AgentCpu : public IBBWinAgent
 {
 	private :
 		IBBWinAgentManager 				& m_mgr;
-		CCpuUsage						m_usage; // cpu usage used when psmode is off
+		myCCpuUsage						m_usage; // cpu usage used when psmode is off
+		myCCpuUsage						*m_usageProc; // cpu usage by processor
 		DWORD							m_procCount; // number of processors on the server
 		bool							m_alwaysgreen; // if no status check is done
 		bool							m_firstPass; // to know if it is the first passage
@@ -113,20 +123,22 @@ class AgentCpu : public IBBWinAgent
 		DWORD							m_pageColor;
 		std::map<DWORD, UsageProc *>	m_procs;
 		procs_sorted_t					m_procsSorted; // set container with sorted procs
-		double							m_systemWideCpuUsage; //Cpu usage (sum of all proc usages)
+		//double							m_systemWideCpuUsage; //Cpu usage (sum of all proc usages)
 		std::string						m_testName; // test column name
 		DWORD							m_limit; // limit the number of lines for ps
-
 		DWORD							m_warnPercent;
 		DWORD							m_panicPercent;
 		DWORD							m_delay;
 		DWORD							m_curDelay;
 		
 		// Terminal Service part (used to get process owner names)
-		bool							m_useWts;
+		bool							m_useWts; // is WTS installed so we can get process owners
 		HMODULE							m_mWts;
-		WTSEnumerateProcesses_t			m_WTSEnumerateProcesses;
-		WTSFreeMemory_t					m_WTSFreeMemory;
+		WTSEnumerateProcesses_t			m_WTSEnumerateProcesses; // function pointer to WTSEnumerateProcesses
+		WTSFreeMemory_t					m_WTSFreeMemory; // function pointer to WTSFreeMemory
+
+		bool							m_uptimeMonitoring; // uptime monitoring like the Quest bbNT (default is false)
+		DWORD							m_uptimeDelay; // delay of the uptime
 
 	private :
 		void		InitWtsExtension();
@@ -142,7 +154,6 @@ class AgentCpu : public IBBWinAgent
 	public :
 		AgentCpu(IBBWinAgentManager & mgr);
 		~AgentCpu();
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 };

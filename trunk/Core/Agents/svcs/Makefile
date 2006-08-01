@@ -23,14 +23,14 @@ BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
 BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
 
-cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
+cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
 	
 ## svcs dependencies
 
-svcs_objs = 	svcs.obj
+svcs_objs = 	svcs.obj ../common/SystemCounters.obj
 
 svcs.res: svcs.rc
 	$(rc) $(rcflags) $(rcvars) /fo svcs.res svcs.rc

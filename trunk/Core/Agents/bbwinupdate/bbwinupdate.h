@@ -32,7 +32,6 @@ class AgentBBWinUpdate : public IBBWinAgent
 
 	public :
 		AgentBBWinUpdate(IBBWinAgentManager & mgr);
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 };

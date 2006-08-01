@@ -18,12 +18,33 @@
 #ifndef 	__BBWINAGENTMANAGER_H__
 #define		__BBWINAGENTMANAGER_H__
 
+#include <map>
+
 #include "IBBWinException.h"
 #include "IBBWinAgentManager.h"
 
 #include "Logging.h"
 #include "BBWinHandlerData.h"
 #include "BBWinNet.h"
+
+typedef std::map < std::string, std::string > 						bbwinagentconfig_attr_t;
+typedef std::multimap < std::string, bbwinagentconfig_attr_t > 		bbwinagentconfig_t;
+typedef bbwinagentconfig_t::iterator bbwinagentconfig_iter_t;
+typedef std::pair< bbwinagentconfig_iter_t, bbwinagentconfig_iter_t >bbwinconfig_range_t;
+
+typedef void		(*clientdata_callback_t)(const std::string & dataName, const std::string & data);
+
+struct _bbwinconfig_s {
+	bbwinagentconfig_t	conf;
+};
+
+struct _bbwinconfig_range_s {
+	bbwinconfig_range_t	range;
+};
+
+typedef struct _bbwinconfig_s _bbwinconfig_t;
+typedef struct _bbwinconfig_range_s	_bbwinconfig_range_t;
+
 
 class   BBWinAgentManager : public IBBWinAgentManager {
 	private :
@@ -39,8 +60,9 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 		DWORD				m_timer;
 		BBWinNet			m_net;
 		bool				m_logReportFailure;
-		bbwinagentconfig_t * m_conf;
-		bbwinconfig_range_t	m_range;
+		
+		bool					m_centralMode;
+		clientdata_callback_t	m_clientdata_callback;
 
 	private :
 		void	LoadFileConfiguration(const std::string & filePath, const std::string & nameSpace, bbwinagentconfig_t & config);
@@ -57,17 +79,22 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 		DWORD			GetSeconds(LPCTSTR str);
 		const std::string & GetSetting(LPCTSTR settingName);
 		
-		DWORD	GetAgentTimer() { return m_timer; };
+		DWORD	GetAgentTimer() { return m_timer; }
 		void	GetHandles(HANDLE * hEvents);
 		
-		DWORD	GetHandlesCount() { return m_hCount; } ;
-		
-		bbwinagentconfig_t * LoadConfiguration(LPCTSTR nameSpace);
-		bbwinagentconfig_t * LoadConfiguration(LPCTSTR fileName, LPCTSTR nameSpace);
-		void	FreeConfiguration(bbwinagentconfig_t * conf);
-		bbwinconfig_range_t * GetConfigurationRange(bbwinagentconfig_t * conf, LPCTSTR name);
-		LPCTSTR				GetConfigurationRangeValue(bbwinconfig_range_t *range, LPCTSTR name);
-		void				FreeConfigurationRange(bbwinconfig_range_t *range);
+		DWORD	GetHandlesCount() { return m_hCount; }
+
+		bool	IsCentralModeEnabled() { return m_centralMode; }
+		void	SetCentralMode(bool mode) { m_centralMode = mode; }
+
+		PBBWINCONFIG			LoadConfiguration(LPCTSTR nameSpace);
+		PBBWINCONFIG			LoadConfiguration(LPCTSTR fileName, LPCTSTR nameSpace);
+		void					FreeConfiguration(PBBWINCONFIG conf);
+		PBBWINCONFIGRANGE		GetConfigurationRange(PBBWINCONFIG conf, LPCTSTR name);
+		bool					IterateConfigurationRange(PBBWINCONFIGRANGE range);
+		bool					AtEndConfigurationRange(PBBWINCONFIGRANGE range);
+		LPCTSTR					GetConfigurationRangeValue(PBBWINCONFIGRANGE range, LPCTSTR name);
+		void					FreeConfigurationRange(PBBWINCONFIGRANGE range);
 
 		// hobbit protocol
 		void 		Status(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime = "");
@@ -82,7 +109,10 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 		void		Message(LPCTSTR message, LPTSTR dest, DWORD size);
 		void		Config(LPCTSTR fileName, LPTSTR dest, DWORD size);
 		void		Query(LPCTSTR testName, LPTSTR dest, DWORD size);
-		
+		void		Download(LPCTSTR fileName, LPTSTR dest, DWORD size);
+		void		ClientData(LPCTSTR dataName, LPCTSTR text);
+
+
 		// Report Functions : report in the bbwin log file
 		void 	ReportError(LPCTSTR str);
 		void 	ReportInfo(LPCTSTR str);
@@ -93,6 +123,9 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 		void 	ReportEventError(LPCTSTR str);
 		void 	ReportEventInfo(LPCTSTR str);
 		void 	ReportEventWarn(LPCTSTR str);
+
+		void	SetCallBackClientData(clientdata_callback_t callback) { m_clientdata_callback = callback; };
+
 };
 
 #endif // __BBWINAGENTMANAGER_H__

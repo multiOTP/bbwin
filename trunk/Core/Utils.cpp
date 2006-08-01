@@ -46,7 +46,7 @@ static 	const duration_t		duration_table[] =
 };
 
 //
-//  FUNCTION: getSeconds
+//  FUNCTION: GetSeconds
 //
 //  PURPOSE: return seconds from duration string
 //
@@ -148,7 +148,7 @@ void		GetLastErrorString(string & str) {
 
 
 //
-//  FUNCTION: getNumber
+//  FUNCTION: GetNbr
 //
 //  PURPOSE: return number from a string
 //
@@ -170,15 +170,16 @@ DWORD			GetNbr(const string & str ) {
 }
 
 //
-//  FUNCTION: getEnvironmentVariable
+//  FUNCTION: GetEnvironmentVariable
 //
-//  PURPOSE: return number from a string
+//  PURPOSE: get the environment variable value from its name
 //
 //  PARAMETERS:
-//    str 		string contening the  number
+//    varname 		name of the environment variable
+//    dest			destination value
 //
 //  RETURN VALUE:
-//    DWORD 	number
+//    none
 //
 //  COMMENTS:
 // 
@@ -190,6 +191,36 @@ void			GetEnvironmentVariable(const string & varname, string & dest) {
 	dwRet = ::GetEnvironmentVariable(varname.c_str(), buf, MAX_PATH);
 	if (dwRet != 0) {
 		dest = buf;
+	}
+}
+
+//
+//  FUNCTION: ReplaceEnvironmentVariableStr
+//
+//  PURPOSE: replace all environments variables names with their value
+//
+//  PARAMETERS:
+//    str 		string contening the  number
+//
+//  RETURN VALUE:
+//    DWORD 	number
+//
+//  COMMENTS:
+// 
+//
+void			ReplaceEnvironmentVariableStr(string & str) {
+	size_t		begin, end;
+	string		var;
+	
+	begin = str.find_first_of("%");
+	if (begin >= 0 && begin < (str.length() - 1)) {
+		end = str.find_first_of("%", begin + 1);
+		if (end >= (begin + 1) && end < str.length()) {
+			GetEnvironmentVariable(str.substr(begin + 1, end - (begin + 1)),  var);
+			str.erase(begin, end + 1);
+			str.insert(begin, var);
+			ReplaceEnvironmentVariableStr(str);
+		}
 	}
 }
 

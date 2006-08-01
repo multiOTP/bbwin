@@ -31,15 +31,11 @@ using namespace std;
 static const BBWinAgentInfo_t 		bbwinupdateAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	1,              					// agentMajVersion;
-	0,              					// agentMinVersion;
 	"bbwinupdate",    					// agentName;
 	"bbwinupdate agent : update the local configuration from central point",        // agentDescription;
+	0 
 };                
 
-const BBWinAgentInfo_t & AgentBBWinUpdate::About() {
-	return bbwinupdateAgentInfo;
-}
 
 void 		AgentBBWinUpdate::Run() {
 	HANDLE hFile; 
@@ -107,14 +103,14 @@ AgentBBWinUpdate::AgentBBWinUpdate(IBBWinAgentManager & mgr) :
 }
 
 bool		AgentBBWinUpdate::Init() {
-	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	PBBWINCONFIG	conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
 	if (conf == NULL)
 		return false;
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	do {
 		string name, value;
 		
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
@@ -122,7 +118,8 @@ bool		AgentBBWinUpdate::Init() {
 		if (name == "filename" && value.length() > 0) {
 			m_fileName = value;
 		}
-	}	
+	}
+	while (m_mgr.IterateConfigurationRange(range));
 	m_mgr.FreeConfigurationRange(range);
 	m_mgr.FreeConfiguration(conf);
 	return true;
@@ -137,3 +134,9 @@ BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
 }
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &bbwinupdateAgentInfo;
+}
+
+

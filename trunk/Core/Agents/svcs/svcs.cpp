@@ -26,6 +26,8 @@ using namespace std;
 
 #define BBWIN_AGENT_EXPORTS
 
+#include "SystemCounters.h"
+
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
 
@@ -34,13 +36,14 @@ using namespace boost::gregorian;
 
 #include "svcs.h"
 
+
+
 static const BBWinAgentInfo_t 		svcsAgentInfo =
 {
-	BBWIN_AGENT_VERSION,				// bbwinVersion;
-	0,              // agentMajVersion;
-	1,              // agentMinVersion;
-	"svcs",    // agentName;
-	"svcs agent : check Windows services",        // agentDescription;
+	BBWIN_AGENT_VERSION,					// bbwinVersion;
+	"svcs",									// agentName;
+	"svcs agent : check Windows services",  // agentDescription;
+	0										// flags
 };                
 
 //
@@ -96,14 +99,7 @@ SvcRule::SvcRule(const SvcRule & rule) {
 }
 
 
-//
-// Agent functions
 
-const BBWinAgentInfo_t & AgentSvcs::About() {
-	return svcsAgentInfo;
-}
-
-#define 	MAX_SERVICE_LENGTH		1024
 
 
 void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstream & reportData) {
@@ -241,7 +237,10 @@ void				AgentSvcs::CheckServices(stringstream & reportData) {
 //
 void AgentSvcs::Run() {
 	stringstream 					reportData;	
-	
+	DWORD							seconds;
+	CSystemCounters					data;
+
+	seconds = data.GetSystemUpTime();
     ptime now = second_clock::local_time();
 	m_pageColor = GREEN;
 	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
@@ -250,8 +249,12 @@ void AgentSvcs::Run() {
 	if (m_autoReset) {
 		reportData << " - Autoreset is On";
 	}
-	reportData << "\n" << endl;
-	CheckServices(reportData);
+	if (seconds < m_delay) {
+		reportData << " - Computer has restarted in the last " << m_delay << " seconds\n\nno check is done until the delay is passed";
+	} else {
+		reportData << "\n" << endl;
+		CheckServices(reportData);
+	}
 	reportData << endl;
 	if (m_alwaysGreen)
 		m_pageColor = GREEN;
@@ -262,14 +265,14 @@ void AgentSvcs::Run() {
 // init function
 //
 bool AgentSvcs::Init() {
-	bbwinagentconfig_t		*conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 	
 	if (conf == NULL)
 		return false;
-	bbwinconfig_range_t * range = m_mgr.GetConfigurationRange(conf, "setting");
+	PBBWINCONFIGRANGE  range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
-	for ( ; range->first != range->second; ++range->first) {
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
 		string		name, value;
 
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
@@ -283,6 +286,9 @@ bool AgentSvcs::Init() {
 		} else if (name == "testname") {
 			if (value.length() > 0)
 				m_testName = value;
+		} else if (name == "delay") {
+			if (value.length() > 0)
+				m_delay = m_mgr.GetSeconds(value.c_str());
 		} else if (name == "alarmcolor") {
 			if (value.length() > 0) {
 				if (value == "red") 
@@ -341,6 +347,7 @@ AgentSvcs::AgentSvcs(IBBWinAgentManager & mgr) :
 		m_autoReset(false)
 {
 	m_testName = "svcs";
+	m_delay = m_mgr.GetSeconds("5m");
 }
 
 //
@@ -363,3 +370,8 @@ BBWIN_AGENTDECL void		 DestroyBBWinAgent(IBBWinAgent * agent)
 {
 	delete agent;
 }
+
+BBWIN_AGENTDECL const BBWinAgentInfo_t * GetBBWinAgentInfo() {
+	return &svcsAgentInfo;
+}
+

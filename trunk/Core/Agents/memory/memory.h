@@ -79,7 +79,6 @@ class AgentMemory : public IBBWinAgent
 		
 	public :
 		AgentMemory(IBBWinAgentManager & mgr);
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 };

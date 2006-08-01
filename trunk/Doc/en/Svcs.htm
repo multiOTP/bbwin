@@ -1,28 +1,24 @@
-<HTML>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML lang="en">
 <HEAD>
  <LINK rel="StyleSheet" href="../BBWin.css">
  <TITLE>Svcs</TITLE>
- <meta name="copyright" value="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <meta name="copyright" content="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
 </HEAD>
 <BODY>
  <H1>Svcs</H1>
-  
-<H3>Description</H3>
-
+ <H3>Description</H3>
 <p>
 Svcs agent is used to monitor Windows services. 
 </p>
-
 <H3>Configuration</H3>
-
-
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
 <p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-</p>
 <LI class="OptionDirective">generic settings
 <p>
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
@@ -63,7 +59,17 @@ Svcs agent is used to monitor Windows services.
 		of these service.
 		<b>Default is false</b></td>
 	</tr>
-	
+	<tr>
+		<td class="OptionValue" vAlign="top" >
+		delay
+		</td>
+		<td class="OptionValue" vAlign="top">
+		Svcs agent will wait the period defined in the delay setting before doing monitoring if the
+		computer has restarted recently. (It may be useful for services which would start later than BBWin
+		or for services which take a lot of time to start). You can specify a unit after the numeric value : "m" for minutes,
+		"h" for hours, "d" for days.
+		<b>Default is 5 minutes</b></td>
+	</tr>
 	<tr>
 		<td class="OptionValue" vAlign="top" >
 		testname
@@ -73,21 +79,18 @@ Svcs agent is used to monitor Windows services.
 		the bbdisplay)
 		<b>Default is "svcs"</b></td>
 	</tr>
-
 </table>
-</p>
  <LI class="OptionDirective"><b>rules</b> directive syntax :
 <p>
 <pre class="Config">
 &lt;setting name="" value="" autoreset="" alarmcolor=""/&gt;
 </pre>
-</p>
 <p>
 If the name value is not one of the generic settings, then, svcs will understand that it is a svcs custom rule.
 To create a custom service rule, you may use the service display name in the setting name attribute.
 </p>
 <p>
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		alarmcolor
@@ -98,7 +101,6 @@ To create a custom service rule, you may use the service display name in the set
 		<b>Default alarm color is yellow</b>.
 		</td>
 	</tr>
-
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		autoreset
@@ -108,7 +110,6 @@ To create a custom service rule, you may use the service display name in the set
 		if it should be started. (depending the value attribute).
 		<b>Default value is "false"</b></td>
 	</tr>
-	
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		name
@@ -117,7 +118,6 @@ To create a custom service rule, you may use the service display name in the set
 		name attribute should be the display name of the service you want to monitor.
 		<b>Name must be the exact display name</b></td>
 	</tr>
-	
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		value
@@ -126,17 +126,9 @@ To create a custom service rule, you may use the service display name in the set
 		Possible values are "started" or "stopped".
 		<b>Default value is "started"</b></td>
 	</tr>
-
 </table>
-</p>
-
 </UL>
-
-
-
 <H3>Examples</H3>
-
-
 <UL>
  <LI>svcs is congigured to restart all service with automatic startup that would be stopped. Default alarm 
  color is set to red. To finish, the service "Automatic Updates" will be restart if its state is not 
@@ -149,17 +141,10 @@ To create a custom service rule, you may use the service display name in the set
 	&lt;setting name="Automatic Updates" value="started" autoreset="true" alarmcolor="yellow" /&gt;
 &lt;/svcs&gt;
 </pre>
-</p>
 </UL>
-
-
 <H3>Notes</H3>
-
 <UL>
  <LI>no note
-
 </UL>
-
-
 </BODY>
 </HTML>

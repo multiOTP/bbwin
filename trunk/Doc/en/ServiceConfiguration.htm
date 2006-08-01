@@ -1,61 +1,42 @@
-<HTML>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML lang="en">
 <HEAD>
  <LINK rel="StyleSheet" href="../BBWin.css">
  <TITLE>BBWin configuration</TITLE>
- <meta name="copyright" value="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
+ <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+ <meta name="copyright" content="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
 </HEAD>
 <BODY>
  <H1>BBWin configuration</H1>
-  
-
-  
 <H3>Configuration</H3>
-
 BBWin configuration is stored in 2 places :
-
 <UL>
 <LI> the registry (for the important runtime settings : paths and hostname)
 <LI> the BBWin.cfg file (for all other settings so it can be saved easily)
 </UL>
-
-
 <H3>First configuration</H3>
-
 <p>
 Before starting BBWin for the first time, you should configure 2 settings:
-
 <UL>
 <LI>
 the hostname setting : insert the hostname HKEY_LOCAL_MACHINE\SOFTWARE\BBWin\hostname. It must conrespond to the name configured in the bb-hosts file
 on the monitoring server side.
-
 <LI>the bbdisplay setting : the format is bbdisplay:port.
 If port is omitted, port 1984 is used.
 bbdisplay can be an IP or a DNS entry.You can specify several bbdisplay settings if you are reporting on
 several hobbit servers.
 If no bbdisplay are specified, you will get a warning event in the Application Event Log.
 </UL>
-
 <p>
 <img src="../yellow.gif" alt="Warning"> If hostname registry key is not configured, BBWin won't start.
 </p>
-
-
-
-
-
-
-
 <H3>Configuration</H3>
-
-
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
 <p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-</p>
 <LI class="OptionDirective">generic settings
 <p>
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
@@ -101,7 +82,7 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 		The bbpager server can be the address ip or the dns entry.
 		<b>The bbpager feature is not needed if your server is running hobbit software.</b>.
 		<br>
-		<b>You may specify multiple bbpager values if you want the pager report be sent to multiple bbdisplays</b>
+		<b>You may specify multiple bbpager values if you want the pager report be sent to multiple bbpagers</b>
 		<br>
 		</td>
 	</tr>
@@ -168,17 +149,12 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 		</td>
 	</tr>
 </table>
-</p>
-
-
 <H3>Loading Agents</H3>
-
 <p>
 BBWin service is in charge to load and run code from the agents.
 The agents are libraries in charge of the monitoring stuffs.
 If BBWin load no agent, BBWin will do nothing forever :)
 </p>
-
 <p>
 In the bbwin XML node, &lt;load /&gt; commands are used
 to tell BBWin to load agents.
@@ -197,21 +173,16 @@ However, you can specify timer like this :
 1h => 1 hour
 2d => 2 days
 4w => 4 weeks
-
-</p>
-
-
  <LI class="OptionDirective"><b>load rules</b> directive syntax :
 <p>
 <pre class="Config">
 &lt;load name="" value="" timer="" /&gt;
 </pre>
-</p>
 <p>
 Load rules are used to inform BBWin to load agents
 </p>
 <p>
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		alarmcolor
@@ -222,7 +193,6 @@ Load rules are used to inform BBWin to load agents
 		<b>Default is yellow</b>.
 		</td>
 	</tr>
-
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		comment
@@ -232,7 +202,6 @@ Load rules are used to inform BBWin to load agents
 		its name is not easy to understand.
 		This parameter is optionnal</td>
 	</tr>
-	
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
 		name
@@ -266,16 +235,17 @@ Load rules are used to inform BBWin to load agents
 	</tr>
 
 </table>
-</p>
-
 </UL>
-
-
+<H3>Notes</H3>
+<UL>
+<LI>The hostname (registry and configuration file), binpath, etcpath, logpath and tmppath settings may 
+contain environment variables (%VARNAME%). <b>The variable are resolved only once at startup time</b>. 
+If the variable is changing when BBWin is running, you need to restart
+the service or force the auto reload mechanism.
+</UL>
 <H3>Examples</H3>
-
-
-
-<UL>This is a full example of BBWin.cfg file :
+<UL>
+<LI>This is a full example of BBWin.cfg file :
 <p>
 <pre class="Config">
 &lt;?xml version="1.0" encoding="utf-8" ?&gt;
@@ -370,11 +340,7 @@ Load rules are used to inform BBWin to load agents
 	&lt;setting name="delay" value="1h" /&gt;
 &lt;/uptime&gt;
 &lt;/configuration&gt;
-
 </pre>
-</p>
 </UL>
-
-
 </BODY>
 </HTML>

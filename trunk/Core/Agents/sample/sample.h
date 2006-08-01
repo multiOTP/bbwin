@@ -30,7 +30,6 @@ class AgentSample : public IBBWinAgent
 		
 	public :
 		AgentSample(IBBWinAgentManager & mgr);
-		const BBWinAgentInfo_t & About();
 		bool Init();
 		void Run();
 };
