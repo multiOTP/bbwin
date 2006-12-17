@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="cpu"
 	ProjectGUID="{A59E54BE-3C29-41E1-BE1A-576C529B8E96}"
+	RootNamespace="cpu"
 	>
 	<Platforms>
 		<Platform
@@ -38,6 +39,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../..;../common"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
 				WarningLevel="2"
 				DebugInformationFormat="3"
 			/>

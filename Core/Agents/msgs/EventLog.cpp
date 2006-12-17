@@ -26,12 +26,15 @@
 #include <algorithm> // pour transform
 
 #include <boost/regex.hpp>
+#include "boost/format.hpp"
 
 #include "EventLog.h"
 
 using namespace boost;
 using namespace std;
 using namespace EventLog;
+
+using boost::format;
 
 //
 // common bb colors
@@ -174,12 +177,9 @@ static void		clean_spaces(string & str) {
 Rule::Rule() :
 		m_useId(false),
 		m_id(0),
-		m_useSource(false),
 		m_alarmColor(1),
 		m_ignore(false),
-		m_useType(false),
 		m_type(0),
-		m_useValue(false),
 		m_delay(30 * 60),
 		m_count(0),
 		m_countTmp(0),
@@ -198,20 +198,12 @@ Rule::Rule(const Rule & rule) {
 	m_id = rule.GetEventId();
 	if (m_id > 0)
 		m_useId = true;
-	m_useSource = false;
 	m_source = rule.GetSource();
-	if (m_source.length() > 0)
-		m_useSource = true;
 	m_alarmColor = rule.GetAlarmColor();
 	m_ignore = rule.GetIgnore();
-	m_useType = false;
 	m_type = rule.GetType();
-	if (m_type != 0)
-		m_useType = true;
-	m_useValue = false;
+	m_user = rule.GetUser();
 	m_value = rule.GetValue();
-	if (m_value.length() > 0)
-		m_useValue = true;
 	m_delay = rule.GetDelay();
 	m_count = rule.GetCount();
 	m_countTmp = 0;
@@ -219,19 +211,16 @@ Rule::Rule(const Rule & rule) {
 }
 
 void		Rule::SetSource(const std::string & source) { 
-	m_useSource = true; 
 	m_source = source; 
 	std::transform( m_source.begin(), m_source.end(), m_source.begin(), tolower ); 
 } 
 
 
 void		Rule::SetValue(const std::string & value) { 
-	m_useValue = true; 
 	m_value = value; 
 } 
 
 void		Rule::SetType(WORD type) { 
-	m_useType = true; 
 	m_type = type; 
 }
 
@@ -361,6 +350,28 @@ void			Session::LoadEventMessageFile(const string & source, const EVENTLOGRECORD
     }
 }
 
+void 					Session::GetEventUser(const EVENTLOGRECORD * ev, std::string & user) {
+	TCHAR				userbuf[ACCOUNT_SIZE];
+	TCHAR				domainbuf[ACCOUNT_SIZE];
+	DWORD				userSize, domainSize;
+	SID_NAME_USE		type;
+	
+	userSize = ACCOUNT_SIZE;
+	domainSize = ACCOUNT_SIZE;
+	SecureZeroMemory(userbuf, ACCOUNT_SIZE);
+	SecureZeroMemory(domainbuf, ACCOUNT_SIZE);
+	BOOL res = LookupAccountSid(NULL, (SID *)((LPBYTE)ev + ev->UserSidOffset), userbuf, &userSize,
+		domainbuf, &domainSize, &type);
+	if (res) {
+		stringstream 		username;	
+
+		username << domainbuf << "\\" << userbuf;
+		user = username.str();
+	} else {
+		user = UNKOWN_ACCOUNT;
+	}
+}
+
 
 void				Session::GetEventDescription(const EVENTLOGRECORD * ev, std::string & description) {
 	string				source =  (LPSTR) ((LPBYTE) ev + sizeof(EVENTLOGRECORD));
@@ -385,7 +396,7 @@ void				Session::GetEventDescription(const EVENTLOGRECORD * ev, std::string & de
 		DWORD	dflags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_ARGUMENT_ARRAY;
 
 		SecureZeroMemory(sBuf, sizeof(sBuf));
-		SecureZeroMemory(strarray, sizeof(sBuf));
+		SecureZeroMemory(strarray, sizeof(strarray));
 		if (ev->NumStrings > 0 && ev->NumStrings < MAX_STRING_EVENT) {
 			LPTSTR	str = NULL;
 			DWORD	inc;
@@ -431,6 +442,9 @@ void				Session::GetEventDescription(const EVENTLOGRECORD * ev, std::string & de
 // return true if the event matched the rule
 //
 bool			Session::ApplyRule(const Rule & rule, const EVENTLOGRECORD * ev) {
+	string test;
+
+	GetEventUser(ev, test);
 	if (rule.GetEventId() != 0 && rule.GetEventId() != (ev->EventID & MSG_ID_MASK))
 		return false;
 	if (ev->TimeGenerated < (m_now - rule.GetDelay()) 
@@ -444,6 +458,16 @@ bool			Session::ApplyRule(const Rule & rule, const EVENTLOGRECORD * ev) {
 	}
 	if (rule.GetType() != 0 && rule.GetType() != ev->EventType)
 		return false;
+	if (rule.GetUser().length() > 0) {
+		string user;
+
+		boost::regex e(rule.GetUser(), boost::regbase::perl);
+		GetEventUser(ev, user);
+		boost::match_results<std::string::const_iterator>	what;
+		if(boost::regex_search(user, what, e) == 0)	{
+			return false;
+		} 
+	}
 	if (rule.GetValue().length() > 0) {
 		string desc;
 		
@@ -470,6 +494,18 @@ void			Session::InitCounters() {
 	}
 }
 
+static void			FormatEventDescription(string & desc) {
+	size_t			resFirst;
+	const size_t	width = 80;
+
+	for (size_t pos = width; pos < desc.size(); pos += width) {
+		resFirst = desc.find(" ", pos);
+		if (resFirst >= 0 && resFirst < desc.size()) {
+			desc.insert(resFirst, "\n");
+		}
+	}
+}
+
 
 // analyze a simple event with the match rules then the ignore rules
 // return the status color
@@ -478,7 +514,7 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	std::list<Rule>::iterator			itr;
 	bool		result;
 	DWORD		color = BB_GREEN;	
-
+	
 	assert(ev != NULL);
 	result = false;
 	// check if one of the rules match the event
@@ -496,7 +532,7 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	if (result == false) // not matched
 		return BB_GREEN;
 	m_match++;
-	// if one of the ignore rules matches, then the event if ignored
+	// if one of the ignore rules matches, then the event is ignored
 	for (itr = m_ignoreRules.begin(); itr != m_ignoreRules.end(); ++itr) {
 		if (ApplyRule((*itr), ev)) {
 			if ((*itr).GetPriority() != 0 && priority != 0 && (*itr).GetPriority() < priority) {
@@ -510,8 +546,9 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	}
 	if (result == false)
 		return BB_GREEN;
-	string desc;
+	string desc, user;
 	GetEventDescription(ev, desc);
+	GetEventUser(ev, user);
 	const string & type = GetEventTypeStr(ev->EventType);
 	SYSTEMTIME			stime, ltime;
 	TCHAR				timebuf[TIME_BUF + 1];
@@ -530,9 +567,11 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	} else {
 		date = "unkwown";
 	}
-	reportData << "&" << bbcolors[color] << " " << m_logfile.substr(0, 4) << ": " << type << " - ";
+	reportData << "&" << bbcolors[color] << " " << m_logfile << ": " << type << " - ";
 	reportData << date << " " << time << " - ";
-	reportData << (LPSTR) ((LPBYTE) ev + sizeof(EVENTLOGRECORD)) << " (" << (ev->EventID & MSG_ID_MASK) << ") -";
+	reportData << (LPSTR) ((LPBYTE) ev + sizeof(EVENTLOGRECORD)) << " (" << (ev->EventID & MSG_ID_MASK) << ") - ";
+	reportData << user << " \n";
+	FormatEventDescription(desc);
 	reportData << " \"" << desc << "\"";
 	reportData << "\n" << endl;
 	return color;
@@ -595,7 +634,9 @@ DWORD			Session::Execute(stringstream & reportData) {
 //
 
 	
-Manager::Manager() {
+Manager::Manager() : 
+	m_checkFullLogFile(false)
+{
 	GetLogFileList();
 }
 
@@ -650,6 +691,9 @@ DWORD		Manager::Execute(stringstream & reportData) {
 		if (tmp > color)
 			color = tmp;
 	}
+	tmp = AnalyzeLogFilesSize(reportData, m_checkFullLogFile);
+	if (tmp > color)
+		color = tmp;
 	return color;
 }
 
@@ -681,6 +725,112 @@ DWORD		Manager::GetTotalCount() {
 		inc += (*itr).second->GetTotalCount();
 	}
 	return inc;
+}
+
+static DWORD		myGetFileSize(LPCSTR path) {
+	HANDLE			h;
+	DWORD			size;
+
+	if ((h = CreateFile(path, FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL)) == INVALID_HANDLE_VALUE) {
+		return 0;
+	}
+	size = GetFileSize(h, NULL);
+	CloseHandle(h);
+	return size;
+}
+
+
+DWORD				Manager::AnalyzeLogFilesSize(std::stringstream & reportData, bool checking) {
+	std::list< std::string >::iterator			logitr;
+	string										key;
+	HKEY 										hk; 
+	TCHAR										val[REG_BUF_SIZE + 1];
+	TCHAR										buf[REG_BUF_SIZE + 1];
+	DWORD										color = BB_GREEN;
+
+	reportData << format("\nEventLog Statistics:\n") << endl;
+	for (logitr = m_logFileList.begin(); logitr != m_logFileList.end(); logitr++) {
+		DWORD		size, type;
+		string		tmp, logpath;
+		DWORD		maxsize, actualsize, retention;
+
+		reportData << format("- %s") % (*logitr) << endl;
+		maxsize = actualsize = retention = size = type = 0;
+		key = EVENT_LOG_REG_KEY + string("\\") + (*logitr);
+		if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, key.c_str(), 0, KEY_READ | KEY_QUERY_VALUE , &hk)) {
+			reportData << "error : can't get registry information" << endl;
+			continue ;
+		}
+		SecureZeroMemory(val, sizeof(val));
+		SecureZeroMemory(buf, sizeof(buf));
+		size = REG_BUF_SIZE;
+		type = REG_EXPAND_SZ;
+		if (RegQueryValueEx(hk, "File", NULL, &type, (LPBYTE)val, &size) == ERROR_SUCCESS) {
+			if (ExpandEnvironmentStrings(val, buf, REG_BUF_SIZE) != 0) {
+				logpath = buf;
+			}
+		} else {
+			reportData << "error : can't get eventlog file path" << endl;
+		}
+		size = sizeof(maxsize);
+		type = REG_DWORD;
+		RegQueryValueEx(hk, "MaxSize", NULL, &type, (LPBYTE)&maxsize, &size);
+		size = sizeof(maxsize);
+		type = REG_DWORD;
+		actualsize = myGetFileSize(logpath.c_str());
+		RegQueryValueEx(hk, "Retention", NULL, &type, (LPBYTE)&retention, &size);
+		RegCloseKey(hk); 
+		// get event log last event timestamp and number of events
+		//
+		HANDLE					h;
+		EVENTLOGRECORD			*pevlr; 
+		DWORD					dwRead, dwNeeded, numRecords;
+		long					myNow;
+		BYTE					bBuffer[EVENT_BUFFER_SIZE]; 
+
+		dwRead = dwNeeded = numRecords = 0;
+		myNow = Session::Now();
+		h = OpenEventLog(NULL, (*logitr).c_str());   
+		if (h)  {
+			GetNumberOfEventLogRecords(h, &numRecords);
+			pevlr = (EVENTLOGRECORD *) &bBuffer;
+			if (ReadEventLog(h,                // event log handle 
+				EVENTLOG_FORWARDS_READ |  // reads forward 
+				EVENTLOG_SEQUENTIAL_READ, // sequential read 
+				0,            // ignored for sequential reads 
+				pevlr,        // pointer to buffer 
+				EVENT_BUFFER_SIZE,  // size of buffer 
+				&dwRead,      // number of bytes read 
+				&dwNeeded) != 0) {
+					pevlr = (EVENTLOGRECORD *) &bBuffer; 
+			}
+			CloseEventLog(h); 
+		}
+	
+		DWORD days = (myNow - pevlr->TimeGenerated) / 86400;
+		if (days == 0)	
+			days = 1;
+		reportData << format("  %u events since %u days (%.02f events/day)") % numRecords % days % (double)((double)numRecords / (double)days)<< endl;
+		reportData << format("  current size is %u kb (max size is set to %u kb)") % (actualsize / 1024) % (maxsize / 1024) << endl;
+		if (checking && retention == 0xffffffff && actualsize >= maxsize) {
+			color = BB_RED;
+			reportData << " &red this event log is full." << endl;
+		}
+		reportData << "  retention is set to : ";
+		switch ( retention ) {
+		case 0xffffffff :
+			reportData << "Do not overwrite events (clear log manually)";
+			break;
+		case 0x0:
+			reportData << "Overwrite events as needed";
+			break;
+		default:
+			reportData << "Overwrite events older than " << (retention / 86400) << " days";
+			break;
+		}
+		reportData << endl;
+	}
+	return color;
 }
 
 void		Manager::GetLogFileList() {

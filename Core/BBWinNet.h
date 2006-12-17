@@ -78,9 +78,10 @@ class BBWinNet
 		void		Test();
 		
 		void		Message(const std::string & message, std::string & dest);
-		void		Config(const std::string & fileName, std::string & dest);
+		void		Config(const std::string & fileName, const std::string & destPath);
 		void		Query(const std::string & testName, std::string & dest);
-
+		void		Download(const std::string & fileName, const std::string & destPath);
+		void		ClientData(const std::string & reportPath, const std::string & destPath);
 };
 
 /** class BBWinNetException 

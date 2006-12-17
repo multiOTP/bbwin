@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="BBWinCmd"
 	ProjectGUID="{7FB946D3-0EF9-4C59-ACD5-4159BAA02008}"
+	RootNamespace="BBWinCmd"
 	>
 	<Platforms>
 		<Platform
@@ -37,6 +38,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -156,10 +158,6 @@
 				RelativePath=".\BBWinCmd.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\BBWinNet.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -176,10 +174,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\BBWinNet.h"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

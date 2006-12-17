@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="uptime"
 	ProjectGUID="{9E7D70DD-A941-4B8C-8084-9011FF96E173}"
+	RootNamespace="uptime"
 	>
 	<Platforms>
 		<Platform
@@ -38,6 +39,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../common;../.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>

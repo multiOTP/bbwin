@@ -22,7 +22,7 @@
 '* Last Modified:	May 10, 2006
 '* Version:		0.5
 '*
-'* BBWin Version	0.8
+'* BBWin Version	0.9
 '*
 '* Main Function:  	Migrate BBnt registry to create the BBWin configuration file
 '* 

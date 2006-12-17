@@ -111,9 +111,9 @@ class   IBBWinAgentManager {
 		virtual void	Rename(LPCTSTR newHostName) = 0;
 		virtual void	Rename(LPCTSTR oldTestName, LPCTSTR newTestName) = 0;
 		virtual void	Message(LPCTSTR message, LPTSTR dest, DWORD size) = 0;
-		virtual void	Config(LPCTSTR fileName, LPTSTR dest, DWORD size) = 0;
+		virtual void	Config(LPCTSTR fileName, LPCTSTR dest) = 0;
 		virtual void	Query(LPCTSTR testName, LPTSTR dest, DWORD size) = 0;
-		virtual void	Download(LPCTSTR fileName, LPTSTR dest, DWORD size) = 0;
+		virtual void	Download(LPCTSTR fileName, LPCTSTR dest) = 0;
 		virtual void	ClientData(LPCTSTR dataName, LPCTSTR text) = 0;
 
 		// virtual destructor 

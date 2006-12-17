@@ -27,7 +27,7 @@ using namespace std;
 #define BB_DISP_LEN		512
 
 // Version
-static const string version = "0.8 - 2006/08/01";
+static const string version = "0.9 - 2006/12/05";
 
 typedef struct 	messageTable_s {
 	string		argument;
@@ -47,6 +47,7 @@ void 	Config(int argc, char *argv[], BBWinNet & bbobj);
 void 	Message(int argc, char *argv[], BBWinNet & bbobj);
 void 	Drop(int argc, char *argv[], BBWinNet & bbobj);
 void 	Rename(int argc, char *argv[], BBWinNet & bbobj);
+void	Download(int argc, char *argv[], BBWinNet & bbobj);
 
 static messageTable_t messTable[] = 
 {
@@ -60,6 +61,7 @@ static messageTable_t messTable[] =
 	{"message", 4, Message}, 
 	{"drop", 4, Drop},
 	{"rename", 4, Rename},
+	{"download", 4, Download},
 	{"", NULL}
 };
 
@@ -148,8 +150,27 @@ void 	Config(int argc, char *argv[], BBWinNet & bbobj)
 	try {
 		string res;
 		
+		res = argv[3];
+		if (argc > 4)
+			res = argv[4];
 		bbobj.Config(argv[3], res);
-		cout << "\n" << res << "\n\n";
+		cout << "\nDownloaded file has been stored to " << res << "\n\n";
+	} catch (BBWinNetException ex) {
+		cout << "Error : " << ex.getMessage() << "\n";
+	}
+}
+
+void 	Download(int argc, char *argv[], BBWinNet & bbobj)
+{
+	cout << "Sending download ...\n";
+	try {
+		string res;
+		
+		res = argv[3];
+		if (argc > 4)
+			res = argv[4];
+		bbobj.Download(argv[3], res);
+		cout << "\nDownloaded file has been stored to " << res << "\n\n";
 	} catch (BBWinNetException ex) {
 		cout << "Error : " << ex.getMessage() << "\n";
 	}
@@ -229,7 +250,7 @@ void	help()
 	cout << "bbwincmd.exe <bbdisplay>[:<port>] query <hostname> <test>";
 	cout << "\n\n";
 	cout << "Sending a config and get the file content:\n\n";
-	cout << "bbwincmd.exe <bbdisplay>[:<port>] config <filename>";
+	cout << "bbwincmd.exe <bbdisplay>[:<port>] config <filename> [<path>]";
 	cout << "\n\n";
 	cout << "Sending a hobbit message manually written\n\n";
 	cout << "bbwincmd.exe <bbdisplay>[:<port>] message <message>";
@@ -242,6 +263,9 @@ void	help()
 	cout << "\n\n";
 	cout << "Sending a test rename\n\n";
 	cout << "bbwincmd.exe <bbdisplay>[:<port>] rename <hostname> <oldtestname> <newtestname>";
+	cout << "\n\n";	
+	cout << "Sending a download message. default download path is the filename requested itself\n\n";
+	cout << "bbwincmd.exe <bbdisplay>[:<port>] download <hostname> <filename> [<path>]";
 	cout << "\n\n";	
 	cout << "Notes : \n\n";
 	cout << "If no port is specified after bbdisplay, it will use hobbit tcp port 1984\n\n";

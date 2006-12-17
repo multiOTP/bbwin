@@ -48,9 +48,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbwinupdate", "Core\Agents\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxml", "Core\tinyxml.vcproj", "{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "crypto", "Core\crypto\crypto.vcproj", "{50006BAE-7E93-428A-9B13-14B5B31BB6E4}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hobbitclient", "Core\hobbitclient\hobbitclient.vcproj", "{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "digest", "Core\Digest\digest.vcproj", "{50006BAE-7E93-428A-9B13-14B5B31BB6E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -126,10 +124,6 @@ Global
 		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Debug|Win32.Build.0 = Debug|Win32
 		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Release|Win32.ActiveCfg = Release|Win32
 		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Release|Win32.Build.0 = Release|Win32
-		{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}.Debug|Win32.ActiveCfg = Debug|Win32
-		{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}.Debug|Win32.Build.0 = Debug|Win32
-		{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}.Release|Win32.ActiveCfg = Release|Win32
-		{C8E7FCE4-2478-4066-A03B-BFBEB40B1C80}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

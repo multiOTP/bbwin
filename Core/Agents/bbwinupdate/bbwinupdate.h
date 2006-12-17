@@ -20,6 +20,10 @@
 
 #include <string>
 #include "IBBWinAgent.h"
+#include <list>
+
+#include "tinyxml.h"
+
 
 #define FILE_MAX_CONFIG_SIZE		32768
 #define CONFIG_BUF_SIZE				1024
@@ -28,8 +32,16 @@ class AgentBBWinUpdate : public IBBWinAgent
 {
 	private :
 		IBBWinAgentManager 		& m_mgr;
-		std::string				m_fileName;
+		std::list<std::string>	m_configFiles;
+		//std::string				m_server;
+		std::string				m_bbwinCfgPath; // bbwin.cfg original place
+		std::string				m_bbwinCfgTmpPath; // bbwin.cfg copy place for working process
+		std::string				m_bbwinupdateTmpFilePath; // file path used to save the config file from the hobbit server 
 
+	private :
+		void					RunUpdate(std::string & configFile);	
+		bool					ValidateUpdate();
+				
 	public :
 		AgentBBWinUpdate(IBBWinAgentManager & mgr);
 		bool Init();

@@ -42,8 +42,10 @@ void 			AgentExternals::SendExternalReport(const string & reportName, const stri
 	size_t		pos;
 	string		color;
 	string 		lifeTime;
-	
+	stringstream 	dbgMess;
+
     if (report) {
+		dbgMess << "sending report '" << reportName << "' " << reportPath;
 		string 			statusLine; 
 		stringstream 	reportData;	
         

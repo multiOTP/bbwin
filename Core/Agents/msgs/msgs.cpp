@@ -40,10 +40,8 @@ static const BBWinAgentInfo_t 		msgsAgentInfo =
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
 	"msgs",								// agentName;
 	"msgs agent : check the event logs",        // agentDescription;
-	0									// flags
+	0	// flags
 };                
-
-using namespace EventLog;
 
 //
 // common bb colors
@@ -74,22 +72,23 @@ void AgentMsgs::Run() {
 	if (m_alwaysgreen)
 		finalState = GREEN;
 
-	if (m_summary) {
-		reportData << "\nSummary:\n" << endl;
-		reportData << format("Events Analyzed: %6u") % m_eventlog.GetTotalCount() << endl ;
-		reportData << format("Events Matched:  %6u") % m_eventlog.GetMatchCount() << endl ;
-		reportData << format("Events Ignored:  %6u") % m_eventlog.GetIgnoreCount() << endl ;
-		reportData << endl;
-	}
+	reportData << "\nSummary:\n" << endl;
+	reportData << format("- Events Analyzed: %6u") % m_eventlog.GetTotalCount() << endl ;
+	reportData << format("- Events Matched:  %6u") % m_eventlog.GetMatchCount() << endl ;
+	reportData << format("- Events Ignored:  %6u") % m_eventlog.GetIgnoreCount() << endl ;
+	reportData << endl;
 	m_mgr.Status(m_testName.c_str(), bbcolors[finalState], reportData.str().c_str());
 }
 
-void	AgentMsgs::AddRule(PBBWINCONFIGRANGE range, bool ignore) {
+void	AgentMsgs::AddEventLogRule(PBBWINCONFIGRANGE range, bool ignore, const string defLogFile = "") {
 	string		logfile, source, delay, type, alarmcolor, value, eventid;
-	string		count, priority;
+	string		count, priority, user;
 	EventLog::Rule		rule;
 	
-	logfile = m_mgr.GetConfigurationRangeValue(range, "logfile");
+	if (defLogFile == "")
+		logfile = m_mgr.GetConfigurationRangeValue(range, "logfile");
+	else
+		logfile = defLogFile;
 	if (logfile.length() == 0)
 		return ;
 	alarmcolor = m_mgr.GetConfigurationRangeValue(range, "alarmcolor");
@@ -100,6 +99,7 @@ void	AgentMsgs::AddRule(PBBWINCONFIGRANGE range, bool ignore) {
 	eventid = m_mgr.GetConfigurationRangeValue(range, "eventid");
 	count = m_mgr.GetConfigurationRangeValue(range, "count");
 	priority = m_mgr.GetConfigurationRangeValue(range, "priority");
+	user = m_mgr.GetConfigurationRangeValue(range, "user");
 	if (value.length() > 0)
 		rule.SetValue(value);
 	if (alarmcolor.length() > 0) {
@@ -126,9 +126,76 @@ void	AgentMsgs::AddRule(PBBWINCONFIGRANGE range, bool ignore) {
 		rule.SetCount(m_mgr.GetNbr(count.c_str()));
 	if (type.length() > 0)
 		rule.SetType(type);
+	if (user.length() > 0)
+		rule.SetUser(user);
 	rule.SetIgnore(ignore);
 	m_eventlog.AddRule(logfile, rule);
 }
+
+
+void	AgentMsgs::AddLogRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile) {
+	
+}
+
+
+//
+// determine if the rule is for eventlogs or logs, then call the good Add*Rule method
+//
+void	AgentMsgs::AddRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile) {
+	string::size_type		res;
+	
+	
+	//cout << "B '" << defLogFile.substr(0, 1) << "'" << endl;
+	//cout << "E '" << defLogFile.substr(defLogFile.len	, 1) << "'" << endl;
+	if	(defLogFile.substr(0, 1) == "`" && defLogFile.substr(defLogFile.length(), 1) == "`") {
+		cout << "Debug " << defLogFile << endl;
+		return ;
+	}
+	res = defLogFile.find(":\\");
+	if (res > 0 && res < defLogFile.length()) {
+		
+		return ;
+	}
+
+	AddEventLogRule(range, ignore, defLogFile);
+}
+
+
+bool	AgentMsgs::LoadConfig(const string config) {
+	string			confNamespace = m_mgr.GetAgentName() + string(".") + config;
+	string			logfile;
+
+	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(confNamespace.c_str());
+	if (conf == NULL)
+		return false;
+	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
+	if (range == NULL)
+		return false;
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+		string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
+		string  value = m_mgr.GetConfigurationRangeValue(range, "value");
+		if (name == "logfile" && value.length() > 0)
+			logfile = value;
+	}
+	m_mgr.FreeConfigurationRange(range);
+	range = m_mgr.GetConfigurationRange(conf, "match");
+	if (range == NULL)
+		return false;
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+		AddRule(range, false, logfile);
+	}
+	m_mgr.FreeConfigurationRange(range);
+	range = m_mgr.GetConfigurationRange(conf, "ignore");
+	if (range == NULL)
+		return false;
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+		AddRule(range, true, logfile);
+	}
+	m_mgr.FreeConfigurationRange(range);
+	m_mgr.FreeConfiguration(conf);
+	return true;
+}
+
 
 //
 // init function
@@ -147,8 +214,8 @@ bool AgentMsgs::Init() {
 		string  value = m_mgr.GetConfigurationRangeValue(range, "value");
 		if (name == "alwaysgreen" && value == "true")
 			m_alwaysgreen = true;
-		if (name == "summary" && value == "true")
-			m_summary = true;
+		if (name == "checkfulleventlog" && value == "true")
+			m_eventlog.SetCheckFullLogFile(true);
 		if (name == "testname" && value.length() > 0)
 			m_testName = value;
 		if (name == "delay" && value.length() > 0) {
@@ -162,14 +229,24 @@ bool AgentMsgs::Init() {
 	if (range == NULL)
 		return false;
 	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		AddRule(range, false);
+		AddEventLogRule(range, false);
 	}
 	m_mgr.FreeConfigurationRange(range);
 	range = m_mgr.GetConfigurationRange(conf, "ignore");
 	if (range == NULL)
 		return false;
 	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		AddRule(range, true);
+		AddEventLogRule(range, true);
+	}
+	m_mgr.FreeConfigurationRange(range);
+	range = m_mgr.GetConfigurationRange(conf, "config");
+	if (range == NULL)
+		return false;
+	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+		string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
+		if (name.length() > 0) {
+			LoadConfig(name);
+		}
 	}
 	m_mgr.FreeConfigurationRange(range);
 	m_mgr.FreeConfiguration(conf);
@@ -185,7 +262,6 @@ AgentMsgs::AgentMsgs(IBBWinAgentManager & mgr) :
 		m_mgr(mgr),
 		m_delay(30 * 60),
 		m_alwaysgreen(false),
-		m_summary(false),
 		m_testName("msgs")
 {
 

@@ -42,12 +42,14 @@ int 					checkVersion()
 	flag = TRUE;
 	ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-	if( !(bOsVersionInfoEx = GetVersionExW ((OSVERSIONINFO *) &osvi)) )
-	{
+	if( !(bOsVersionInfoEx = GetVersionExW ((OSVERSIONINFO *) &osvi)) ) {
 		osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-		if (! GetVersionExW ( (OSVERSIONINFO *) &osvi) ) 
+		if (! GetVersionExW ( (OSVERSIONINFO *) &osvi) ) {
+			wprintf (L"GetVersionExW failed on this system. Error %i\n", GetLastError());
 			return FALSE;
+		}
 	}
+	wprintf (L"Microsoft Windows Version %i.%i\n", osvi.dwMajorVersion, osvi.dwMinorVersion);
 	switch (osvi.dwPlatformId)
 	{
 		case VER_PLATFORM_WIN32_NT:
@@ -80,11 +82,11 @@ int 					checkVersion()
 				if(osvi.dwMajorVersion==5 && osvi.dwMinorVersion==2)
 				{
 				   if( osvi.wSuiteMask & VER_SUITE_DATACENTER )
-					  wprintf ( L"Datacenter Edition " );
+						wprintf ( L"Datacenter Edition " );
 				   else if( osvi.wSuiteMask & VER_SUITE_ENTERPRISE )
-					  wprintf ( L"Enterprise Edition " );
+						wprintf ( L"Enterprise Edition " );
 				   else if ( osvi.wSuiteMask == VER_SUITE_BLADE )
-					  wprintf ( L"Web Edition " );
+						wprintf ( L"Web Edition " );
 				   else 
 						wprintf ( L"Standard Edition " );
 				}
@@ -174,6 +176,7 @@ int 					checkVersion()
 		//"Microsoft Windows 95 "
 		//"Microsoft Windows 98 "
 		//"Microsoft Windows Millennium Edition"
+		wprintf (L"Microsoft Windows Me/98/95\n");
 		flag = FALSE;
       break;
 

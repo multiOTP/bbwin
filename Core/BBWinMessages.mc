@@ -131,9 +131,14 @@ The personnalized timer for agent %1 is incorrect. Minimum value is 5 seconds an
 MessageId       = +1
 SymbolicName    = EVENT_HOBBIT_MODE_NOT_SUPPORTED
 Language        = English
-The agent does'nt support hobbit centralized mode. It will be launched as a classical BBWin agent.
+The agent does not support hobbit centralized mode. It will be launched as a classical BBWin agent.
 .
 
+MessageId       = +1
+SymbolicName    = EVENT_HOBBIT_FAILED_CLIENTDATA
+Language        = English
+BBWin failed to send the client data successfuly to the hobbit server. The error was : %1 : %2.
+.
 
 ;////////////////////////////////////////
 ;// Additional messages

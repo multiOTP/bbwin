@@ -42,6 +42,17 @@ If no rules is specified, msgs will do nothing.
 	</tr>
 	<tr>
 		<td class="OptionValue" vAlign="top" >
+		checkfulleventlog
+		</td>
+		<td class="OptionValue" vAlign="top">
+		Possible values are "true" or "false". If true, it will alert you (red color) when one of the event log 
+		on the host has reached the maximum size and if its retention is set to 
+		"Do not overwrite events (clear log manually)".
+		<b>Default is false</b>.
+		</td>
+	</tr>
+	<tr>
+		<td class="OptionValue" vAlign="top" >
 		delay
 		</td>
 		<td class="OptionValue" vAlign="top">
@@ -50,16 +61,6 @@ If no rules is specified, msgs will do nothing.
 		"h" for hours, "d" for days.
 		<b>Default is 30 minutes</b>.
 		<b>Delay has no effect on ignore rules</b>.
-		</td>
-	</tr>
-	<tr>
-		<td class="OptionValue" vAlign="top" >
-		summary
-		</td>
-		<td class="OptionValue" vAlign="top">
-		Possible values are "true" or "false". If true, it will add a small footer in the report
-		to inform the number of events parsed, the number of events matched and the number of events ignored.
-		<b>Default is false</b>.
 		</td>
 	</tr>
 	<tr>
@@ -175,6 +176,15 @@ If the name value is not one of the generic settings, then, disk will understand
 	</td>
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
+		user
+		</td>
+		<td class="OptionValue" vAlign="top">
+		user is to match events with the user field.
+		You may specify perl regular expressions in it.
+		<b>This parameter is optional</b><br>
+	</td>
+	<tr>
+		<td class="OptionTitle" vAlign="top" >
 		value
 		</td>
 		<td class="OptionValue" vAlign="top">
@@ -192,7 +202,6 @@ If the name value is not one of the generic settings, then, disk will understand
 <pre class="Config">
 &lt;msgs&gt;
 	&lt;setting name="alwaysgreen" value="false" /&gt;
-	&lt;setting name="summary" value="true" /&gt;
 	&lt;match logfile="System" type="error" delay="1h" alarmcolor="red" /&gt;
 	&lt;match logfile="System" type="warning" alarmcolor="yellow" /&gt;
 	&lt;match logfile="Application" type="error" delay="1h" alarmcolor="red" /&gt;

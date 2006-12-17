@@ -39,8 +39,8 @@ PARTICULAR PURPOSE.
 APPICON ICON cluster.ico
 
 1 VERSIONINFO
- FILEVERSION 1,0,0,0
- PRODUCTVERSION 0,8,0,0
+ FILEVERSION 1,1,0,0
+ PRODUCTVERSION 0,9,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0xbL
@@ -57,10 +57,10 @@ APPICON ICON cluster.ico
           BEGIN
             VALUE "CompanyName", "GNU\0"
             VALUE "FileDescription", "mscs cluster external : monitor mscs windows clusters\0"
-            VALUE "FileVersion", "1.0\0"
-            VALUE "LegalCopyright", "Copyrights 2005 - Etienne Grignon\0"
+            VALUE "FileVersion", "1.1\0"
+            VALUE "LegalCopyright", "Copyrights 2006 - Etienne Grignon\0"
             VALUE "ProductName", "BBWin\0"
-            VALUE "ProductVersion", "0.8\0"
+            VALUE "ProductVersion", "0.9\0"
           END
        END
     BLOCK "VarFileInfo"

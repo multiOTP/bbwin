@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
-	<Product Name='BBWin 0.8' Id='2E5A8A62-0787-4266-B559-53919F94D7C1'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
-		Language='1033' Codepage='1252' Version='0.8' Manufacturer='GNU'>
+	<Product Name='BBWin 0.9' Id='C4677524-0BDF-4c75-BA0A-AF5BDE88F7DD'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
+		Language='1033' Codepage='1252' Version='0.9' Manufacturer='GNU'>
 
-    <Package Id='B0EC4CC0-944D-4c71-A4A4-7D640F47D319' Keywords='Installer'
-      Description="BBWin 0.8 Installer"
+    <Package Id='09AAD29F-87F3-40b5-8A75-A911DB836BEA' Keywords='Installer'
+      Description="BBWin 0.9 Installer"
       Comments='BBWin : Big Brother Hobbit Windows Client' Manufacturer='GNU'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
@@ -58,6 +58,11 @@
 					<!--
 					Agents Sections
 					-->
+					
+					<Component Id='BBWinUpdateDllC' Guid='0BC7C94B-63AB-47c6-8F16-D3180984BACD'>
+						<File Id='bbwinupdate.dll' Name="bbwupd.dll" LongName='bbwinupdate.dll' DiskId='1' src='../Release/Bbwinupdate.dll' />
+					</Component>
+					
 					<Component Id='CpuC' Guid='1E68A93A-7A2D-407e-AAFD-CB7486DF40C3'>
 						<File Id='cpu.dll' Name="cpu.dll" LongName='cpu.dll' DiskId='1' src='../Release/Cpu.dll' />
 					</Component>
@@ -186,7 +191,7 @@
         </Directory>
 	</Directory>
 						
-    <Feature Id='Complete' Title='BBWin 0.8' Description='The complete BBWin package.'
+    <Feature Id='Complete' Title='BBWin 0.9' Description='The complete BBWin package.'
       TypicalDefault='install' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
 		<Feature Id='BBWin' Title='BBWin' Description='The BBWin core service.'
 		TypicalDefault='install' Level='1' Absent='disallow' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR'>
@@ -205,6 +210,10 @@
 		</Feature>
 		<Feature Id='Agents' Title='Agents' Description='BBWin Agents.'
 			TypicalDefault='install' Level='1' ConfigurableDirectory='INSTALLDIR'>
+			<Feature Id='BBWinUpdateDll' Title='BBWinUpdate' Description='Update BBWin configuration from an hobbit server.'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='BBWinUpdateDllC' />
+			</Feature>
 			<Feature Id='Cpu' Title='Cpu' Description='Monitor cpu.'
 			TypicalDefault='install' Level='1'>
 				<ComponentRef Id='CpuC' />

@@ -44,7 +44,7 @@ static const BBWinAgentInfo_t 		diskAgentInfo =
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
 	"disk",    							// agentName;
 	"disk agent : report disk usage",	// agentDescription;
-	0									// flags
+	BBWIN_AGENT_CENTRALIZED_COMPATIBLE	// flags
 };                
 
 static const disk_unit_t		disk_unit_table[] = 
@@ -199,11 +199,11 @@ void	AgentDisk::ApplyRules() {
 	for (itr = m_disks.begin(); itr != m_disks.end(); ++itr) {	
 		disk_t	& disk = *(*itr);
 		disk.color = GREEN;
-		if (disk.ignore == false) {
-			disk.color = ApplyRule(disk);
-			if (m_pageColor < disk.color)
-				m_pageColor = disk.color;
-		}
+		if (disk.ignore || (disk.type == DRIVE_FIXED && disk.i64TotalBytes == 0))
+			continue ;
+		disk.color = ApplyRule(disk);
+		if (m_pageColor < disk.color)
+			m_pageColor = disk.color;
 	}
 }
 
@@ -267,26 +267,33 @@ void		AgentDisk::SendStatusReport() {
 	stringstream 					reportData;	
 	std::list<disk_t *>::iterator 	itr;
 	disk_t							*disk;
-	
-    ptime now = second_clock::local_time();
-	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] " << endl;
-	reportData << "\n" << endl;
+
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		ptime now = second_clock::local_time();
+		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] " << endl;
+		reportData << "\n" << endl;
+	}
 	reportData << format("Filesystem     1K-blocks     Used       Avail    Capacity    Mounted      Summary(Total\\Avail)") << endl;
 	for (itr = m_disks.begin(); itr != m_disks.end(); ++itr) {
 		stringstream					summary;
-		
+
 		disk = (*itr);
-		if (disk->ignore)
+		// we don't use ignore disk and fixed disk with totalbyte at 0
+		if (disk->ignore || (disk->type == DRIVE_FIXED && disk->i64TotalBytes == 0))
 			continue ;
 		GenerateSummary(*disk, summary);
-	    reportData << format("%s             %10.0f %10.0f %10.0f   %3d%%       /%s/%s      %s") %
-				disk->letter % (disk->i64TotalBytes / 1024) % ((disk->i64TotalBytes - disk->i64FreeBytes) / 1024) % 
-				(disk->i64FreeBytes / 1024) % disk->percent % GetDiskTypeStr(disk->type) % 
-				disk->letter % summary.str();
-		reportData << " &" << bbcolors[disk->color];
+		reportData << format("%s             %10.0f %10.0f %10.0f   %3d%%       /%s/%s      %s") %
+			disk->letter % (disk->i64TotalBytes / 1024) % ((disk->i64TotalBytes - disk->i64FreeBytes) / 1024) % 
+			(disk->i64FreeBytes / 1024) % disk->percent % GetDiskTypeStr(disk->type) % 
+			disk->letter % summary.str();
+		if (m_mgr.IsCentralModeEnabled() == false)
+			reportData << " &" << bbcolors[disk->color];
 		reportData << endl;
-	}
-	m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
+	} 
+	if (m_mgr.IsCentralModeEnabled() == false)
+		m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
+	else
+		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
 }
 
 void 		AgentDisk::Run() {
@@ -374,43 +381,45 @@ void		AgentDisk::AddRule(const string & label, const string & warnlevel, const s
 }
 
 bool		AgentDisk::Init() {
-	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
-	
-	if (conf == NULL)
-		return false;
-	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string		name, value;
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
-		name = m_mgr.GetConfigurationRangeValue(range, "name");
-		value = m_mgr.GetConfigurationRangeValue(range, "value");
-		if (name == "alwaysgreen") {
-			if (value == "true")
-				m_alwaysgreen = true;
-		} else if (name == "remote") {
-			if (value == "true")
-				m_checkRemote = true;
-		} else if (name == "testname") {
-			if (value.length() > 0) 
-				m_testName = value;
-		} else if (name == "cdrom") {
-			if (value == "true")
-				m_checkCdrom = true;
-		} else {
-			AddRule(name, 
+		if (conf == NULL)
+			return false;
+		PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			string		name, value;
+
+			name = m_mgr.GetConfigurationRangeValue(range, "name");
+			value = m_mgr.GetConfigurationRangeValue(range, "value");
+			if (name == "alwaysgreen") {
+				if (value == "true")
+					m_alwaysgreen = true;
+			} else if (name == "remote") {
+				if (value == "true")
+					m_checkRemote = true;
+			} else if (name == "testname") {
+				if (value.length() > 0) 
+					m_testName = value;
+			} else if (name == "cdrom") {
+				if (value == "true")
+					m_checkCdrom = true;
+			} else {
+				AddRule(name, 
 					m_mgr.GetConfigurationRangeValue(range, "warnlevel"), 
 					m_mgr.GetConfigurationRangeValue(range, "paniclevel"), 
 					m_mgr.GetConfigurationRangeValue(range, "ignore"));	
+			}
 		}
+		// if no default, create the default rule
+		if (m_rules.find(DEFAULT_RULE_NAME) == m_rules.end()) {
+			AddRule(DEFAULT_RULE_NAME, DEF_DISK_WARN, DEF_DISK_PANIC, "false");
+		}
+		m_mgr.FreeConfigurationRange(range);
+		m_mgr.FreeConfiguration(conf);
 	}
-	// if no default, create the default rule
-	if (m_rules.find(DEFAULT_RULE_NAME) == m_rules.end()) {
-		AddRule(DEFAULT_RULE_NAME, DEF_DISK_WARN, DEF_DISK_PANIC, "false");
-	}
-	m_mgr.FreeConfigurationRange(range);
-	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 

@@ -26,8 +26,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 1 VERSIONINFO
- FILEVERSION 0,8,0,0
- PRODUCTVERSION 0,8,0,0
+ FILEVERSION 0,9,0,0
+ PRODUCTVERSION 0,9,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0xbL
@@ -45,13 +45,13 @@
             VALUE "Comments", "BBWin : MSI Custom Actions DLL\0"
             VALUE "CompanyName", "GNU\0"
             VALUE "FileDescription", "BBWin : MSI Custom Actions DLL\0"
-            VALUE "FileVersion", "0.8.0\0"
+            VALUE "FileVersion", "0.9.0\0"
             VALUE "InternalName", "BBWin\0"
             VALUE "LegalCopyright", "Copyright 2006 Etienne Grignon\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "\0"
             VALUE "ProductName", "BBWin\0"
-            VALUE "ProductVersion", "0.8\0"
+            VALUE "ProductVersion", "0.9\0"
           END
        END
     BLOCK "VarFileInfo"

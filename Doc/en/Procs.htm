@@ -84,7 +84,8 @@ To create a custom procs rule, you may use the process name in the name attribut
 		</td>
 		<td class="OptionValue" vAlign="top">
 		Rule is composed of a numeric sign followed by a numeric value.
-		Possibles signs are '&lt;=', '&gt;=', '&lt;', '&gt;' or	'='.
+		Possibles signs are '-=', '+=', '-', '+' or	'='.
+		'-' means &lt; and '+' means &gt;.
 		See the example bellow.
 		This parameter is <b>required</b></td>
 	</tr>
@@ -98,7 +99,7 @@ To create a custom procs rule, you may use the process name in the name attribut
 <p>
 <pre class="Config">
 &lt;procs&gt;
-	&lt;setting name="drwtsn" rule="&lt;1" alarmcolor="red" /&gt;
+	&lt;setting name="drwtsn" rule="-1" alarmcolor="red" /&gt;
 	&lt;setting name="pageant.exe" rule="=1" comment="Putty agent deamon" /&gt;
 &lt;/procs&gt;
 </pre>

@@ -4,6 +4,16 @@ Designer and Developer
 Etienne Grignon (etienne.grignon@gmail.com)
 
 
+Of course, BBWin would not exists if the hobbit project
+created and maintained by Henrik Stoerner did not exists.
+
+Please visit the hobbit project website :
+http://www.hswn.dk/hobbit/
+
+Some source code is directly from the hobbit source code.
+(digest part)
+
+
 I would like to thank some people. They helped me a lot in my work 
 and gave me a lot of nice ideas.
 
@@ -23,11 +33,6 @@ I also would like to thanks Steve Friedl (http://www.unixwiz.net) who helped me
 by providing me excellent coding rules advises to improve the source code of BBWin.
 
 
-Of course, BBWin would not exists if the hobbit project
-created and maintained by Henrik Stoerner did not exists.
-
-Please visit the hobbit project website :
-http://www.hswn.dk/hobbit/
 
 ----------------------
 

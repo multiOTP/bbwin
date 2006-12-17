@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="msgs"
 	ProjectGUID="{AB3AF868-F5E9-406F-AF02-A73FE6FEE3D6}"
+	RootNamespace="msgs"
 	>
 	<Platforms>
 		<Platform
@@ -38,6 +39,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -159,6 +161,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Logs.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\msgs.cpp"
 				>
 			</File>
@@ -170,6 +176,10 @@
 			>
 			<File
 				RelativePath=".\EventLog.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Logs.h"
 				>
 			</File>
 			<File

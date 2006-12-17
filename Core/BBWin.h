@@ -78,7 +78,7 @@ class BBWin : public Singleton< BBWin > {
 		//
 		// STL Containers
 		//
-		std::map< std::string, BBWinHandler * >			m_handler; // handle the agents instance
+		std::map< std::string, BBWinHandler * >			m_agents; // handle the agents instance
 		std::map< std::string, BBWinLocalHandler *>		m_localHandlers; // handle to the
 		BBWinCentralHandler								*m_centralClient; // central handler for hobbit client
 

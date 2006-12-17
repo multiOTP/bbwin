@@ -200,9 +200,8 @@ BBWin::BBWin() :
 	m_defaultSettings[ "autoreload"] = &BBWin::callback_SetAutoReload;
 	m_defaultSettings[ "hostname" ] = &BBWin::callback_AddSimpleSetting;
 	
-	// not used in BBWin 0.8
-	//m_defaultSettings[ "mode" ] = &BBWin::callback_SetBBWinMode;
-	//m_defaultSettings[ "configclass" ] = &BBWin::callback_AddSimpleSetting;
+	m_defaultSettings[ "mode" ] = &BBWin::callback_SetBBWinMode;
+	m_defaultSettings[ "configclass" ] = &BBWin::callback_AddSimpleSetting;
 
 	// call to the settings initialization
 	InitSettings();
@@ -653,7 +652,7 @@ void			BBWin::StartAgents() {
 	map<string, BBWinHandler * >::iterator	itr;
 	
 	// first start local agents
-	for (itr = m_handler.begin(); itr != m_handler.end(); ++itr) {
+	for (itr = m_agents.begin(); itr != m_agents.end(); ++itr) {
 		BBWinHandler		& handler = *((*itr).second);
 		BBWinLocalHandler	* localHandler = NULL;
 
@@ -691,14 +690,10 @@ void			BBWin::StopAgents() {
 
 	// first stop the agents with local configuration which have their own threads
 	m_log->logDebug("Listing Agents Threads to terminate.");
-	for (itr = m_localHandlers.begin(); itr != m_localHandlers.end(); ++itr) {
-		//		string mes = "will stop " + (*itr).second->GetAgentName();
-		//		m_log->logDebug(mes);
-	}
+	for (itr = m_localHandlers.begin(); itr != m_localHandlers.end(); ++itr)
+		;
 	m_log->logDebug("Agents Threads Terminating.");
 	for (itr = m_localHandlers.begin(); itr != m_localHandlers.end(); ++itr) {
-		//		string mes = "wait for " + (*itr).second->GetAgentName();
-		//		m_log->logDebug(mes);
 		if (m_do_stop == true && m_report_stop != NULL) {
 			m_report_stop();
 		}
@@ -716,7 +711,6 @@ void			BBWin::StopAgents() {
 		m_log->logDebug("Stopping hobbit client agent.");
 		m_centralClient->stop();
 		delete m_centralClient;
-		
 	}
 }
 
@@ -742,43 +736,6 @@ void				BBWin::LoadAgents() {
 	std::pair< config_iter_t, config_iter_t > range;
 	BBWinHandler 			*hand;
 	
-	range = m_configuration.equal_range("load");
-	for ( ; range.first != range.second; ++range.first) {
-		DWORD		timer = GetSeconds(m_setting[ "timer" ]);
-		
-		if (range.first->second["timer"].size() != 0) {
-			timer = GetSeconds(range.first->second["timer"]);
-			if (timer < 5 || timer > 2678400) { // invalid time
-				LPCTSTR		arg[] = {range.first->second["name"].c_str(), m_setting[ "timer" ].c_str(), NULL};
-				m_log->reportWarnEvent(BBWIN_SERVICE, EVENT_INVALID_TIMER, 2, arg);
-				timer = GetNbr(m_setting[ "timer" ]);
-			}
-		}
-		bbwinhandler_data_t		data = {m_hEvents, 
-										m_hCount, 
-										range.first->second["name"], 
-										range.first->second["value"], 
-										m_bbdisplay, 
-										m_bbpager, 
-										m_setting, 
-										timer};
-		
-		map< std::string, BBWinHandler * >::iterator itr;
-		
-		itr = m_handler.find(range.first->second["name"]);
-		if (itr == m_handler.end()) {
-			try {
-				hand = new BBWinHandler(data);
-			} catch (std::bad_alloc ex) {
-				m_log->logError("no more memory");
-				continue ;
-			}
-			m_handler.insert(pair< std::string, BBWinHandler * >(range.first->second["name"], hand));
-		} else {
-			LPCTSTR		arg[] = {range.first->second["name"].c_str(), NULL};
-			m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_ALREADY_LOADED_AGENT, 1, arg);
-		}
-	}
 	//
 	// If the central mode is created then, the environment for the 
 	// central mode is created
@@ -798,6 +755,51 @@ void				BBWin::LoadAgents() {
 		} catch (std::bad_alloc ex) {
 			m_log->logError("no more memory");
 			m_centralMode = false;
+		}
+	}
+	range = m_configuration.equal_range("load");
+	for ( ; range.first != range.second; ++range.first) {
+		DWORD		timer = GetSeconds(m_setting[ "timer" ]);
+
+		if (range.first->second["timer"].size() != 0) {
+			timer = GetSeconds(range.first->second["timer"]);
+			if (timer < 5 || timer > 2678400) { // invalid time
+				LPCTSTR		arg[] = {range.first->second["name"].c_str(), m_setting[ "timer" ].c_str(), NULL};
+				m_log->reportWarnEvent(BBWIN_SERVICE, EVENT_INVALID_TIMER, 2, arg);
+				timer = GetNbr(m_setting[ "timer" ]);
+			}
+		}
+		bbwinhandler_data_t		data = {m_hEvents, 
+										m_hCount, 
+										range.first->second["name"], 
+										range.first->second["value"], 
+										m_bbdisplay, 
+										m_bbpager, 
+										m_setting, 
+										timer};
+		
+		map< std::string, BBWinHandler * >::iterator itr;
+		
+		itr = m_agents.find(range.first->second["name"]);
+		if (itr == m_agents.end()) {
+			try {
+				hand = new BBWinHandler(data);
+			} catch (std::bad_alloc ex) {
+				m_log->logError("no more memory");
+				continue ;
+			}
+			//
+			// We decide here if the agent will work in the centralized or local mode
+			//
+			//
+			if (m_centralMode && hand->GetAgentFlags() & BBWIN_AGENT_CENTRALIZED_COMPATIBLE) {
+				m_centralClient->AddAgentHandler(hand);
+			} else {
+				m_agents.insert(pair< std::string, BBWinHandler * >(range.first->second["name"], hand));
+			}
+		} else {
+			LPCTSTR		arg[] = {range.first->second["name"].c_str(), NULL};
+			m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_ALREADY_LOADED_AGENT, 1, arg);
 		}
 	}
 }
@@ -820,11 +822,11 @@ void				BBWin::UnloadAgents() {
 	map<string, BBWinHandler * >::iterator	itr;
 	
 	m_log->logDebug("Listing Agents to unload.");
-	for (itr = m_handler.begin(); itr != m_handler.end(); ++itr) {
+	for (itr = m_agents.begin(); itr != m_agents.end(); ++itr) {
 		delete (*itr).second;
 	}
 	m_log->logDebug("Agents deleted.");
-	m_handler.clear();
+	m_agents.clear();
 }
 
 

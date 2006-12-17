@@ -20,7 +20,7 @@
 
 #include <string>
 #include <list>
-
+		
 #include "IBBWinAgent.h"
 
 #define	MAX_TABLE_PROC	1024
@@ -58,9 +58,9 @@ typedef struct Rule_s			Rule_t;
 class AgentProcs : public IBBWinAgent
 {
 	private :
-		IBBWinAgentManager 			& m_mgr;
-		std::list<ProcRule_t *>		m_rules;		
-		std::string					m_testName;
+		IBBWinAgentManager 				& m_mgr;
+		std::list<ProcRule_t *>			m_rules;
+		std::string						m_testName;
 
 	private :
 		void			AddRule(const std::string & name, const std::string & rule, const std::string & color, const std::string & comment);
