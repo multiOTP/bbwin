@@ -33,7 +33,7 @@ static const BBWinAgentInfo_t 		sampleAgentInfo =
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
 	"sample",    					// agentName;
 	"this is a sample bbwin agent for example purpose",        // agentDescription;
-	0									// flags
+	BBWIN_AGENT_CENTRALIZED_COMPATIBLE			// flags
 };                
 
 void 		AgentSample::Run() {
@@ -41,7 +41,10 @@ void 		AgentSample::Run() {
         
 	reportData << "sample monitoring agent\n" << endl;
     reportData << m_message << endl;
-	m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
+	if (m_mgr.IsCentralModeEnabled())
+		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
+	else
+		m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
 }
 
 AgentSample::AgentSample(IBBWinAgentManager & mgr) : m_mgr(mgr) {

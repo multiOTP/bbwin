@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="memory"
 	ProjectGUID="{DD037882-89F4-4AA4-9BF3-B368CEA60E84}"
+	RootNamespace="memory"
 	>
 	<Platforms>
 		<Platform
@@ -38,6 +39,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>

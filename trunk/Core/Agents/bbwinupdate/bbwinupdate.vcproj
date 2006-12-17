@@ -37,7 +37,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../.."
+				AdditionalIncludeDirectories="../..;../../digest"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -52,7 +53,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(TargetDir)tinyxml.lib&quot;"
+				AdditionalDependencies="&quot;$(TargetDir)tinyxml.lib&quot; &quot;$(TargetDir)digest.lib&quot;"
 				GenerateDebugInformation="true"
 			/>
 			<Tool
@@ -117,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(TargetDir)tinyxml.lib&quot;"
+				AdditionalDependencies="&quot;$(TargetDir)tinyxml.lib&quot; &quot;$(TargetDir)digest.lib&quot;"
 			/>
 			<Tool
 				Name="VCALinkTool"

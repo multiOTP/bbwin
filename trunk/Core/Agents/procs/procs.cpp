@@ -22,6 +22,7 @@
 #include <fstream>
 
 #include <string>
+#include <map>
 using namespace std;
 
 #define BBWIN_AGENT_EXPORTS
@@ -29,6 +30,7 @@ using namespace std;
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
 
+using boost::format;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
@@ -41,7 +43,7 @@ static const BBWinAgentInfo_t 		procsAgentInfo =
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
 	"procs",							// agentName;
 	"procs agent : check running processes",        // agentDescription;
-	0									// flags
+	BBWIN_AGENT_CENTRALIZED_COMPATIBLE		// flags
 };                
 
 
@@ -81,11 +83,15 @@ static const char	*bbcolors[] = {"green", "yellow", "red", NULL};
 const static Rule_t			globalRules[]  = 
 {
 	{"<=", InfEqualProcRule},
+	{"-=", InfEqualProcRule},
 	{">=", SupEqualProcRule},
+	{"+=", SupEqualProcRule},
 	{"==", EqualProcRule},
 	{"<", InfProcRule},
+	{"-", InfProcRule},
 	{"=", EqualProcRule},
 	{">", SupProcRule},
+	{"+", SupProcRule},
 	{NULL, NULL},
 };
 
@@ -157,8 +163,78 @@ static DWORD 		CountProcesses(const string & name) {
 	return count;
 }
 
+//
+// only used with the centralized mode
+// generate a table with list of process with their count number
+//
+static void 		ReportCountProcesses(stringstream & reportData) {
+	string									procname;
+	DWORD									maxlen = 0;
+	std::map<std::string, DWORD>			procs;
+	std::map<std::string, DWORD>::iterator	itr;
 
-
+	HINSTANCE hNtDll;
+	NTSTATUS (WINAPI * pZwQuerySystemInformation)(UINT, PVOID, ULONG, PULONG);
+	hNtDll = GetModuleHandle("ntdll.dll");
+	assert(hNtDll != NULL);
+	// find ZwQuerySystemInformation address
+	*(FARPROC *)&pZwQuerySystemInformation =
+		GetProcAddress(hNtDll, "ZwQuerySystemInformation");
+	if (pZwQuerySystemInformation == NULL)
+		return ;
+	HANDLE hHeap = GetProcessHeap();
+	NTSTATUS Status;
+	ULONG cbBuffer = 0x8000;
+	PVOID pBuffer = NULL;
+	// it is difficult to predict what buffer size will be
+	// enough, so we start with 32K buffer and increase its
+	// size as needed
+	do
+	{
+		pBuffer = HeapAlloc(hHeap, 0, cbBuffer);
+		if (pBuffer == NULL)
+			return ;
+		Status = pZwQuerySystemInformation(
+			SystemProcessesAndThreadsInformation,
+			pBuffer, cbBuffer, NULL);
+		if (Status == STATUS_INFO_LENGTH_MISMATCH) {
+			HeapFree(hHeap, 0, pBuffer);
+			cbBuffer *= 2;
+		}
+		else if (!NT_SUCCESS(Status)) {
+			HeapFree(hHeap, 0, pBuffer);
+			return ;
+		}
+	}
+	while (Status == STATUS_INFO_LENGTH_MISMATCH);
+	PSYSTEM_PROCESS_INFORMATION pProcesses = 
+		(PSYSTEM_PROCESS_INFORMATION)pBuffer;
+	for (;;) {
+		PCWSTR pszProcessName = pProcesses->ProcessName.Buffer;
+		if (pszProcessName == NULL)
+			pszProcessName = L"Idle";
+		CHAR szProcessName[MAX_PATH];
+		WideCharToMultiByte(CP_ACP, 0, pszProcessName, -1,
+			szProcessName, MAX_PATH, NULL, NULL);
+		procname = szProcessName;
+		if (maxlen < procname.size())
+			maxlen = procname.size();
+		itr = procs.find(procname);
+		if (itr != procs.end()) {
+			++procs[procname];
+		} else {
+			procs.insert(pair<std::string, DWORD>(procname, 1));
+		}
+		if (pProcesses->NextEntryDelta == 0)
+			break ;
+		pProcesses = (PSYSTEM_PROCESS_INFORMATION)(((LPBYTE)pProcesses)
+			+ pProcesses->NextEntryDelta);
+	}
+	HeapFree(hHeap, 0, pBuffer);
+	for (itr = procs.begin(); itr != procs.end(); ++itr) {
+		reportData << format("%-16s %u") % (*itr).first % (*itr).second << endl;
+	}
+}
 
 
 //
@@ -212,13 +288,18 @@ void AgentProcs::Run() {
 	
     ptime now = second_clock::local_time();
 	finalState = GREEN;
-	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
-	if (m_rules.size() == 0)
-		reportData << "No process to check" << endl;
-	else
-		finalState = ExecProcRules(reportData);
-	reportData << endl;
-	m_mgr.Status(m_testName.c_str(), bbcolors[finalState], reportData.str().c_str());
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
+		if (m_rules.size() == 0)
+			reportData << "No process to check" << endl;
+		else
+			finalState = ExecProcRules(reportData);
+		reportData << endl;
+		m_mgr.Status(m_testName.c_str(), bbcolors[finalState], reportData.str().c_str());
+	} else {
+		ReportCountProcesses(reportData);
+		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
+	}
 }
 
 //
@@ -271,29 +352,31 @@ void AgentProcs::AddRule(const string & name, const string & rule, const string 
 // init function
 //
 bool AgentProcs::Init() {
-	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
-	
-	if (conf == NULL)
-		return false;
-	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string		name = m_mgr.GetConfigurationRangeValue(range, "name");
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
-		if (name == "testname") {
-			string value = 	m_mgr.GetConfigurationRangeValue(range, "value");
-			if (value.length() > 0)
-				m_testName = value;
-		} else {
-			AddRule(name.c_str(), 
-				m_mgr.GetConfigurationRangeValue(range, "rule"), 
-				m_mgr.GetConfigurationRangeValue(range, "alarmcolor"),
-				m_mgr.GetConfigurationRangeValue(range, "comment"));
+		if (conf == NULL)
+			return false;
+		PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			string		name = m_mgr.GetConfigurationRangeValue(range, "name");
+
+			if (name == "testname") {
+				string value = 	m_mgr.GetConfigurationRangeValue(range, "value");
+				if (value.length() > 0)
+					m_testName = value;
+			} else {
+				AddRule(name.c_str(), 
+					m_mgr.GetConfigurationRangeValue(range, "rule"), 
+					m_mgr.GetConfigurationRangeValue(range, "alarmcolor"),
+					m_mgr.GetConfigurationRangeValue(range, "comment"));
+			}
 		}
+		m_mgr.FreeConfigurationRange(range);
+		m_mgr.FreeConfiguration(conf);
 	}
-	m_mgr.FreeConfigurationRange(range);
-	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 

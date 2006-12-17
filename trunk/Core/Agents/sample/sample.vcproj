@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="sample"
 	ProjectGUID="{169AFCB7-C5CD-40EB-BD38-715B3A96103D}"
+	RootNamespace="sample"
 	>
 	<Platforms>
 		<Platform
@@ -37,6 +38,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../.."
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>

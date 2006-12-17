@@ -51,7 +51,7 @@ static const BBWinAgentInfo_t 		memoryAgentInfo =
 	BBWIN_AGENT_VERSION,					// bbwinVersion;
 	"memory",								// agentName;
 	"memory agent : report memory usage",	// agentDescription;
-	0										// flags
+	BBWIN_AGENT_CENTRALIZED_COMPATIBLE		// flags
 };                
 
 bool		AgentMemory::GetMemoryData() {
@@ -143,15 +143,29 @@ void		AgentMemory::SendStatusReport() {
 	m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
 }
 
+void		AgentMemory::SendClientData() {
+	stringstream 			reportData;	
+
+	reportData << format("memory  %6s  %6s  %s\n") % "Used" % "Total" % "Pctg";
+	reportData << format("physical:  %6luM %6luM  %3lu%%\n") % m_memData[PHYS_MEM_TYPE].used % m_memData[PHYS_MEM_TYPE].total % m_memData[PHYS_MEM_TYPE].value;
+	reportData << format("virtual:   %6luM %6luM  %3lu%%\n") % m_memData[VIRT_MEM_TYPE].used % m_memData[VIRT_MEM_TYPE].total % m_memData[VIRT_MEM_TYPE].value;
+	reportData << format("page:      %6luM %6luM  %3lu%%\n") % m_memData[PAGE_MEM_TYPE].used % m_memData[PAGE_MEM_TYPE].total % m_memData[PAGE_MEM_TYPE].value;
+	m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
+}
+
 void 		AgentMemory::Run() {
 	if (GetMemoryData() == false)
 		return ;
-	ApplyLevels();
-	if (m_alwaysgreen == true) {
-		m_pageColor = GREEN;
-		m_status = "Memory AlwaysGreen";
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		ApplyLevels();
+		if (m_alwaysgreen == true) {
+			m_pageColor = GREEN;
+			m_status = "Memory AlwaysGreen";
+		}
+		SendStatusReport();
+	} else {
+		SendClientData();
 	}
-	SendStatusReport();
 }
 
 void			AgentMemory::SetMemDataLevels(mem_data_t & mem, DWORD warn, DWORD panic) {
@@ -171,55 +185,57 @@ void			AgentMemory::SetMemDataLevels(mem_data_t & mem, DWORD warn, DWORD panic) 
 }
 
 bool AgentMemory::Init() {
-	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
-	if (conf == NULL)
-		return false;
-	m_klib = GetModuleHandle("kernel32.dll");
-    if (m_klib == NULL) {
-		m_mgr.ReportEventError("can't get kernel32.dll module");
-		return false;
-	}
-	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string			name;
+		if (conf == NULL)
+			return false;
+		m_klib = GetModuleHandle("kernel32.dll");
+		if (m_klib == NULL) {
+			m_mgr.ReportEventError("can't get kernel32.dll module");
+			return false;
+		}
+		PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			string			name;
 
-		name = m_mgr.GetConfigurationRangeValue(range, "name");
-		if (name == "alwaysgreen") {
-			string value =  m_mgr.GetConfigurationRangeValue(range, "value");
-			if (value == "true")
-				m_alwaysgreen = true;
-		} else if (name == "testname") {
-			string value =  m_mgr.GetConfigurationRangeValue(range, "value");
-			if (value.length() > 0)
-				m_testName = value;
-		} else {
-			DWORD panic, warn;
-			string sPanic, sWarn;
-		
-			sPanic = m_mgr.GetConfigurationRangeValue(range, "paniclevel");
-			sWarn = m_mgr.GetConfigurationRangeValue(range, "warnlevel");
-			if (name == "physical") {
-				warn = (sWarn == "") ? DEF_PHYS_WARN : m_mgr.GetNbr(sWarn.c_str());
-				panic = (sPanic == "") ? DEF_PHYS_PANIC : m_mgr.GetNbr(sPanic.c_str());
-				SetMemDataLevels(m_memData[PHYS_MEM_TYPE], warn, panic);
-			}
-			if (name == "page") {
-				warn = (sWarn == "") ? DEF_PAGE_WARN : m_mgr.GetNbr(sWarn.c_str());
-				panic = (sPanic == "") ? DEF_PAGE_PANIC : m_mgr.GetNbr(sPanic.c_str());
-				SetMemDataLevels(m_memData[PAGE_MEM_TYPE], warn, panic);
-			}
-			if (name == "virtual") {
-				warn = (sWarn == "") ? DEF_VIRT_WARN : m_mgr.GetNbr(sWarn.c_str());
-				panic = (sPanic == "") ? DEF_VIRT_PANIC : m_mgr.GetNbr(sPanic.c_str());
-				SetMemDataLevels(m_memData[VIRT_MEM_TYPE], warn, panic);
+			name = m_mgr.GetConfigurationRangeValue(range, "name");
+			if (name == "alwaysgreen") {
+				string value =  m_mgr.GetConfigurationRangeValue(range, "value");
+				if (value == "true")
+					m_alwaysgreen = true;
+			} else if (name == "testname") {
+				string value =  m_mgr.GetConfigurationRangeValue(range, "value");
+				if (value.length() > 0)
+					m_testName = value;
+			} else {
+				DWORD panic, warn;
+				string sPanic, sWarn;
+
+				sPanic = m_mgr.GetConfigurationRangeValue(range, "paniclevel");
+				sWarn = m_mgr.GetConfigurationRangeValue(range, "warnlevel");
+				if (name == "physical") {
+					warn = (sWarn == "") ? DEF_PHYS_WARN : m_mgr.GetNbr(sWarn.c_str());
+					panic = (sPanic == "") ? DEF_PHYS_PANIC : m_mgr.GetNbr(sPanic.c_str());
+					SetMemDataLevels(m_memData[PHYS_MEM_TYPE], warn, panic);
+				}
+				if (name == "page") {
+					warn = (sWarn == "") ? DEF_PAGE_WARN : m_mgr.GetNbr(sWarn.c_str());
+					panic = (sPanic == "") ? DEF_PAGE_PANIC : m_mgr.GetNbr(sPanic.c_str());
+					SetMemDataLevels(m_memData[PAGE_MEM_TYPE], warn, panic);
+				}
+				if (name == "virtual") {
+					warn = (sWarn == "") ? DEF_VIRT_WARN : m_mgr.GetNbr(sWarn.c_str());
+					panic = (sPanic == "") ? DEF_VIRT_PANIC : m_mgr.GetNbr(sPanic.c_str());
+					SetMemDataLevels(m_memData[VIRT_MEM_TYPE], warn, panic);
+				}
 			}
 		}
+		m_mgr.FreeConfigurationRange(range);
+		m_mgr.FreeConfiguration(conf);
 	}
-	m_mgr.FreeConfigurationRange(range);
-	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 

@@ -36,11 +36,13 @@
 class BBWinCentralHandler : public Thread {
 	private:
 		std::list<BBWinHandler *>		m_agents;
+		bbwinhandler_data_t				m_data;
 		DWORD							m_timer;
 		HANDLE							*m_hEvents;
 		DWORD							m_hCount;
 		Logging							*m_log;
 		BBWinAgentManager				*m_mgr;
+		bbdisplay_t						& m_bbdisplay;
 
 	private :
 		// RunAgents
@@ -54,6 +56,7 @@ class BBWinCentralHandler : public Thread {
 		void	SetEventCount(DWORD count) { m_hCount = count; }
 		void	SetEvents(HANDLE *events) { m_hEvents = events; }
 		void	AddAgentHandler(BBWinHandler *handler);
+		static	void bbwinClientData_callback(const std::string & dataName, const std::string & data);
 
 		void run();
 };

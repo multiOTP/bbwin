@@ -24,6 +24,8 @@
 #include <string>
 using namespace std;
 
+#include "digest.h"
+
 #define BBWIN_AGENT_EXPORTS
 
 #include "BBWinUpdate.h"
@@ -36,70 +38,155 @@ static const BBWinAgentInfo_t 		bbwinupdateAgentInfo =
 	0 
 };                
 
+// return true if the 2 files are identical
+static bool			Compare2Files(const char * file1, const char * file2) { 
+	digestctx_t *dig1, *dig2;
+	HANDLE			hFile1, hFile2;
+	string			res1, res2;
+	char			buf[1024];
+	DWORD			read;
 
-void 		AgentBBWinUpdate::Run() {
-	HANDLE hFile; 
- 
-	hFile = CreateFile(TEXT("C:\\BBWinUpdate.data"),     // file to create
-		GENERIC_READ | GENERIC_WRITE,          // open for writing
-		FILE_SHARE_READ | FILE_SHARE_WRITE, // share
+	dig1 = digest_init("md5");
+	dig2 = digest_init("md5");
+	if (dig1 == NULL || dig2 == NULL)
+		return false;
+	hFile1 = CreateFile(file1,     // file to open
+		GENERIC_READ,         // open for reading
+		NULL, // do not share
 		NULL,                   // default security
-		CREATE_ALWAYS,          // overwrite existing
+		OPEN_EXISTING, // default flags
 		0,   // asynchronous I/O
 		0);                  // no attr. template
-
-	if (hFile == INVALID_HANDLE_VALUE) 
-	{ 
-		cout << "Could not open file " << GetLastError() << endl;
-		return ;
+	if (file1 == INVALID_HANDLE_VALUE) 
+		return false;
+	while (ReadFile(hFile1, buf, 1024, &read, NULL)) {
+		if (read == 0)
+			break ;
+		digest_data(dig1, (unsigned char *)buf, read);
 	}
-
-	TCHAR szName[]=TEXT("MyFileMappingObject");
-	TCHAR szMsg[]=TEXT("Message from first process");
-	HANDLE hMapFile;
-	LPTSTR pBuf;
-
-	hMapFile = CreateFileMapping(
-                 hFile,    // use paging file
-                 NULL,                    // default security 
-                 PAGE_READWRITE,          // read/write access
-                 0,    // max. object size 
-                 FILE_MAX_CONFIG_SIZE,                // buffer size  
-                 NULL);                 // name of mapping object
- 
-   if (hMapFile == NULL || hMapFile == INVALID_HANDLE_VALUE) 
-   { 
-      cout << "Could not create file mapping object " << GetLastError() << endl;
-      return;
-   }
-   pBuf = (LPTSTR) MapViewOfFile(hMapFile,   // handle to map object
-                        FILE_MAP_ALL_ACCESS, // read/write permission
-                        0,                   
-                        0,                   
-                        FILE_MAX_CONFIG_SIZE);           
-	
-	if (pBuf == NULL) 
-	{ 
-		  cout << "Could not map view of file " << GetLastError() << endl;
-		return;
+	CloseHandle(hFile1);
+	res1 = digest_done(dig1);
+	hFile2 = CreateFile(file2,     // file to open
+		GENERIC_READ,         // open for reading
+		NULL, // do not share
+		NULL,                   // default security
+		OPEN_EXISTING, // default flags
+		0,   // asynchronous I/O
+		0);                  // no attr. template
+	if (file2 == INVALID_HANDLE_VALUE) 
+		return false;
+	while (ReadFile(hFile2, buf, 1024, &read, NULL)) {
+		if (read == 0)
+			break ;
+		digest_data(dig2, (unsigned char *)buf, read);
 	}
-	
-	//cout << "BBWin Update Started" << endl;
-	m_mgr.Config(m_fileName.c_str(), pBuf, FILE_MAX_CONFIG_SIZE);
-	
-	string test = pBuf;
-	cout << test << endl;
+	CloseHandle(hFile2);
+	res2 = digest_done(dig2);
+	if (res1 == res2)
+		return true;
+	return false;
+}
 
-	UnmapViewOfFile(pBuf);
-	CloseHandle(hMapFile);
-	CloseHandle(hFile);
+
+
+// check if the xml is well formed
+// check if the checksum is different
+// return true if validated
+bool					AgentBBWinUpdate::ValidateUpdate() {
+	bool				valid = true;
+	TiXmlDocument		*update;
+
+	update = new TiXmlDocument(m_bbwinCfgTmpPath.c_str());
+	if (update == NULL)
+		return valid;
+	bool loadUpdateOkay = update->LoadFile();
+	if ( !loadUpdateOkay ) {
+		string err = (string)" failed to validate the update file " 
+			+ m_bbwinCfgTmpPath + (string) " : " + (string)update->ErrorDesc();
+		m_mgr.ReportEventError(err.c_str());
+		valid = false;
+	}
+	delete update;
+	if (valid == false)
+		return false;
+	if (Compare2Files(m_bbwinCfgPath.c_str(), m_bbwinCfgTmpPath.c_str())) {
+		valid = false;
+	}
+	return valid;
+}
+
+// get the configuration file using hobbit protocol config
+void		AgentBBWinUpdate::RunUpdate(std::string & configFile) {
+	TiXmlDocument		* update, * toUpdate;
+
+	DeleteFile(m_bbwinupdateTmpFilePath.c_str());
+	m_mgr.Config(configFile.c_str(), m_bbwinupdateTmpFilePath.c_str());
+	update = new TiXmlDocument(m_bbwinupdateTmpFilePath.c_str());
+	bool loadUpdateOkay = update->LoadFile();
+	if ( !loadUpdateOkay ) {
+		string err = (string)" failed to get the update " + configFile + (string)" or the update file is not correct";
+		m_mgr.ReportEventError(err.c_str());
+	}
+	toUpdate = new TiXmlDocument(m_bbwinCfgTmpPath.c_str());
+	bool loadToUpdateOkay = toUpdate->LoadFile();
+	if ( !loadToUpdateOkay ) {
+		delete update;
+		string err = (string)" failed to open " + m_bbwinCfgTmpPath;
+		m_mgr.ReportEventError(err.c_str());
+	}
+	TiXmlElement *root = update->FirstChildElement( "configuration" );
+	TiXmlElement *toUpdateRoot = toUpdate->FirstChildElement( "configuration" );
+	if ( root && toUpdateRoot) {
+		for (TiXmlNode * nameSpaceNode = root->FirstChild(); nameSpaceNode != NULL; nameSpaceNode = root->IterateChildren(nameSpaceNode)) {
+			// we never update bbwin namespace (too dangerous)
+			if (strcmp(nameSpaceNode->Value(), "bbwin") != 0) {
+				TiXmlNode * destNameSpaceNode = toUpdateRoot->FirstChild(nameSpaceNode->Value());
+				if ( destNameSpaceNode ) {
+					toUpdateRoot->ReplaceChild(destNameSpaceNode, *nameSpaceNode);
+				} else {
+					toUpdateRoot->InsertEndChild(*nameSpaceNode);
+				}
+			} else {
+				string err = (string)" bbwin namespace update is not permitted. Please check the " + (string)configFile + (string)" on your hobbit server.";
+				m_mgr.ReportEventError(err.c_str());
+			}
+		}
+	}
+	if (toUpdate->SaveFile() != true) {
+		string err = (string)" failed to save " + m_bbwinCfgTmpPath;
+		m_mgr.ReportEventError(err.c_str());
+	}
+	delete update;
+	delete toUpdate;
+}
+
+void 		AgentBBWinUpdate::Run() {
+	std::list<string>::iterator		itr;
+	
+	if (CopyFile(m_bbwinCfgPath.c_str(), m_bbwinCfgTmpPath.c_str(), false) == 0) {
+		string err = (string)" failed to copy " + m_bbwinCfgPath + (string)" to " + m_bbwinCfgTmpPath;
+		m_mgr.ReportEventError(err.c_str());
+	}
+	for (itr = m_configFiles.begin(); itr != m_configFiles.end(); ++itr) {
+		RunUpdate((*itr));
+	}
+	if (ValidateUpdate()) {
+		if (CopyFile(m_bbwinCfgTmpPath.c_str(), m_bbwinCfgPath.c_str(), false) == 0) {
+			string err = (string)" failed to update " + m_bbwinCfgPath;
+			m_mgr.ReportEventError(err.c_str());
+		} else {
+			string err = (string)" successfully updated the bbwin configuration";
+			m_mgr.ReportEventInfo(err.c_str());
+		}
+	}
 }
 
 AgentBBWinUpdate::AgentBBWinUpdate(IBBWinAgentManager & mgr) : 
-			m_mgr(mgr),
-			m_fileName("BBWin.cfg")
+			m_mgr(mgr)
 {
-	
+	m_bbwinCfgPath = m_mgr.GetSetting("etcpath") + (string)"\\bbwin.cfg";
+	m_bbwinCfgTmpPath = m_mgr.GetSetting("tmppath") + (string)"\\bbwin.cfg.work";
+	m_bbwinupdateTmpFilePath = m_mgr.GetSetting("tmppath") + (string)"\\bbwin.cfg.update";
 }
 
 bool		AgentBBWinUpdate::Init() {
@@ -115,8 +202,11 @@ bool		AgentBBWinUpdate::Init() {
 		
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
 		value = m_mgr.GetConfigurationRangeValue(range, "value");
+		/*if (name == "server" && value.length() > 0) {
+			m_server = value;
+		}*/
 		if (name == "filename" && value.length() > 0) {
-			m_fileName = value;
+			m_configFiles.push_back(value);
 		}
 	}
 	while (m_mgr.IterateConfigurationRange(range));

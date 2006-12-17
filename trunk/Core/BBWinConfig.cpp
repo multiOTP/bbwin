@@ -49,6 +49,8 @@ void 			BBWinConfig::LoadConfiguration(const string & fileName, const string & c
 	EnterCriticalSection(&m_configCriticalSection); 
 	m_path = fileName;
 	m_doc = new TiXmlDocument(m_path.c_str());
+	if (m_doc == NULL) 
+		throw BBWinConfigException("can't allocare tinyxml instance");
 	bool loadOkay = m_doc->LoadFile();
 	if ( !loadOkay ) {
 		LeaveCriticalSection(&m_configCriticalSection);

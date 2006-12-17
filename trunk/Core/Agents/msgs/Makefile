@@ -30,7 +30,7 @@ cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
 	
 ## msgs dependencies
 
-msgs_objs = 	msgs.obj eventlog.obj
+msgs_objs = 	msgs.obj eventlog.obj logs.obj
 
 msgs.res: msgs.rc
 	$(rc) $(rcflags) $(rcvars) /fo msgs.res msgs.rc

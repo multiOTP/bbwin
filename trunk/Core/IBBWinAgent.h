@@ -31,7 +31,7 @@
 // must be set to 0 if no flag is set
 //
 #define			BBWIN_AGENT_THREAD_SAFE					0x01
-#define			BBWIN_AGENT_HOBBIT_COMPATIBLE			0x02
+#define			BBWIN_AGENT_CENTRALIZED_COMPATIBLE			0x02
 
 
 // 

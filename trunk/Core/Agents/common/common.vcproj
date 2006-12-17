@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="common"
 	ProjectGUID="{5FD05B63-7A8C-4563-91C7-8E481F35BFED}"
+	RootNamespace="common"
 	>
 	<Platforms>
 		<Platform
@@ -36,6 +37,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				RuntimeLibrary="2"
 				DebugInformationFormat="3"
 			/>
 			<Tool

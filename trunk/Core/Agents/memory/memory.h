@@ -76,6 +76,7 @@ class AgentMemory : public IBBWinAgent
 		bool		GetMemoryData();
 		void		ApplyLevels();
 		void		SendStatusReport();
+		void		SendClientData();
 		
 	public :
 		AgentMemory(IBBWinAgentManager & mgr);

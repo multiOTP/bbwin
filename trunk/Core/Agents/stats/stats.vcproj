@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="stats"
 	ProjectGUID="{E8F7E4D3-C0DF-4D76-A754-B6B6DB70D797}"
+	RootNamespace="stats"
 	>
 	<Platforms>
 		<Platform
@@ -38,6 +39,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>

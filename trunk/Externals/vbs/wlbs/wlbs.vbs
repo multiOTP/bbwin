@@ -19,8 +19,8 @@
 '*
 '* File:		WLBS.VBS
 '* Created:		February 15, 2006
-'* Last Modified:	February 22, 2006
-'* Version:		1.0
+'* Last Modified:	August 30, 2006
+'* Version:		1.1
 '*
 '* Main Function:  	check wlbs (nlb)  node status
 '* 
@@ -32,6 +32,7 @@
 '*
 '* History
 '* 2006/02/17      1.0          First try
+'* 2006/08/30      1.1          resolve a bug for the configuration loading, it wasn't the right path
 '***********************************************************************************
 
 ' use explicit declaration
@@ -110,7 +111,7 @@ Sub				ReadConfig(byref confStatus)
 	Dim			etcPath
 
 	On Error Resume Next
-	etcPath = shello.RegRead(regTmp)
+	etcPath = shello.RegRead(regEtc)
 	Err.Number = 0
 	Set fconf = fso.OpenTextFile(etcPath & "\wlbs.cfg", 1)
 	If Err.Number <> 0 Then

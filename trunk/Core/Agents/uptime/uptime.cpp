@@ -43,12 +43,12 @@ static const BBWinAgentInfo_t 		uptimeAgentInfo =
 	BBWIN_AGENT_VERSION,						// bbwinVersion;
 	"uptime",									// agentName;
 	"uptime agent : report uptime server",		// agentDescription;
-	0											// flags
+	BBWIN_AGENT_CENTRALIZED_COMPATIBLE			// flags
 };                
 
 
 void AgentUptime::Run() {
-	DWORD				seconds;
+	DWORD				seconds, uptime;
 	bool				alert = false;
 	DWORD				day, hour, min;
 	stringstream 		reportData;	
@@ -56,12 +56,21 @@ void AgentUptime::Run() {
 	ptime 				now;
 	
 	now = second_clock::local_time();
-	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] - uptime\n\n";
+	if (m_mgr.IsCentralModeEnabled() == false)
+		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] - uptime\n\n";
 	seconds = data.GetSystemUpTime();
-	if (seconds <= m_delay) {
-		reportData << "&" << m_alarmColor << " machine rebooted recently" << endl;
-		reportData << endl;
-		alert = true;
+	uptime = seconds;
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		if (seconds == 0) {
+			// some times, the counter returns 0 on the first collect even if the server is
+			// up since many days. So, if we got 0 seconds, we send a green status
+			reportData << "&yellow system uptime performance counter query failed" << endl;
+			reportData << endl;
+		} else 	if (seconds <= m_delay) {
+			reportData << "&" << m_alarmColor << " machine rebooted recently" << endl;
+			reportData << endl;
+			alert = true;
+		}
 	}
 	day = seconds / 86400;
 	seconds -= day * 86400;
@@ -70,38 +79,45 @@ void AgentUptime::Run() {
 	min = seconds / 60;
 	seconds -= min * 60;
 	reportData << day  << " days " << hour << " hours " << min << " minutes " << seconds << " seconds" << endl;
-	if (alert){
-		m_mgr.Status(m_testName.c_str(), m_alarmColor.c_str(), reportData.str().c_str());
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		if (alert){
+			m_mgr.Status(m_testName.c_str(), m_alarmColor.c_str(), reportData.str().c_str());
+		} else {
+			m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
+		}
 	} else {
-		m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
+		reportData << uptime << " sec" << endl;
+		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
 	}
 }
 
 bool AgentUptime::Init() {
-	PBBWINCONFIG conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
-	if (conf == NULL)
-		return false;
-	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string name, value;
-		
-		name = m_mgr.GetConfigurationRangeValue(range, "name");
-		value = m_mgr.GetConfigurationRangeValue(range, "value");
-		if (name == "delay" && value != "") {
-			DWORD		seconds = m_mgr.GetSeconds(value.c_str());
-			m_delay = seconds;
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		PBBWINCONFIG conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+		if (conf == NULL)
+			return false;
+		PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			string name, value;
+
+			name = m_mgr.GetConfigurationRangeValue(range, "name");
+			value = m_mgr.GetConfigurationRangeValue(range, "value");
+			if (name == "delay" && value != "") {
+				DWORD		seconds = m_mgr.GetSeconds(value.c_str());
+				m_delay = seconds;
+			}
+			if (name == "alarmcolor" && value != "") {
+				m_alarmColor = value;
+			}
+			if (name == "testname" && value != "") {
+				m_testName = value;
+			}
 		}
-		if (name == "alarmcolor" && value != "") {
-			m_alarmColor = value;
-		}
-		if (name == "testname" && value != "") {
-			m_testName = value;
-		}
-	}
-	m_mgr.FreeConfigurationRange(range);
-	m_mgr.FreeConfiguration(conf);
+		m_mgr.FreeConfigurationRange(range);
+		m_mgr.FreeConfiguration(conf);
+	}	
 	return true;
 }
 

@@ -146,10 +146,14 @@ Logging::~Logging() {
 //  the functions is implemented to work in multithreading environnment. 
 //  that's why critical sections are used
 //
+#define TIME_BUF			256
 void Logging::write(const string & log) {
 	struct _SYSTEMTIME  ts;
-
+	string				time, date;
+	TCHAR				timebuf[TIME_BUF + 1];
+	
 	EnterCriticalSection(&m_logCriticalSection); 
+	SecureZeroMemory(timebuf, sizeof(timebuf));
     GetLocalTime(&ts);
 	try {
 		open();
@@ -157,8 +161,17 @@ void Logging::write(const string & log) {
 		LeaveCriticalSection(&m_logCriticalSection);
 		return ;
 	}
-	*m_logFile << ts.wDay << "/" << ts.wMonth << "/" << ts.wYear << " " << ts.wHour; 
-	*m_logFile << ":" << ts.wMinute << ":" << ts.wSecond << ":";
+	if (GetTimeFormat(LOCALE_SYSTEM_DEFAULT, TIME_FORCE24HOURFORMAT, &ts, "hh':'mm':'ss", timebuf, TIME_BUF) != 0) {
+		time = timebuf;
+	} else {
+		time = "00:00:00";
+	}
+	if (GetDateFormat(LOCALE_SYSTEM_DEFAULT, 0, &ts, "yyyy/MM/dd", timebuf, TIME_BUF) != 0) {
+		date = timebuf;
+	} else {
+		date = "unkwown";
+	}
+	*m_logFile << date << " " << time << " ";
 	*m_logFile << log << endl;
 	close();
     LeaveCriticalSection(&m_logCriticalSection);

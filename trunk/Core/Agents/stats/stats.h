@@ -29,7 +29,11 @@ class AgentStats : public IBBWinAgent
 		std::string				m_testName;
 		
 	private :
-		void		Netstat();
+		void		NetstatLocal(const std::string & path);
+		void		NetstatCentralized(const std::string & path);
+		void		NetstatCentralizedStep(const std::string & cmd, const std::string & path, 
+			const std::string dataName);
+
 	public :
 		AgentStats(IBBWinAgentManager & mgr);
 		bool Init();

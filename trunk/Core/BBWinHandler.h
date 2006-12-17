@@ -26,10 +26,6 @@
 
 #include "BBWinHandlerData.h"
 
-// 
-// inherit from the nice thread class written by Vijay Mathew Pandyalakal
-// this class handle each agent and execute agent code
-// 
 class BBWinHandler {
 
 private:

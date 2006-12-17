@@ -19,7 +19,7 @@
 
 all: bbwinupdate.dll
 
-cflags = $(cflags) /EHsc /I ../..
+cflags = $(cflags) /EHsc /I ../.. /I ../../digest
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
@@ -32,7 +32,7 @@ bbwinupdate.res: bbwinupdate.rc
 	$(rc) $(rcflags) $(rcvars) /fo bbwinupdate.res bbwinupdate.rc
 	
 bbwinupdate.dll: $(bbwinupdate_objs) bbwinupdate.res
-    $(link) /DLL $(dllldebug) $(bbwinupdate_objs) bbwinupdate.res -out:bbwinupdate.dll
+    $(link) /DLL $(dllldebug) $(bbwinupdate_objs) bbwinupdate.res ../../../Release/digest.lib ../../../Release/TinyXml.lib kernel32.lib -out:bbwinupdate.dll
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
 	copy /Y bbwinupdate.dll ..\..\..\Release
 	

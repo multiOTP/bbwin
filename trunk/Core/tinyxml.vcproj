@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="tinyxml"
 	ProjectGUID="{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}"
+	RootNamespace="tinyxml"
 	>
 	<Platforms>
 		<Platform
@@ -37,6 +38,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>

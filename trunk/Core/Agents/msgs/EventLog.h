@@ -33,6 +33,8 @@
 
 #define MSG_ID_MASK 0x0000FFFF
 
+#define ACCOUNT_SIZE	128
+#define UNKOWN_ACCOUNT	"n/a"
 
 namespace EventLog {
 
@@ -45,14 +47,12 @@ class Rule {
 	private :
 		bool			m_useId; // true if event ID specified
 		DWORD			m_id; // event ID
-		bool			m_useSource; // true if event Source specified
 		std::string		m_source; // event source
 		DWORD			m_alarmColor; // alarm color for the rules
 		bool			m_ignore;  // is it an ignore rule
-		bool			m_useType; // true if type specified
 		WORD			m_type; // event type
-		bool			m_useValue; // true if value specified
 		std::string		m_value; // value to match
+		std::string		m_user; // user of the event
 		DWORD			m_delay; // delay in seconds
 		DWORD			m_count; // Maximum number of matches for the rules. Default is 0 which mean rule is checked all time
 		DWORD			m_countTmp; // Current number of matches
@@ -85,6 +85,8 @@ class Rule {
 		void				SetCurrentCount(DWORD currentCount) { m_countTmp = currentCount; }
 		DWORD				GetPriority() const { return m_priority; }
 		void				SetPriority(DWORD priority) { m_priority = priority; }
+		const std::string & GetUser() const { return m_user; }
+		void				SetUser(const std::string & user) { m_user = user; }
 };
 
 typedef std::multimap < std::string, HMODULE > 					eventlog_mod_t;
@@ -111,13 +113,12 @@ class Session {
 		DWORD								m_oldestRecord;
 
 	private :
-		void			FormatEventMessage() {};
-		void			LoadSource(const std::string & logfile, const std::string & source) {};
 		void			FreeSources();
 		DWORD			GetMaxDelay();
 		DWORD			AnalyzeEvent(const EVENTLOGRECORD * ev, std::stringstream & reportData);
 		bool			ApplyRule(const Rule & rule, const EVENTLOGRECORD * ev);
 		void			GetEventDescription(const EVENTLOGRECORD * ev, std::string & description);
+		void			GetEventUser(const EVENTLOGRECORD * ev, std::string & user);
 		void			InitCounters();
 		void			LoadEventMessageFile(const std::string & source, const EVENTLOGRECORD * ev);
 		
@@ -128,7 +129,6 @@ class Session {
 		DWORD		GetTotalCount() { return m_total; }
 
 		DWORD			Execute(std::stringstream & reportData);
-		void			GetReport() {};
 		static LONG		Now();
 		void			AddRule(const Rule & rule);
 
@@ -144,8 +144,10 @@ class Manager {
 	private:
 		std::map< std::string, Session * >			m_sessions;
 		std::list< std::string >					m_logFileList;
+		bool										m_checkFullLogFile;
 
 	private:
+		DWORD				AnalyzeLogFilesSize(std::stringstream & reportData, bool checking);
 		void				GetLogFileList();
 		void				FreeSessions() {};
 
@@ -155,6 +157,8 @@ class Manager {
 		DWORD		GetMatchCount();
 		DWORD		GetIgnoreCount();
 		DWORD		GetTotalCount();
+		bool		GetCheckFullLogFile() const { return m_checkFullLogFile; }
+		void		SetCheckFullLogFile(bool checkFullLogFile) { m_checkFullLogFile = checkFullLogFile; }
 		Manager();
 		~Manager();
 };

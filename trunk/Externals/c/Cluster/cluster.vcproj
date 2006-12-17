@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="cluster"
 	ProjectGUID="{54212266-EFC0-4ED9-A401-D64906F6AE08}"
+	RootNamespace="cluster"
 	>
 	<Platforms>
 		<Platform
@@ -37,6 +38,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>

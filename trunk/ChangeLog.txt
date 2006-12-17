@@ -2,6 +2,41 @@ ChangeLog file for BBWin
 ==============================================================
 
 
+BBWin 0.9 Preview version - December 5th 2006
+-------------------
+
+
++ New Features
+* Msgs agent reports events username and you may filter event with user name
+* Msgs agent reports some statistics about each event log file. You can activate
+  an option which alert you when an event log is full. See the help chm file for details.
+* New BBWinUpdate agent : it used for the semi centralized mode. You can configure the agent
+  to download configurations updates from a central hobbit server.
+* First version of BBWin centralized mode implemented. Backend for hobbit not coded.
+  Look at the BBWin.cfg example in the doc folder or in the documentation
+
++ Updates
+* system uptime sometimes returns 0 seconds on the first query. BBWin now send 
+  a green status when this happens to avoid incorrect alerts.
+* msgs now formats description field in status so you don't have to scroll your window
+  to read a large event description
+* disk agent reported alerts on unrecognized disks (like disks part of cluster resources on
+  the inactive node of an MSCS cluster). These disks are now automatically ignored.
+* cluster.exe is more verbose when it check the Windows version
+* procs agent now is using rules with signs '+' or '-' because XML format doesn't accept
+  '<' sign in attributes ... However, the compatibility with '<' and '>' is preserved.
+* msgs summary option is removed. It is enabled by default and there is no use to disable it.
+
++ Bugs
+* limit option for cpu agent was wrong in the number of lines reported, it is fixed.
+* When an agent had no configuration in BBWin.cfg and if it was loaded, BBWin crashed, it is fixed.
+* msgs agent had a memory leak when an initialization was made to get event description. it is fixed.
+* wlbs script external had a bug to load the configuration file. it is fixed.
+* cpu agent were always missing one process in the ps report. it is fixed.
+* externals agent was crashing BBWin if its configuration was empty. it is fixed.
+
+
+
 BBWin 0.8 Preview version - 01 August 2006
 -------------------
 

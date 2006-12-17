@@ -107,9 +107,9 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 		void		Rename(LPCTSTR newHostName);
 		void		Rename(LPCTSTR oldTestName, LPCTSTR newTestName);
 		void		Message(LPCTSTR message, LPTSTR dest, DWORD size);
-		void		Config(LPCTSTR fileName, LPTSTR dest, DWORD size);
+		void		Config(LPCTSTR fileName, LPCTSTR dest);
 		void		Query(LPCTSTR testName, LPTSTR dest, DWORD size);
-		void		Download(LPCTSTR fileName, LPTSTR dest, DWORD size);
+		void		Download(LPCTSTR fileName, LPCTSTR dest);
 		void		ClientData(LPCTSTR dataName, LPCTSTR text);
 
 

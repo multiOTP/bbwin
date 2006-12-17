@@ -723,7 +723,7 @@ void		BBWinNet::Test() {
 //  message 		hobbit message manually formed
 //
 //  RETURN VALUE:
-//   string			return the string returned by the server if there is one 
+//   dest			return the string returned by the server if there is one 
 //
 //  COMMENTS:
 //
@@ -770,7 +770,7 @@ void				BBWinNet::Message(const string & message, string & dest) {
 //  testName 		testName queried
 //
 //  RETURN VALUE:
-//   string			return the string returned by the server if there is one 
+//   dest			return the string returned by the server if there is one 
 //
 //  COMMENTS:
 //
@@ -825,11 +825,12 @@ void				BBWinNet::Query(const string & testName, string & dest) {
 //
 //  COMMENTS:
 //
-void				BBWinNet::Config(const string & fileName, string & dest) {
+void				BBWinNet::Config(const string & fileName, const string & destPath) {
 	ostringstream 	query;
 	int				rBuf;
 	char			buf[BB_LEN_RECV + 1];
-	
+	HANDLE			hFile; 
+
 	try {
 		Open();
 	} catch (BBWinNetException ex) {
@@ -846,22 +847,218 @@ void				BBWinNet::Config(const string & fileName, string & dest) {
 	if (shutdown(m_conn, 1) != 0) {
 		throw BBWinNetException("Can't shutdown socket");
 	}
+	hFile = CreateFile(destPath.c_str(),     // file to create
+		GENERIC_READ | GENERIC_WRITE,          // open for writing
+		NULL, // do not share
+		NULL,                   // default security
+		CREATE_ALWAYS,          // overwrite existing
+		0,   // asynchronous I/O
+		0);                  // no attr. template
+	if (hFile == INVALID_HANDLE_VALUE) {
+		Close();
+		throw BBWinNetException("Can't create file");
+	}
+	DWORD		writen = 0;
 	while((rBuf = recv(m_conn, buf, BB_LEN_RECV,0)) && rBuf != SOCKET_ERROR)
 	{
 		buf[rBuf] = '\0';
-		dest += buf;
+		if (WriteFile(hFile, buf, rBuf, &writen, NULL) == 0) {
+			CloseHandle(hFile);
+			Close();
+			throw BBWinNetException("writing file failed");
+		}
 	}
 	if (rBuf == SOCKET_ERROR) {
+		Close();
+		CloseHandle(hFile);
 		throw BBWinNetException("Can't receive query answer");
 	}
 	if (shutdown(m_conn, 0) != 0) {
+		Close();
+		CloseHandle(hFile);
 		throw BBWinNetException("Can't shutdown socket");
 	}
 	if (shutdown(m_conn, 2) != 0) {
+		Close();
+		CloseHandle(hFile);
 		throw BBWinNetException("Can't shutdown socket");
 	}
 	Close();
+	CloseHandle(hFile);
 }
+
+
+//
+//  FUNCTION: BBWinNet::Download
+//
+//  PURPOSE: send a download message
+//
+//  PARAMETERS:
+//  filename 		filename wanted 
+//  destPath			it is the filename of the destination
+//
+//  COMMENTS:
+//
+void				BBWinNet::Download(const string & fileName, const string & destPath) {
+	ostringstream 	query;
+	int				rBuf;
+	char			buf[BB_LEN_RECV + 1];
+	HANDLE			hFile; 
+
+	try {
+		Open();
+	} catch (BBWinNetException ex) {
+		throw ex;
+	}
+	query << "download";
+	query << " " << fileName;
+	string res = query.str();
+	try {
+		Send(res);
+	} catch (BBWinNetException ex) {
+		throw ex;
+	}
+	if (shutdown(m_conn, 1) != 0) {
+		throw BBWinNetException("Can't shutdown socket");
+	}
+	hFile = CreateFile(destPath.c_str(),     // file to create
+		GENERIC_READ | GENERIC_WRITE,          // open for writing
+		NULL, // do not share
+		NULL,                   // default security
+		CREATE_ALWAYS,          // overwrite existing
+		0,   // asynchronous I/O
+		0);                  // no attr. template
+	if (hFile == INVALID_HANDLE_VALUE) {
+		Close();
+		throw BBWinNetException("Can't create file");
+	}
+	DWORD		writen = 0;
+	while((rBuf = recv(m_conn, buf, BB_LEN_RECV,0)) && rBuf != SOCKET_ERROR)
+	{
+		buf[rBuf] = '\0';
+		if (WriteFile(hFile, buf, rBuf, &writen, NULL) == 0) {
+			CloseHandle(hFile);
+			Close();
+			throw BBWinNetException("writing file failed");
+		}
+	}
+	if (rBuf == SOCKET_ERROR) {
+		Close();
+		CloseHandle(hFile);
+		throw BBWinNetException("Can't receive query answer");
+	}
+	if (shutdown(m_conn, 0) != 0) {
+		Close();
+		CloseHandle(hFile);
+		throw BBWinNetException("Can't shutdown socket");
+	}
+	if (shutdown(m_conn, 2) != 0) {
+		Close();
+		CloseHandle(hFile);
+		throw BBWinNetException("Can't shutdown socket");
+	}
+	Close();
+	CloseHandle(hFile);
+}
+
+
+//
+//  FUNCTION: BBWinNet::ClientData
+//
+//  PURPOSE: send a clientdata message
+//
+//  PARAMETERS:
+//  report				data client report 
+//  destPath			it is the filename of the destination from the answer
+//
+//  COMMENTS:
+//
+void				BBWinNet::ClientData(const string & reportPath, const string & destPath) {
+	ostringstream 	query;
+	int				rBuf;
+	char			buf[BB_LEN_RECV + 1];
+	HANDLE			hFile, hReportFile; 
+
+	hReportFile = CreateFile(reportPath.c_str(),     // file to open
+		GENERIC_READ,         // open for reading
+		NULL, // do not share
+		NULL,                   // default security
+		OPEN_EXISTING, // default flags
+		0,   // asynchronous I/O
+		0);                  // no attr. template
+	if (hReportFile == INVALID_HANDLE_VALUE) {
+		Close();
+		throw BBWinNetException("Can't open report file");
+	}
+	try {
+		Open();
+	} catch (BBWinNetException ex) {
+		CloseHandle(hReportFile);
+		throw BBWinNetException(ex.getMessage().c_str());
+	}
+	// sending the file
+	DWORD			tosend = 0;
+	
+	SecureZeroMemory(buf, sizeof(buf));
+	while (ReadFile(hReportFile, buf, BB_LEN_RECV, &tosend, NULL)) {
+		DWORD			hasSent;
+
+		if (tosend == 0)
+			break ;
+		hasSent = send(m_conn, buf, tosend, 0);
+		if (hasSent == SOCKET_ERROR) {
+			CloseHandle(hReportFile);
+			Close();
+			throw BBWinNetException("Can't send message");
+		}
+	}
+	if (shutdown(m_conn, 1) != 0) {
+		CloseHandle(hReportFile);
+		throw BBWinNetException("Can't shutdown socket");
+	}
+	CloseHandle(hReportFile);
+	hFile = CreateFile(destPath.c_str(),     // file to create
+		GENERIC_READ | GENERIC_WRITE,          // open for writing
+		NULL, // do not share
+		NULL,                   // default security
+		CREATE_ALWAYS,          // overwrite existing
+		0,   // asynchronous I/O
+		0);                  // no attr. template
+	if (hFile == INVALID_HANDLE_VALUE) {
+		Close();
+		string err = "Can't create file " + (string)destPath;
+		throw BBWinNetException(err.c_str());
+	}
+	DWORD		writen = 0;
+	SecureZeroMemory(buf, sizeof(buf));
+	while((rBuf = recv(m_conn, buf, BB_LEN_RECV,0)) && rBuf != SOCKET_ERROR)
+	{
+		buf[rBuf] = '\0';
+		if (WriteFile(hFile, buf, rBuf, &writen, NULL) == 0) {
+			CloseHandle(hFile);
+			Close();
+			throw BBWinNetException("writing file failed");
+		}
+	}
+	if (rBuf == SOCKET_ERROR) {
+		Close();
+		CloseHandle(hFile);
+		throw BBWinNetException("Can't receive query answer");
+	}
+	if (shutdown(m_conn, 0) != 0) {
+		Close();
+		CloseHandle(hFile);
+		throw BBWinNetException("Can't shutdown socket");
+	}
+	if (shutdown(m_conn, 2) != 0) {
+		Close();
+		CloseHandle(hFile);
+		throw BBWinNetException("Can't shutdown socket");
+	}
+	Close();
+	CloseHandle(hFile);
+}
+
 
 // BBwinNetException
 BBWinNetException::BBWinNetException(const char* m) {

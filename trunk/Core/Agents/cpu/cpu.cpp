@@ -54,7 +54,7 @@ static const BBWinAgentInfo_t 		cpuAgentInfo =
 	BBWIN_AGENT_VERSION,					// bbwinVersion;
 	"cpu",    								// agentName;
 	"cpu agent : report cpu usage",        	// agentDescription;
-	0										// flags
+	BBWIN_AGENT_CENTRALIZED_COMPATIBLE		// flags
 };                
 
 
@@ -208,7 +208,6 @@ void 		AgentCpu::GetProcsData() {
 	UsageProc			*proc;
 	procs_itr			itr;
 
-	m_mgr.ReportDebug("GetProcsData started");
 	HINSTANCE hNtDll;
 	NTSTATUS (WINAPI * pZwQuerySystemInformation)(UINT, PVOID, ULONG, PULONG);
 	hNtDll = GetModuleHandle("ntdll.dll");
@@ -254,8 +253,6 @@ void 		AgentCpu::GetProcsData() {
 			+ pProcesses->NextEntryDelta);
 			continue ;
 		}
-		if (pProcesses->NextEntryDelta == 0)
-			break ;
 		CHAR szProcessName[MAX_PATH];
 		WideCharToMultiByte(CP_ACP, 0, pszProcessName, -1,
 			szProcessName, MAX_PATH, NULL, NULL);
@@ -288,7 +285,6 @@ void 		AgentCpu::GetProcsData() {
 			+ pProcesses->NextEntryDelta);
 	}
 	HeapFree(hHeap, 0, pBuffer);
-	m_mgr.ReportDebug("GetProcsData ended");
 }
 
 static const std::string BuildCpuTimeString(int time) {
@@ -316,15 +312,17 @@ void		AgentCpu::SendStatusReport() {
 	totalUsage = ceil(m_usage.usageVal);
 	if (totalUsage > 100) 
 		totalUsage = 100;
-	ptime now = second_clock::local_time();
-    date today = now.date();
-	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		ptime now = second_clock::local_time();
+		date today = now.date();
+		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
+	}
 	reportData << "up: " << (data.GetSystemUpTime() / 86400) << " days, ";
 	reportData << data.GetServerSessions() << " users, ";
 	reportData << countProcesses() << " procs, ";
 	reportData << "load=" << totalUsage << "%";
-	reportData << "\n\n" << endl;
-	if (m_uptimeMonitoring && m_uptimeDelay >= data.GetSystemUpTime()) {
+	reportData << "\n\n" << endl;	
+	if (m_mgr.IsCentralModeEnabled() == false && m_uptimeMonitoring && m_uptimeDelay >= data.GetSystemUpTime()) {
 		reportData << "&yellow Warning: Machine recently rebooted\n\n" << endl;
 		m_pageColor = YELLOW;
 	}
@@ -352,7 +350,7 @@ void		AgentCpu::SendStatusReport() {
 			if (m_useWts)
 				reportData << format(" %-35s") % (*itrSort)->GetOwner();
 			reportData << format(" %luk") % (*itrSort)->GetMemUsage() << endl;
-			if (m_limit != 0 && count > m_limit) {
+			if (m_limit != 0 && count >= (m_limit - 1)) {
 				reportData << "..." << endl;
 				break ;
 			}
@@ -360,20 +358,24 @@ void		AgentCpu::SendStatusReport() {
 		}
 	}
 	reportData << endl;
-	if (totalUsage >= m_warnPercent && totalUsage < m_panicPercent) {
-		if (m_curDelay >= m_delay)
-			m_pageColor = YELLOW;
-		++m_curDelay;
-	} else if (totalUsage >= m_panicPercent) {
-		if (m_curDelay >= m_delay)
-			m_pageColor = RED;
-		++m_curDelay;
-	} else { // reset delay
-		m_curDelay = 0;
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		if (totalUsage >= m_warnPercent && totalUsage < m_panicPercent) {
+			if (m_curDelay >= m_delay)
+				m_pageColor = YELLOW;
+			++m_curDelay;
+		} else if (totalUsage >= m_panicPercent) {
+			if (m_curDelay >= m_delay)
+				m_pageColor = RED;
+			++m_curDelay;
+		} else { // reset delay
+			m_curDelay = 0;
+		}
+		if (m_alwaysgreen)
+			m_pageColor = GREEN;
+		m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());	
+	} else {
+		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());	
 	}
-	if (m_alwaysgreen)
-		m_pageColor = GREEN;
-	m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());	
 }
 
 //
@@ -430,12 +432,10 @@ void		AgentCpu::GetCpuData() {
 void AgentCpu::Run() {
 	procs_itr			itr;
 	
-	m_mgr.ReportDebug("cpu started");
+	m_mgr.ReportDebug("cpu review started");
 	if (m_psMode)
 		InitProcs();
-	m_mgr.ReportDebug("InitProcs ended");
 	GetCpuData();
-	m_mgr.ReportDebug("GetCpuData ended");
 	if (m_psMode) {
 		DeleteOlderProcs();
 		for (itr = m_procs.begin(); itr != m_procs.end(); ++itr) {
@@ -443,12 +443,10 @@ void AgentCpu::Run() {
 		}
 		GetProcsOwners();
 	}
-	m_mgr.ReportDebug("SendReport started");
 	SendStatusReport();
-	m_mgr.ReportDebug("SendReport ended");
 	m_procsSorted.clear();
 	m_firstPass = false;
-	m_mgr.ReportDebug("cpu ended");
+	m_mgr.ReportDebug("cpu review ended");
 }
 
 //
@@ -472,55 +470,55 @@ AgentCpu::~AgentCpu() {
 bool AgentCpu::Init() {
 	PBBWINCONFIG		conf;
 	
-	m_mgr.ReportDebug("Init cpu started");
-	conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
-	if (conf == NULL) {
-		m_mgr.ReportDebug("Init cpu failed");
-		return false;
-	}
-	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string		name, value;
+	m_mgr.ReportDebug("initialization cpu agent started");
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+		if (conf == NULL) {
+			return false;
+		}
+		PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			string		name, value;
 
-		name = m_mgr.GetConfigurationRangeValue(range, "name");
-		value = m_mgr.GetConfigurationRangeValue(range, "value");
-		if (name == "alwaysgreen" && value == "true") {
-			m_alwaysgreen = true;
-		}
-		if (name == "psmode" && value == "false") {
-			m_psMode = false;
-		}
-		if (name == "testname" && value.length() > 0) {
-			m_testName = value;
-		}
-		if (name == "limit" && value.length() >0) {
-			m_limit = m_mgr.GetNbr(value.c_str());
-		}
-		if (name == "uptime" && value.length()) {
-			m_uptimeMonitoring = true;
-			m_uptimeDelay = m_mgr.GetSeconds(value.c_str());
-		}
-		if (name == "default") {
-			string		warn, panic, delay;
+			name = m_mgr.GetConfigurationRangeValue(range, "name");
+			value = m_mgr.GetConfigurationRangeValue(range, "value");
+			if (name == "alwaysgreen" && value == "true") {
+				m_alwaysgreen = true;
+			}
+			if (name == "psmode" && value == "false") {
+				m_psMode = false;
+			}
+			if (name == "testname" && value.length() > 0) {
+				m_testName = value;
+			}
+			if (name == "limit" && value.length() >0) {
+				m_limit = m_mgr.GetNbr(value.c_str());
+			}
+			if (name == "uptime" && value.length()) {
+				m_uptimeMonitoring = true;
+				m_uptimeDelay = m_mgr.GetSeconds(value.c_str());
+			}
+			if (name == "default") {
+				string		warn, panic, delay;
 
-			warn = m_mgr.GetConfigurationRangeValue(range, "warnlevel");
-			panic = m_mgr.GetConfigurationRangeValue(range, "paniclevel");
-			delay = m_mgr.GetConfigurationRangeValue(range, "delay");
-			if (warn.size() > 0)
-				m_warnPercent = m_mgr.GetNbr(warn.c_str());
-			if (panic.size() > 0)
-				m_panicPercent = m_mgr.GetNbr(panic.c_str());
-			if (delay.size() > 0)
-				m_delay = m_mgr.GetNbr(delay.c_str());
+				warn = m_mgr.GetConfigurationRangeValue(range, "warnlevel");
+				panic = m_mgr.GetConfigurationRangeValue(range, "paniclevel");
+				delay = m_mgr.GetConfigurationRangeValue(range, "delay");
+				if (warn.size() > 0)
+					m_warnPercent = m_mgr.GetNbr(warn.c_str());
+				if (panic.size() > 0)
+					m_panicPercent = m_mgr.GetNbr(panic.c_str());
+				if (delay.size() > 0)
+					m_delay = m_mgr.GetNbr(delay.c_str());
+			}
 		}
+		m_mgr.FreeConfigurationRange(range);
+		m_mgr.FreeConfiguration(conf);
 	}
-	m_mgr.FreeConfigurationRange(range);
-	m_mgr.FreeConfiguration(conf);
-	m_mgr.ReportDebug("Init Wts Extension ended");
 	InitWtsExtension();
-	m_mgr.ReportDebug("Init cpu ended");
+	m_mgr.ReportDebug("initialization cpu agent ended");
 	return true;
 }
 

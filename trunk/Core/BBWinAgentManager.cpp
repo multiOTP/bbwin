@@ -214,8 +214,7 @@ LPCTSTR				BBWinAgentManager::GetConfigurationRangeValue(PBBWINCONFIGRANGE range
 	_bbwinconfig_range_t *_range;
 
 	_range = (_bbwinconfig_range_t *)range;
-	
-	if (_range->range.first->second[name].size() == 0)
+	if (_range->range.first == _range->range.second || _range->range.first->second[name].size() == 0)
 		return "";
 	return _range->range.first->second[name].c_str();
 }
@@ -645,36 +644,24 @@ void		BBWinAgentManager::Message(LPCTSTR message, LPTSTR dest, DWORD size) {
 	}
 }
 
-void		BBWinAgentManager::Config(LPCTSTR fileName, LPTSTR dest, DWORD size) {
+void		BBWinAgentManager::Config(LPCTSTR fileName, LPCTSTR dest) {
 	bbdisplay_t::iterator			itr;
 	BBWinNet	hobNet;
-	string		result;
 
 	assert(fileName != NULL);
 	assert(dest != NULL);
-	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
-		hobNet.SetBBDisplay((*itr));
-		try {
-			hobNet.Config(fileName, result);
-		} catch (BBWinNetException ex) {
-			if (m_logReportFailure) {
-				string mes;
-			
-				mes = "Sending report to " + (*itr) + " failed.";
-				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
-			}
-			continue ; 
+	itr = m_bbdisplay.begin(); 
+	hobNet.SetBBDisplay((*itr));
+	try {
+		hobNet.Config(fileName, dest);
+	} catch (BBWinNetException ex) {
+		if (m_logReportFailure) {
+			string mes;
+
+			mes = "Sending config message to " + (*itr) + " failed.";
+			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
 		}
-	}
-	try
-	{
-		if (dest != NULL && size != 0)
-			strncpy(dest, result.c_str(), size);
-	}
-	catch (...)
-	{
-		// Failed to write
 	}
 }
 
@@ -685,19 +672,17 @@ void		BBWinAgentManager::Query(LPCTSTR testName, LPTSTR dest, DWORD size) {
 
 	assert(testName != NULL);
 	assert(dest != NULL);
-	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
-		hobNet.SetBBDisplay((*itr));
-		try {
-			hobNet.Query(testName, result);
-		} catch (BBWinNetException ex) {
-			if (m_logReportFailure) {
-				string mes;
-			
-				mes = "Sending report to " + (*itr) + " failed.";
-				LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
-				m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
-			}
-			continue ; 
+	itr = m_bbdisplay.begin();
+	hobNet.SetBBDisplay((*itr));
+	try {
+		hobNet.Query(testName, result);
+	} catch (BBWinNetException ex) {
+		if (m_logReportFailure) {
+			string mes;
+
+			mes = "Sending config message to " + (*itr) + " failed.";
+			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
 		}
 	}
 	try
@@ -712,10 +697,27 @@ void		BBWinAgentManager::Query(LPCTSTR testName, LPTSTR dest, DWORD size) {
 }
 
 
-void		BBWinAgentManager::Download(LPCTSTR fileName, LPTSTR dest, DWORD size) {
-	//
-	// not yet implemented
-	//
+void		BBWinAgentManager::Download(LPCTSTR fileName, LPCTSTR dest) {
+	bbdisplay_t::iterator			itr;
+	BBWinNet	hobNet;
+	string		result;
+
+	assert(fileName != NULL);
+	assert(dest != NULL);
+	itr = m_bbdisplay.begin();
+	hobNet.SetBBDisplay((*itr));
+	result = dest;
+	try {
+		hobNet.Download(fileName, result);
+	} catch (BBWinNetException ex) {
+		if (m_logReportFailure) {
+			string mes;
+			
+			mes = "Sending download message to " + (*itr) + " failed.";
+			LPCTSTR		arg[] = {m_agentName.c_str(), mes.c_str(), NULL};
+			m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
+		}
+	}
 }
 
 

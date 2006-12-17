@@ -18,6 +18,7 @@
 !include <Win32.Mak>
 
 DIRS = \
+	Digest\~		\
     Agents\~   		\
 	
 !include <sdkpropbld.mak>
@@ -39,7 +40,10 @@ tinyxml_objs = 	$(OUTDIR)\tinystr.obj \
 				$(OUTDIR)\tinyxml.obj \
 				$(OUTDIR)\tinyxmlerror.obj \
 				$(OUTDIR)\tinyxmlparser.obj
-
+				
+bbwinnet_objs = 	$(OUTDIR)\bbwinnet.obj
+				
+				
 ## BBWin dependencies
 
 bbwinmessage_objs = 	BBWinMessages.h \
@@ -52,7 +56,6 @@ bbwin_objs = 	$(OUTDIR)\BBWin.obj \
 				$(OUTDIR)\Logging.obj \
 				$(OUTDIR)\Utils.obj \
 				$(OUTDIR)\BBWinConfig.obj \
-				$(OUTDIR)\BBWinNet.obj \
 				$(OUTDIR)\BBWinAgentManager.obj \
 				$(OUTDIR)\BBWinCentralHandler.obj \
 				$(OUTDIR)\BBWinLocalHandler.obj \
@@ -69,10 +72,17 @@ $(OUTDIR)\BBWinMessages.res: $(bbwinmessage_objs)
 	
 $(OUTDIR)\tinyxml.lib: $(tinyxml_objs)
 	$(link) /LIB /OUT:$@ $**
-
-$(OUTDIR)\BBWin.exe: $(OUTDIR)\BBWinMessages.res $(OUTDIR)\BBWin.res $(bbwin_objs) $(OUTDIR)\tinyxml.lib
+	if not exist ..\Release mkdir ..\Release
+	copy /Y $(OUTDIR)\tinyxml.lib ..\Release
+	
+$(OUTDIR)\bbwinnet.lib: $(bbwinnet_objs)
+	$(link) /LIB /OUT:$@ $**
+	if not exist ..\Release mkdir ..\Release
+	copy /Y $(OUTDIR)\bbwinnet.lib ..\Release
+	
+$(OUTDIR)\BBWin.exe: $(OUTDIR)\BBWinMessages.res $(OUTDIR)\BBWin.res $(bbwin_objs) $(OUTDIR)\tinyxml.lib $(OUTDIR)\bbwinnet.lib
     $(link) $(ldebug) $(bbwin_objs) $(OUTDIR)\BBWin.res $(OUTDIR)\BBWinMessages.res \
-    -out:$(OUTDIR)\BBWin.exe  $(conlibsmt) advapi32.lib User32.lib  $(OUTDIR)\tinyxml.lib
+    -out:$(OUTDIR)\BBWin.exe  $(conlibsmt) advapi32.lib User32.lib  $(OUTDIR)\tinyxml.lib $(OUTDIR)\bbwinnet.lib
 	if not exist ..\Release mkdir ..\Release
 	copy /Y $(OUTDIR)\BBWin.exe ..\Release
 	
@@ -84,8 +94,8 @@ bbwincmd_objs =		$(OUTDIR)\BBWinCmd.obj \
 $(OUTDIR)\BBWincmd.res: BBWincmd.rc
 	$(rc) $(rcflags) $(rcvars) /fo $(OUTDIR)\BBWincmd.res BBWincmd.rc
 
-$(OUTDIR)\BBWinCmd.exe: $(bbwincmd_objs) $(OUTDIR)\BBWincmd.res
-    $(link) $(ldebug) $(conlflags) -out:$(OUTDIR)\BBWinCmd.exe $(bbwincmd_objs) $(OUTDIR)\BBWincmd.res $(conlibsmt)
+$(OUTDIR)\BBWinCmd.exe: $(bbwincmd_objs) $(OUTDIR)\BBWincmd.res $(OUTDIR)\bbwinnet.lib
+    $(link) $(ldebug) $(conlflags) -out:$(OUTDIR)\BBWinCmd.exe $(bbwincmd_objs) $(OUTDIR)\bbwinnet.lib $(OUTDIR)\BBWincmd.res $(conlibsmt)
 	if not exist ..\Release mkdir ..\Release
 	copy /Y $(OUTDIR)\BBWinCmd.exe ..\Release
 

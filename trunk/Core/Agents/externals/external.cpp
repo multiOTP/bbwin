@@ -18,6 +18,8 @@
 #include <windows.h>
 
 #include <string>
+#include <sstream>
+#include <fstream>
 #include <iostream>
 
 using namespace std;
@@ -35,9 +37,13 @@ External::External(IBBWinAgentManager & mgr, const string extCommand, DWORD time
 }
 
 bool	External::LaunchExternal() {
+	stringstream 		dbgMess;
+
 	ZeroMemory(&m_startupInfo, sizeof(m_startupInfo) );
     m_startupInfo.cb = sizeof(m_startupInfo);
 	ZeroMemory(&m_procInfo, sizeof(m_procInfo));
+	dbgMess << "starting external '" << m_extCommand << "'";
+	m_mgr.ReportDebug(dbgMess.str().c_str());
 	if (!CreateProcess(0, const_cast <LPTSTR> (m_extCommand.c_str()), 0, 0, false, 0, 0, NULL, &m_startupInfo, &m_procInfo))
 	{
 		TCHAR		buf[ERROR_STR_LEN + 1];

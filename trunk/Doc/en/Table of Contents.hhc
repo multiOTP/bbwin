@@ -33,6 +33,10 @@
 			<param name="Local" value="ServiceConfiguration.htm">
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="BBWin Centralized">
+			<param name="Local" value="CentralMode.htm">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Troubleshooting">
 			<param name="Local" value="Troubleshooting.htm">
 			</OBJECT>
@@ -42,6 +46,10 @@
 		<param name="ImageNumber" value="1">
 		</OBJECT>
 	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="bbwinupdate">
+			<param name="Local" value="BBWinUpdateAgent.htm">
+			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="cpu">
 			<param name="Local" value="Cpu.htm">
@@ -136,6 +144,10 @@
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Licence">
 		<param name="Local" value="Licence.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="COPYING">
+		<param name="Local" value="GPL.htm">
 		</OBJECT>
 </UL>
 </BODY></HTML>

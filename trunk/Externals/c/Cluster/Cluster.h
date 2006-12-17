@@ -31,7 +31,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */ 
 
 // Somes usefull defines
-#define BUFFER_SIZE 		2046
+#define BUFFER_SIZE 		2048
 
 #define MAX_CLUSTER_GROUP	128
 

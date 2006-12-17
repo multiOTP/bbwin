@@ -4,6 +4,7 @@
 	Version="8,00"
 	Name="procs"
 	ProjectGUID="{BDD8DA2A-9F79-4F3F-8CF4-62C6B207C0F0}"
+	RootNamespace="procs"
 	>
 	<Platforms>
 		<Platform
@@ -38,6 +39,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../common;../.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
