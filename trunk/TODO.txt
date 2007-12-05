@@ -1,0 +1,84 @@
+TODO file for BBWin
+==============================================================
+
+
+Big things
+----------
+
+- finish centralized mode
+- GUI
+- perfmon agent
+- scheduled tasks agent
+- logfile for msgs agent
+- BBWinUpdate.exe for updating the Software (integrate zip library)
+- a better bbwincmd
+- who agent
+- procs agents : change match with compare function
+- add maxdelay to uptime agent
+
+
+Small things
+------------
+
+- send event logs events ignored
+
+Bugs
+----
+
+- problem with deamon tools : 4.0.9.1. Improve disk debugging
+
+
+
+
+Special Notes
+=============
+
+
+- faire le petit programme BBWinUpdate
+- faire partie file
+- faire partie dir
+- modifier les agents pour le mode hobbit
+- modifier message, config, pour qu'ils renvoie le path du fichier temporaire sauvegardé- faire bbwincmd àour
+
+
++ Sections client :
+
+client hostname.os os
+
+date : hobbitclient part
+uname : hobbitclient part
+osversion : hobbitclient part
+uptime : agent uptime
+who : pas pré : enum sessions
+df : disk
+free : memory
+ifconfig : ipconfig /all
+route : netstat -nr
+netstat : netstat -ns
+ports : netstat -an
+ifstats : pas prevu
+top : cpu
+ps : procs
+[msgs:/var/log/messages]
+msgs: msgs agent
+clientversion
+
+[logfile:/var/log/messages]
+type:100000 (file)
+mode:640 (-rw-r-----)
+linkcount:1
+owner:0 (root)
+group:4 (adm)
+size:63593
+clock:1150958712 (2006/06/22-08:45:12)
+atime:1150958712 (2006/06/22-08:45:12)
+ctime:1150958684 (2006/06/22-08:44:44)
+mtime:1150958684 (2006/06/22-08:44:44)
+
+
+
+clock
+epoch: 1150958712.347743
+local: 2006-06-22 08:45:12 CEST
+UTC: 2006-06-22 06:45:12 GMT
+
