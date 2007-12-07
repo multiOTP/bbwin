@@ -41,6 +41,8 @@ memory.dll: $(memory_objs) memory.res
 	copy /Y memory.dll ..\..\..\Release
 	
 clean:
-		erase /Q /S memory.res memory.obj memory.dll memory.exp memory.lib $(memory_objs)
+		erase /Q /S $(memory_objs)
+
+
 
 

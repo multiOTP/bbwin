@@ -41,6 +41,8 @@ procs.dll: $(procs_objs) procs.res
 	copy /Y procs.dll ..\..\..\Release
 	
 clean:
-		erase /Q /S procs.res procs.obj procs.dll procs.exp procs.lib $(procs_objs)
+		erase /Q /S $(procs_objs)
+
+
 
 

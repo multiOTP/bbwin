@@ -37,4 +37,6 @@ sample.dll: $(sample_objs) sample.res
 	copy /Y sample.dll ..\..\..\Release
 	
 clean:
-		erase /Q /S sample.res sample.obj sample.dll
+		erase /Q /S $(sample_objs)
+
+

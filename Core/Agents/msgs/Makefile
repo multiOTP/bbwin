@@ -41,6 +41,6 @@ msgs.dll: $(msgs_objs) msgs.res
 	copy /Y msgs.dll ..\..\..\Release
 	
 clean:
-		erase /Q /S msgs.res msgs.obj msgs.dll msgs.exp msgs.lib $(msgs_objs)
+		erase /Q /S $(msgs_objs)
 
 

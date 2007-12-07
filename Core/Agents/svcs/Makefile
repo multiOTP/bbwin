@@ -41,5 +41,7 @@ svcs.dll: $(svcs_objs) svcs.res
 	copy /Y svcs.dll ..\..\..\Release
 	
 clean:
-		erase /Q /S svcs.res svcs.obj svcs.dll svcs.exp svcs.lib $(svcs_objs)
+		erase /Q /S $(svcs_objs)
+
+
 

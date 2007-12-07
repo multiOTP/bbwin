@@ -24,6 +24,7 @@
 
 using namespace std;
 
+#include "IBBWinAgent.h"
 #include "External.h"
 
 
@@ -43,7 +44,7 @@ bool	External::LaunchExternal() {
     m_startupInfo.cb = sizeof(m_startupInfo);
 	ZeroMemory(&m_procInfo, sizeof(m_procInfo));
 	dbgMess << "starting external '" << m_extCommand << "'";
-	m_mgr.ReportDebug(dbgMess.str().c_str());
+	m_mgr.Log(LOGLEVEL_DEBUG, dbgMess.str().c_str());
 	if (!CreateProcess(0, const_cast <LPTSTR> (m_extCommand.c_str()), 0, 0, false, 0, 0, NULL, &m_startupInfo, &m_procInfo))
 	{
 		TCHAR		buf[ERROR_STR_LEN + 1];

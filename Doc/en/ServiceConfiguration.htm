@@ -69,6 +69,7 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 		<b>If no bbdisplay server is specified, you will get a warning event in the application event log</b>.
 		<br>
 		<b>You may specify multiple bbdisplay values if you want the reports be sent to multiple bbdisplays</b>
+		Default port is 1984.
 		<br>
 		</td>
 	</tr>
@@ -82,7 +83,8 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 		The bbpager server can be the address ip or the dns entry.
 		<b>The bbpager feature is not needed if your server is running hobbit software.</b>.
 		<br>
-		<b>You may specify multiple bbpager values if you want the pager report be sent to multiple bbpagers</b>
+		<b>You may specify multiple bbpager values if you want the pager report be sent to multiple bbpagers. </b>
+		
 		<br>
 		</td>
 	</tr>
@@ -129,6 +131,19 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 	</tr>
 	<tr>
 		<td class="OptionValue" vAlign="top" >
+		proxy
+		</td>
+		<td class="OptionValue" vAlign="top">
+		you may specify an http proxy server with this syntax : [user:password@]proxyhost&lt;:port&gt;
+		The proxy server can be the address ip or the dns entry. user:password is optional if you want to 
+		use the Basic Authentification of your proxy server.
+		<br>
+		Default port is 8080.
+		<br>
+		</td>
+	</tr>
+	<tr>
+		<td class="OptionValue" vAlign="top" >
 		timer
 		</td>
 		<td class="OptionValue" vAlign="top">
@@ -144,6 +159,16 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 		</td>
 		<td class="OptionValue" vAlign="top">
 		Possible values are "true" or "false". If true, it will send report to the bbpager.
+		<b>Default is false</b>
+		<br>
+		</td>
+	</tr>
+	<tr>
+		<td class="OptionValue" vAlign="top" >
+		useproxy
+		</td>
+		<td class="OptionValue" vAlign="top">
+		Possible values are "true" or "false". If true, it will use the proxy setting and connect through the proxy server specified.
 		<b>Default is false</b>
 		<br>
 		</td>
@@ -334,7 +359,7 @@ the service or force the auto reload mechanism.
 	&lt;!-- If true, the agent will restart all "automatic  services" which would be stopped--&gt;
 	&lt;setting name="autoreset" value="false" /&gt;
 	&lt;setting name="alarmcolor" value="yellow" /&gt;
-	&lt;!-- The line bellow show you svcs rules. If the "Automatic Updates" service is stopped,  
+	&lt;!-- The line below show you svcs rules. If the "Automatic Updates" service is stopped,  
 	it will be automatically restarted and a red status will be sent
 	until the service get it's correct status --&gt;
 	&lt;setting name="Automatic Updates" value="started" autoreset="true" alarmcolor="red" /&gt;

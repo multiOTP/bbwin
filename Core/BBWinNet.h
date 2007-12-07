@@ -19,6 +19,7 @@
 #define __BBWINNETOBJ_H__
 
 #define BB_TCP_PORT 	"1984"
+#define PROXY_PORT 		"8080"
 #define BB_LEN_RECV	1024
 #define BB_LEN_SEND	1024
 
@@ -35,6 +36,10 @@ class BBWinNet
 	std::string		m_port;
 	std::string		m_bbDisplay;
 	std::string 	m_hostName;
+	std::string		m_proxyHost;
+	std::string		m_proxyPort;
+	std::string		m_proxyUser;
+	std::string		m_proxyPass;
 	bool			m_debug;
 	
 	// network variables
@@ -45,9 +50,10 @@ class BBWinNet
 	private :
 		void		Open();
 		void 		Close();
+		void		Connect(const std::string & host, const std::string & port);
 		void		Send(const std::string & message);
 		void		Init();
-		
+		void		ConnectProxy();
 	public :
 		BBWinNet();
 		BBWinNet(const std::string & hostName);
@@ -59,6 +65,8 @@ class BBWinNet
 		const std::string	& GetBBDisplay();
 		void			SetBBPager(const std::string & bbPager) { SetBBDisplay(bbPager); };
 		const std::string	& GetBBPager() {return GetBBDisplay();};	
+		
+		void			SetProxy(const std::string & proxy);
 
 		void			SetPort(const std::string & port);
 		const string &	GetPort();

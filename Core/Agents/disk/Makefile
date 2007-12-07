@@ -41,4 +41,4 @@ disk.dll: $(disk_objs) disk.res
 	copy /Y disk.dll ..\..\..\Release
 
 clean:
-		erase /Q /S disk.res $(disk_objs) disk.dll disk.lib disk.exp
+		erase /Q /S $(disk_objs)

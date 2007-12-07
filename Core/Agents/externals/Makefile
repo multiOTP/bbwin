@@ -37,4 +37,4 @@ externals.dll: $(externals_objs) externals.res
 	copy /Y externals.dll ..\..\..\Release
 
 clean:
-		erase /Q /S externals.res externals.obj externals.dll
+		erase /Q /S $(externals_objs)

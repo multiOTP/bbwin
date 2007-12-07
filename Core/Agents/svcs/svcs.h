@@ -34,12 +34,15 @@ class SvcRule {
 		BBAlarmType		m_alarmColor;
 		DWORD			m_state;
 		bool			m_reset;
+		std::string		m_comment;
 		
 	public :
 		SvcRule();
 		SvcRule(const SvcRule & rule);
 		const bool	GetReset() const { return m_reset; };
 		void 		SetReset(bool reset)  { m_reset = reset; };
+		void		SetComment(const std::string & comment) { m_comment = comment; } ;
+		const std::string & GetComment() const { return m_comment; } ;
 		const std::string & GetName() const { return m_name; };
 		void		SetName(const std::string & name) { m_name = name; };
 		const BBAlarmType	GetAlarmColor() const { return m_alarmColor; };

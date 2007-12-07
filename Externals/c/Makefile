@@ -26,3 +26,8 @@ all: $(DIRS)
 
 $(DIRS):
 !include <sdkbld.mak>
+
+clean:
+	cd Cluster
+	nmake clean
+	cd ..

@@ -67,6 +67,7 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 	private :
 		void	LoadFileConfiguration(const std::string & filePath, const std::string & nameSpace, bbwinagentconfig_t & config);
 		void	Pager(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime);
+		void	PrepareBBWinNetObj(BBWinNet & hobNet);
 
 	public :
 		BBWinAgentManager(const bbwinhandler_data_t & data);
@@ -114,10 +115,7 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 
 
 		// Report Functions : report in the bbwin log file
-		void 	ReportError(LPCTSTR str);
-		void 	ReportInfo(LPCTSTR str);
-		void 	ReportDebug(LPCTSTR str);
-		void 	ReportWarn(LPCTSTR str);
+		void 	Log(const int level, LPCTSTR str, ...);
 		
 		// Event Report Functions : report in the Windows event log
 		void 	ReportEventError(LPCTSTR str);

@@ -37,4 +37,6 @@ bbwinupdate.dll: $(bbwinupdate_objs) bbwinupdate.res
 	copy /Y bbwinupdate.dll ..\..\..\Release
 	
 clean:
-		erase /Q /S bbwinupdate.res bbwinupdate.obj bbwinupdate.dll
+		erase /Q /S $(bbwinupdate_objs)
+
+

@@ -29,24 +29,21 @@ using namespace DesignPattern;
 #define 		LOGLEVEL_INFO		3
 #define			LOGLEVEL_DEBUG		4
 
-#define			LOGLEVEL_DEFAULT	4
-
-
+#define			LOGLEVEL_DEFAULT	2
 
 //
 // class used to log information
 // singleton
 class Logging : public Singleton< Logging > {
 	private :
-		DWORD					m_logLevel;
+		int						m_logLevel;
 		std::string				m_fileName;
-		std::ofstream 			*m_logFile;
+		FILE					*m_fileHandle;
 
-		
 	protected :
 		void	open();
 		void 	close();
-		void 	write(const std::string & log);
+		void 	write(LPCTSTR log, va_list ap);
 		void 	reportEvent(WORD type, WORD category, DWORD eventId, WORD nbStr, LPCTSTR *str);
 	
 	public :
@@ -55,10 +52,8 @@ class Logging : public Singleton< Logging > {
 	
 		void setLogLevel(DWORD level);
 		void setFileName(const std::string & fileName);
-		void logInfo(const std::string & log);
-		void logWarn(const std::string & log);
-		void logDebug(const std::string & log);
-		void logError(const std::string & log);
+		void log(const int level, LPCTSTR log, ...);
+		void vlog(const int level, LPCTSTR log, va_list ap);
 		void reportInfoEvent(WORD category, DWORD eventId, WORD nbStr, LPCTSTR *str);
 		void reportSuccessEvent(WORD category, DWORD eventId, WORD nbStr, LPCTSTR *str);
 		void reportErrorEvent(WORD category, DWORD eventId, WORD nbStr, LPCTSTR *str);

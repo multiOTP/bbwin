@@ -102,7 +102,7 @@ void	AgentStats::NetstatCentralizedStep(const string & cmd, const string & path,
 
 	if (MyNetstatExec(cmd, path)) {
 		string err = (string)"failed to execute " + cmd;
-		m_mgr.ReportError(err.c_str());
+		m_mgr.Log(LOGLEVEL_ERROR,err.c_str());
 		m_mgr.ReportEventError(err.c_str());
 	}
 	ifstream fileOut(path.c_str());
@@ -122,7 +122,7 @@ void	AgentStats::NetstatCentralizedStep(const string & cmd, const string & path,
 		}
 	} else {
 		string err = (string)"failed to open report file " + path;
-		m_mgr.ReportError(err.c_str());
+		m_mgr.Log(LOGLEVEL_ERROR,err.c_str());
 		m_mgr.ReportEventError(err.c_str());
 	}
 	m_mgr.ClientData(dataName.c_str(), reportData.str().c_str());

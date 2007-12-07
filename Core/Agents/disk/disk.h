@@ -52,6 +52,7 @@ typedef struct		disk_rule_s
 	__int64			panicSize;
 	DWORD			panicPercent;
 	bool			panicUseSize;
+	bool			used; // flag to check that rules are used
 }					disk_rule_t;
 
 typedef struct		disk_unit_s

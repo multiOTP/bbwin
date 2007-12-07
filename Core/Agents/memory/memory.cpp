@@ -104,6 +104,9 @@ bool		AgentMemory::GetMemoryData() {
     m_memData[PAGE_MEM_TYPE].total = m_statex.ullTotalPageFile;
     m_memData[PAGE_MEM_TYPE].used  = m_statex.ullTotalPageFile - m_statex.ullAvailPageFile;
     m_memData[PAGE_MEM_TYPE].value = (m_memData[PAGE_MEM_TYPE].used * 100) / m_statex.ullTotalPageFile;
+	/* calculate the real memory usage */
+	if (m_memData[PHYS_MEM_TYPE].total != 0)
+		m_memData[REAL_MEM_TYPE].value = (DWORDLONG)(((float)m_memData[PAGE_MEM_TYPE].used / (float)m_memData[PHYS_MEM_TYPE].total) * (float)100.00);
 	return true;
 }
 
@@ -133,7 +136,10 @@ void		AgentMemory::SendStatusReport() {
 	
     ptime now = second_clock::local_time();
 	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] " << m_status << endl;
-    reportData << format("    Memory  %6s  %6s  %s\n") % "Used" % "Total" % "Pctg";
+	reportData << endl;
+	reportData << format("&%s real memory usage: %3lu%%\n\n") % bbcolors[m_memData[REAL_MEM_TYPE].color] % 
+		m_memData[REAL_MEM_TYPE].value;
+	reportData << format("    Memory  %6s  %6s  %s\n") % "Used" % "Total" % "Pctg";
 	reportData << format("&%s Physical:  %6luM %6luM  %3lu%%\n") % bbcolors[m_memData[PHYS_MEM_TYPE].color] %
 			m_memData[PHYS_MEM_TYPE].used % m_memData[PHYS_MEM_TYPE].total % m_memData[PHYS_MEM_TYPE].value;
 	reportData << format("&%s Virtual:   %6luM %6luM  %3lu%%\n") % bbcolors[m_memData[VIRT_MEM_TYPE].color] %
@@ -146,6 +152,7 @@ void		AgentMemory::SendStatusReport() {
 void		AgentMemory::SendClientData() {
 	stringstream 			reportData;	
 
+	reportData << format("real memory usage:  %3lu%%\n") % m_memData[REAL_MEM_TYPE].value;
 	reportData << format("memory  %6s  %6s  %s\n") % "Used" % "Total" % "Pctg";
 	reportData << format("physical:  %6luM %6luM  %3lu%%\n") % m_memData[PHYS_MEM_TYPE].used % m_memData[PHYS_MEM_TYPE].total % m_memData[PHYS_MEM_TYPE].value;
 	reportData << format("virtual:   %6luM %6luM  %3lu%%\n") % m_memData[VIRT_MEM_TYPE].used % m_memData[VIRT_MEM_TYPE].total % m_memData[VIRT_MEM_TYPE].value;
@@ -230,6 +237,11 @@ bool AgentMemory::Init() {
 					warn = (sWarn == "") ? DEF_VIRT_WARN : m_mgr.GetNbr(sWarn.c_str());
 					panic = (sPanic == "") ? DEF_VIRT_PANIC : m_mgr.GetNbr(sPanic.c_str());
 					SetMemDataLevels(m_memData[VIRT_MEM_TYPE], warn, panic);
+				}
+				if (name == "real") {
+					warn = (sWarn == "") ? DEF_REAL_WARN : m_mgr.GetNbr(sWarn.c_str());
+					panic = (sPanic == "") ? DEF_REAL_PANIC : m_mgr.GetNbr(sPanic.c_str());
+					SetMemDataLevels(m_memData[REAL_MEM_TYPE], warn, panic);
 				}
 			}
 		}

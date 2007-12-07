@@ -205,7 +205,7 @@ bool AgentMsgs::Init() {
 	
 	if (conf == NULL)
 		return false;
-	m_mgr.ReportDebug("Begin Msgs Initialization");
+	m_mgr.Log(LOGLEVEL_DEBUG, "Begin Msgs Initialization");
 	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
 	if (range == NULL)
 		return false;
@@ -250,7 +250,7 @@ bool AgentMsgs::Init() {
 	}
 	m_mgr.FreeConfigurationRange(range);
 	m_mgr.FreeConfiguration(conf);
-	m_mgr.ReportDebug("Ending Msgs Initialization");
+	m_mgr.Log(LOGLEVEL_DEBUG,"Ending Msgs Initialization");
 	return true;
 }
 

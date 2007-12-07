@@ -96,6 +96,7 @@ SvcRule::SvcRule(const SvcRule & rule) {
 	m_state = rule.GetSvcState();
 	m_name = rule.GetName();
 	m_reset = rule.GetReset();
+	m_comment = rule.GetComment();
 }
 
 
@@ -119,7 +120,7 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 	if (scs == NULL) {
 		string		sName = tempName;
 		string 		mess = "can't open service" + sName;
-		m_mgr.ReportInfo(mess.c_str());
+		m_mgr.Log(LOGLEVEL_INFO, mess.c_str());
 		return ;
 	}
 	retVal = QueryServiceConfig(scs, NULL, 0, &bytesNeeded);
@@ -166,13 +167,15 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 							}
 							if (m_pageColor < itr->second.GetAlarmColor())
 								m_pageColor = itr->second.GetAlarmColor();
-							reportData << endl;
 						} else { // service is ok
 							LPCSTR		str = (servStatus.dwCurrentState == SERVICE_RUNNING) ? "running" : "stoppped";
 							reportData << "&" << bbcolors[GREEN] << " " << name << " is ";
-							reportData << str << endl;
+							reportData << str;
 						}
-					} else {
+						if (rule.GetComment().size() > 0)
+							reportData << " (" << rule.GetComment() << ")";
+						reportData << endl;
+					} else { // no rules found
 						if (m_autoReset) {
 							if (servStatus.dwCurrentState == SERVICE_STOPPED 
 								&& lpServiceConfig->dwStartType == SERVICE_AUTO_START) {
@@ -204,7 +207,7 @@ void				AgentSvcs::CheckServices(stringstream & reportData) {
 	DWORD 					bytesNeeded, srvCount, resumeHandle = 0;
 	BOOL 					retVal;
 	
-	m_mgr.ReportDebug("OpenSCManager");
+	m_mgr.Log(LOGLEVEL_DEBUG, "OpenSCManager");
 	if ((scm = OpenSCManager(NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE)) == NULL) {
 		return ;
 	}
@@ -227,7 +230,7 @@ void				AgentSvcs::CheckServices(stringstream & reportData) {
 		}
 		delete [] lpservice;
     }
-	m_mgr.ReportDebug("CloseServiceHandle");
+	m_mgr.Log(LOGLEVEL_DEBUG, "CloseServiceHandle");
 	CloseServiceHandle(scm);
 }
 
@@ -301,6 +304,7 @@ bool AgentSvcs::Init() {
 		} else {
 			string	autoreset = m_mgr.GetConfigurationRangeValue(range, "autoreset");
 			string	color = m_mgr.GetConfigurationRangeValue(range, "alarmcolor");
+			string	comment = m_mgr.GetConfigurationRangeValue(range, "comment");
 
 			if (name.length() > 0 && value.length() > 0) {
 				SvcRule		rule;
@@ -315,6 +319,8 @@ bool AgentSvcs::Init() {
 				} else  {
 					rule.SetSvcState(SERVICE_RUNNING);
 				}
+				if (comment.length() > 0) 
+					rule.SetComment(comment);
 				if (color.length() > 0) {
 					if (color == "red") 
 						rule.SetAlarmColor(RED);

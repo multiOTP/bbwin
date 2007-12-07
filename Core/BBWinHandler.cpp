@@ -76,7 +76,7 @@ BBWinHandler::BBWinHandler(bbwinhandler_data_t & data) :
 	try {
 		init();
 	} catch (BBWinHandlerException ex) {
-		m_log->logDebug("Init for agent failed.");
+		m_log->log(LOGLEVEL_DEBUG, "Init for agent failed.");
 		return ;
 	}
 	m_loadSucceed = true;
@@ -104,16 +104,16 @@ BBWinHandler::~BBWinHandler() {
 
 	if (m_loadSucceed) {
 		mess = "Agent " + m_agentName + " going to be destroyed.";
-		m_log->logDebug(mess);
+		m_log->log(LOGLEVEL_DEBUG, mess.c_str());
 		m_destroy(m_agent);
 		mess = "Agent " + m_agentName + " destroyed.";
-		m_log->logDebug(mess);
+		m_log->log(LOGLEVEL_DEBUG, mess.c_str());
 		FreeLibrary(m_hm);
 		mess = "Agent DLL " + m_agentName + " Unloaded.";
-		m_log->logDebug(mess);
+		m_log->log(LOGLEVEL_DEBUG, mess.c_str());
 		delete m_mgr;
 		mess = "Thread for agent " + m_agentName + " stopped.";
-		m_log->logDebug(mess);
+		m_log->log(LOGLEVEL_DEBUG, mess.c_str());
 	}
 }
 

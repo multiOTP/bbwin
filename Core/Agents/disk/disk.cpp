@@ -143,18 +143,43 @@ bool			AgentDisk::GetDisksData() {
 	return true;
 }
 
+DWORD	GetColorFromRule(const disk_t & disk, const disk_rule_t & rule) {
+	DWORD	color = GREEN;
+
+	// warning status
+	if (rule.warnUseSize == true) {
+		if (rule.warnSize > disk.i64FreeBytes)
+			color = YELLOW;
+	} else {
+		if (rule.warnPercent < disk.percent)
+			color = YELLOW;
+	}
+	// panic status
+	if (rule.panicUseSize == true) {
+		if (rule.panicSize > disk.i64FreeBytes)
+			color = RED;
+	} else {
+		if (rule.panicPercent < disk.percent)
+			color = RED;
+	}
+	return color;
+}
+
 DWORD	AgentDisk::ApplyRule(disk_t & disk) {
 	map<std::string, disk_rule_t *>::iterator	itr;
 	disk_rule_t		*rule;
 	string			letter = disk.letter;
 	DWORD			color;
-	
+	bool			useDefault = false;
+
 	color = GREEN;
 	itr = m_rules.find(letter);
 	if (itr == m_rules.end()) {
 		itr = m_rules.find(DEFAULT_RULE_NAME);
+		useDefault = true;
 	}
 	rule = (*itr).second;
+	rule->used = true;
 	if (rule->ignore == true) {
 		disk.ignore = true;
 		return GREEN;
@@ -165,25 +190,16 @@ DWORD	AgentDisk::ApplyRule(disk_t & disk) {
 		disk.ignore = true;
 		return GREEN;
 	}
-	// warning status
-	if (rule->warnUseSize == true) {
-		if (rule->warnSize > disk.i64FreeBytes)
-			color = YELLOW;
-	} else {
-		if (rule->warnPercent < disk.percent)
-			color = YELLOW;
-	}
-	// panic status
-	if (rule->panicUseSize == true) {
-		if (rule->panicSize > disk.i64FreeBytes)
-			color = RED;
-	} else {
-		if (rule->panicPercent < disk.percent)
-			color = RED;
-	}
+	color = GetColorFromRule(disk, *rule);
 	if (disk.type == DRIVE_CDROM) {
+		// if there is no specific rule, then we just check if a media is present
+		// if there is a specific rule, then we check the free space
+		// if no cdrom is inserted (totalbytes == 0) then we ignore the drive
 		if (disk.i64TotalBytes > 0)
-			color = YELLOW;
+			if (useDefault)
+				color = YELLOW;
+			else
+				color = GetColorFromRule(disk, *rule);
 		else {
 			disk.ignore = true;
 			color = GREEN;
@@ -193,9 +209,14 @@ DWORD	AgentDisk::ApplyRule(disk_t & disk) {
 }
 
 void	AgentDisk::ApplyRules() {
-	std::list<disk_t *>::iterator 	itr;
-	
+	std::list<disk_t *>::iterator 				itr;
+	map<std::string, disk_rule_t *>::iterator	itrRule;
+
 	m_pageColor = GREEN;
+	// clean used flag for rules
+	for (itrRule = m_rules.begin(); itrRule != m_rules.end(); ++itrRule) {
+		itrRule->second->used = false;
+	}
 	for (itr = m_disks.begin(); itr != m_disks.end(); ++itr) {	
 		disk_t	& disk = *(*itr);
 		disk.color = GREEN;
@@ -266,6 +287,7 @@ void		AgentDisk::GenerateSummary(const disk_t & disk, stringstream & summary) {
 void		AgentDisk::SendStatusReport() {
 	stringstream 					reportData;	
 	std::list<disk_t *>::iterator 	itr;
+	map<std::string, disk_rule_t *>::iterator	itrRule;
 	disk_t							*disk;
 
 	if (m_mgr.IsCentralModeEnabled() == false) {
@@ -290,6 +312,17 @@ void		AgentDisk::SendStatusReport() {
 			reportData << " &" << bbcolors[disk->color];
 		reportData << endl;
 	} 
+	// check unused custum rules to generate an alert. Not used in centralized mode
+	for (itrRule = m_rules.begin(); itrRule != m_rules.end(); ++itrRule) {
+		float	size = 0.000;
+		if (itrRule->second->used == false && itrRule->first != DEFAULT_RULE_NAME) {
+			reportData << format("%s             %10.0f %10.0f %10.0f   %3d%%       /%s/%s      %s") %
+			itrRule->first % size % size % size % 0 % GetDiskTypeStr(DRIVE_UNKNOWN) % itrRule->first % "drive not found";
+			reportData << " &" << bbcolors[RED];
+			reportData << endl;
+			m_pageColor = RED;
+		}
+	}
 	if (m_mgr.IsCentralModeEnabled() == false)
 		m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
 	else
@@ -345,13 +378,13 @@ void		AgentDisk::BuildRule(disk_rule_t & rule, const string & warnlevel, const s
 		}
 	}
 	if (rule.warnUseSize == false && rule.panicUseSize == false && rule.panicPercent < rule.warnPercent)
-		m_mgr.ReportEventWarn("panic percentage must be higher than warning percentage");
+		m_mgr.Log(LOGLEVEL_WARN, "panic percentage must be higher than warning percentage");
 	if (rule.warnUseSize == true && rule.panicUseSize == true && rule.panicSize > rule.warnSize)
-		m_mgr.ReportEventWarn("warning free space must be higher than panic free space");
+		m_mgr.Log(LOGLEVEL_WARN, "warning free space must be higher than panic free space");
 	if (rule.warnUseSize == true && rule.warnSize < 0)
-		m_mgr.ReportEventWarn("invalid warning free space value");
+		m_mgr.Log(LOGLEVEL_WARN, "invalid warning free space value");
 	if (rule.panicUseSize == true && rule.panicSize < 0)
-		m_mgr.ReportEventWarn("invalid panic free space value");
+		m_mgr.Log(LOGLEVEL_WARN, "invalid panic free space value");
 }
 
 void		AgentDisk::AddRule(const string & label, const string & warnlevel, const string & paniclevel,
@@ -367,6 +400,7 @@ void		AgentDisk::AddRule(const string & label, const string & warnlevel, const s
 		return ;
 	ZeroMemory(rule, sizeof(*rule));
 	rule->ignore = false;
+	rule->used = false;
 	if (ignore == "true")
 		rule->ignore = true;
 	BuildRule(*rule, warnlevel, paniclevel);
@@ -375,7 +409,7 @@ void		AgentDisk::AddRule(const string & label, const string & warnlevel, const s
 	} else {
 		string mess;
 		mess = "duplicate rule " + label;
-		m_mgr.ReportEventWarn(mess.c_str());
+		m_mgr.Log(LOGLEVEL_WARN, mess.c_str());
 		delete rule;
 	}
 }

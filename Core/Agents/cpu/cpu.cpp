@@ -262,11 +262,11 @@ void 		AgentCpu::GetProcsData() {
 			try {
 				proc = new UsageProc(pProcesses->ProcessId);
 			} catch (std::bad_alloc ex) {
-				m_mgr.ReportInfo("Can't alloc memory");
+				m_mgr.Log(LOGLEVEL_ERROR, "Can't alloc memory");
 				continue ;
 			}
 			if (proc == NULL) {
-				m_mgr.ReportInfo("Can't alloc memory");
+				m_mgr.Log(LOGLEVEL_ERROR, "Can't alloc memory");
 				continue ;
 			}
 			proc->SetName(procname);
@@ -432,7 +432,7 @@ void		AgentCpu::GetCpuData() {
 void AgentCpu::Run() {
 	procs_itr			itr;
 	
-	m_mgr.ReportDebug("cpu review started");
+	m_mgr.Log(LOGLEVEL_DEBUG, "cpu review started");
 	if (m_psMode)
 		InitProcs();
 	GetCpuData();
@@ -446,7 +446,7 @@ void AgentCpu::Run() {
 	SendStatusReport();
 	m_procsSorted.clear();
 	m_firstPass = false;
-	m_mgr.ReportDebug("cpu review ended");
+	m_mgr.Log(LOGLEVEL_DEBUG, "cpu review ended");
 }
 
 //
@@ -470,7 +470,7 @@ AgentCpu::~AgentCpu() {
 bool AgentCpu::Init() {
 	PBBWINCONFIG		conf;
 	
-	m_mgr.ReportDebug("initialization cpu agent started");
+	m_mgr.Log(LOGLEVEL_DEBUG, "initialization cpu agent started");
 	if (m_mgr.IsCentralModeEnabled() == false) {
 		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 		if (conf == NULL) {
@@ -518,7 +518,7 @@ bool AgentCpu::Init() {
 		m_mgr.FreeConfiguration(conf);
 	}
 	InitWtsExtension();
-	m_mgr.ReportDebug("initialization cpu agent ended");
+	m_mgr.Log(LOGLEVEL_DEBUG, "initialization cpu agent ended");
 	return true;
 }
 
@@ -542,7 +542,7 @@ AgentCpu::AgentCpu(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 			m_usageProc[count].usageObj.SetProcessorIndex(count);
 		}
 	} catch (std::bad_alloc ex) {
-		m_mgr.ReportInfo("Can't alloc memory");
+		m_mgr.Log(LOGLEVEL_ERROR, "AgentCpu::AgentCpu Can't alloc memory");
 	}
 	m_alwaysgreen = false;
 	m_firstPass = true;
