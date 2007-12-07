@@ -3,6 +3,10 @@
 Designer and Developer
 Etienne Grignon (etienne.grignon@gmail.com)
 
+BBWin Centralized Mode (Unix part)
+François Lacroix
+
+---------
 
 Of course, BBWin would not exists if the hobbit project
 created and maintained by Henrik Stoerner did not exists.
