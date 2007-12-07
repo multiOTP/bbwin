@@ -29,7 +29,7 @@
 			/>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=""
+				CommandLine="SubWCRev.exe . version_template.h version.h"
 				ExecutionBucket="2"
 			/>
 			<Tool
@@ -116,7 +116,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
-				CommandLine=""
+				CommandLine="SubWCRev.exe . version_template.h version.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -296,6 +296,10 @@
 			</File>
 			<File
 				RelativePath=".\Utils.h"
+				>
+			</File>
+			<File
+				RelativePath=".\version_template.h"
 				>
 			</File>
 		</Filter>
