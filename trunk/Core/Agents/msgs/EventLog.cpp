@@ -373,16 +373,50 @@ void 					Session::GetEventUser(const EVENTLOGRECORD * ev, std::string & user) {
 }
 
 
+// when the message DLL is not present or the evenid description not found in the message DLL
+// it simulates the Windows Event Viewer behavior
+static void				FillUnresolvedDescription(const EVENTLOGRECORD * ev, const LPTSTR *strarray, std::string & description) {
+	stringstream		reportDesc;
+	
+	reportDesc << "The description for Event ID ( " << (ev->EventID & MSG_ID_MASK) << " ) ";
+	reportDesc << "in Source ( " << (LPSTR) ((LPBYTE) ev + sizeof(EVENTLOGRECORD)) << " ) ";
+	reportDesc << "cannot be found. The local computer may not have the necessary registry ";
+	reportDesc << "information or message DLL files to display messages from a remote computer. ";
+	reportDesc << "You may be able to use the /AUXSOURCE= flag to retrieve this description; see ";
+	reportDesc << "Help and Support for details. The following information is part of the event: ";
+	for (DWORD count = 0; strarray[count] != NULL; count++) {
+		if (count > 0)
+			reportDesc << "; ";
+		reportDesc << strarray[count];
+	}
+	reportDesc << ".";
+	description = reportDesc.str();
+}
+
 void				Session::GetEventDescription(const EVENTLOGRECORD * ev, std::string & description) {
 	string				source =  (LPSTR) ((LPBYTE) ev + sizeof(EVENTLOGRECORD));
 	bool				generated = false;
+	LPTSTR				strarray[MAX_STRING_EVENT + 1];
 
+	SecureZeroMemory(strarray, sizeof(strarray));
+	if (ev->NumStrings > 0 && ev->NumStrings < MAX_STRING_EVENT) {
+		LPTSTR	str = NULL;
+		DWORD	inc;
+
+		str = (LPTSTR)((LPBYTE)ev + ev->StringOffset);
+		for (inc = 0; inc < ev->NumStrings; inc++) {
+			strarray[inc] = str;
+			str = str + (strlen(str) + 1);
+		}
+		strarray[inc] = NULL;
+	}
 	eventlog_mode_range_t	range = m_sources.equal_range(source);
 	if (range.first == range.second) {
 		LoadEventMessageFile(source, ev);
 		range = m_sources.equal_range(source);
 		if (range.first == range.second) {
-			description = "no description";
+			// the message DLL is not present
+			FillUnresolvedDescription(ev, strarray, description);
 			return ;
 		}
 	}
@@ -391,22 +425,11 @@ void				Session::GetEventDescription(const EVENTLOGRECORD * ev, std::string & de
 		TCHAR	sBuf[DESC_BUF_SIZE + 1]; 
 		DWORD	dwSize = DESC_BUF_SIZE;
 		LPTSTR	lpszTemp = NULL;
-		LPTSTR	strarray[MAX_STRING_EVENT + 1];
+		
 		LPTSTR	*pstrarray = NULL;
 		DWORD	dflags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_ARGUMENT_ARRAY;
-
 		SecureZeroMemory(sBuf, sizeof(sBuf));
-		SecureZeroMemory(strarray, sizeof(strarray));
 		if (ev->NumStrings > 0 && ev->NumStrings < MAX_STRING_EVENT) {
-			LPTSTR	str = NULL;
-			DWORD	inc;
-
-			str = (LPTSTR)((LPBYTE)ev + ev->StringOffset);
-			for (inc = 0; inc < ev->NumStrings; inc++) {
-				strarray[inc] = str;
-				str = str + (strlen(str) + 1);
-			}
-			strarray[inc] = NULL;
 			pstrarray = strarray;
 		} else {
 			dflags |= FORMAT_MESSAGE_IGNORE_INSERTS;
@@ -420,7 +443,8 @@ void				Session::GetEventDescription(const EVENTLOGRECORD * ev, std::string & de
 				0,
 				(va_list*) strarray);
 		if ( !dwRet || ( (long)dwSize < (long)dwRet+14 ) ) {
-			sBuf[0] = TEXT('\0');
+			// the message DLL is present but the description for the event id is not included
+			FillUnresolvedDescription(ev, strarray, description);
 		} else {
 			strcpy(sBuf, lpszTemp);
 			description = sBuf;

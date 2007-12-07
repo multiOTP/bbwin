@@ -44,7 +44,8 @@ Disk agent is used to monitor disk usage.
 		cdrom
 		</td>
 		<td class="OptionValue" vAlign="top">
-		Possible values are "true" or "false". If true, it will check than cdrom are empty. If a media is in, it will send an alert.
+		Possible values are "true" or "false". If true, it will check than cdrom drives are empty. If a media is in, it will send an alert.
+		You can monitor free space from CDROM drives by specifying a custom rule.
 		<b>Default is false</b>.
 		</td>
 	</tr>
@@ -93,6 +94,7 @@ If the name value is not one of the generic settings, then, disk will understand
 		<td class="OptionValue" vAlign="top">
 		name attribute must be the drive letter of the drive to check.
 		If name is "default", it will be the default settings for all drives.
+		If the drive letter is for the dvd or cd rom drive. It will check the free space of the media. It can be useful to check if there is free space to burn data.
 		<b>This parameter is required</b><br>
 	</td>
 	</tr>
@@ -139,7 +141,8 @@ If the name value is not one of the generic settings, then, disk will understand
 </UL>
 <H3>Notes</H3>
 <UL>
- <LI>no note
+ <LI>If a custum rule doesn't match any drive, it will generate an alert since it can be a known harddrive which desappeared. (For example, an external usb harddrive 
+  turned off on the server).
 </UL>
 </BODY>
 </HTML>

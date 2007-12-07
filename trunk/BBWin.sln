@@ -4,9 +4,13 @@ Microsoft Visual Studio Solution File, Format Version 9.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BBWin", "Core\Core.vcproj", "{98DF289A-CD24-47CD-B811-603C09881B88}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1} = {E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}
+		{EFE4D26B-F137-4F92-93C3-123046934A2C} = {EFE4D26B-F137-4F92-93C3-123046934A2C}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BBWinCmd", "Core\BBWinCmd.vcproj", "{7FB946D3-0EF9-4C59-ACD5-4159BAA02008}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EFE4D26B-F137-4F92-93C3-123046934A2C} = {EFE4D26B-F137-4F92-93C3-123046934A2C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uptime", "Core\Agents\uptime\uptime.vcproj", "{9E7D70DD-A941-4B8C-8084-9011FF96E173}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -44,11 +48,17 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbwinupdate", "Core\Agents\bbwinupdate\bbwinupdate.vcproj", "{44A9B2B1-08C7-4E52-9887-AFD3D7C33468}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1} = {E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}
+		{50006BAE-7E93-428A-9B13-14B5B31BB6E4} = {50006BAE-7E93-428A-9B13-14B5B31BB6E4}
+		{EFE4D26B-F137-4F92-93C3-123046934A2C} = {EFE4D26B-F137-4F92-93C3-123046934A2C}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxml", "Core\tinyxml.vcproj", "{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "digest", "Core\Digest\digest.vcproj", "{50006BAE-7E93-428A-9B13-14B5B31BB6E4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BBWinNet", "Core\BBWinNet.vcproj", "{EFE4D26B-F137-4F92-93C3-123046934A2C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "who", "Core\Agents\who\who.vcproj", "{2CB84EBA-BC33-4C12-B083-FD9508B0B9F5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -124,6 +134,14 @@ Global
 		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Debug|Win32.Build.0 = Debug|Win32
 		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Release|Win32.ActiveCfg = Release|Win32
 		{50006BAE-7E93-428A-9B13-14B5B31BB6E4}.Release|Win32.Build.0 = Release|Win32
+		{EFE4D26B-F137-4F92-93C3-123046934A2C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EFE4D26B-F137-4F92-93C3-123046934A2C}.Debug|Win32.Build.0 = Debug|Win32
+		{EFE4D26B-F137-4F92-93C3-123046934A2C}.Release|Win32.ActiveCfg = Release|Win32
+		{EFE4D26B-F137-4F92-93C3-123046934A2C}.Release|Win32.Build.0 = Release|Win32
+		{2CB84EBA-BC33-4C12-B083-FD9508B0B9F5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2CB84EBA-BC33-4C12-B083-FD9508B0B9F5}.Debug|Win32.Build.0 = Debug|Win32
+		{2CB84EBA-BC33-4C12-B083-FD9508B0B9F5}.Release|Win32.ActiveCfg = Release|Win32
+		{2CB84EBA-BC33-4C12-B083-FD9508B0B9F5}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

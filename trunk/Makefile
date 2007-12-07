@@ -28,3 +28,12 @@ all: $(DIRS)
 
 $(DIRS):
 !include <sdkbld.mak>
+
+clean:
+	cd Core
+	nmake fclean
+	cd ../Externals
+	nmake clean
+	cd ../Setup
+	nmake clean
+	cd ..

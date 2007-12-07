@@ -38,7 +38,8 @@ Special Notes
 - faire partie file
 - faire partie dir
 - modifier les agents pour le mode hobbit
-- modifier message, config, pour qu'ils renvoie le path du fichier temporaire sauvegardÃ©- faire bbwincmd Ã our
+- modifier message, config, pour qu'ils renvoie le path du fichier temporaire sauvegardée
+- faire bbwincmd à jour
 
 
 + Sections client :
@@ -49,7 +50,7 @@ date : hobbitclient part
 uname : hobbitclient part
 osversion : hobbitclient part
 uptime : agent uptime
-who : pas prÃ© : enum sessions
+who : pas prévu : enum sessions
 df : disk
 free : memory
 ifconfig : ipconfig /all
@@ -81,4 +82,3 @@ clock
 epoch: 1150958712.347743
 local: 2006-06-22 08:45:12 CEST
 UTC: 2006-06-22 06:45:12 GMT
-

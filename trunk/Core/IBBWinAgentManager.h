@@ -90,10 +90,7 @@ class   IBBWinAgentManager {
 		virtual void				FreeConfigurationRange(PBBWINCONFIGRANGE range) = 0;
 
 		// Report Functions : report in the bbwin log file
-		virtual void 	ReportError(LPCTSTR str) = 0;
-		virtual void 	ReportInfo(LPCTSTR str) = 0;
-		virtual void 	ReportDebug(LPCTSTR str) = 0;
-		virtual void 	ReportWarn(LPCTSTR str) = 0;
+		virtual void 	Log(const int level, LPCTSTR str, ...) = 0;
 		
 		// Event Report Functions : report in the Windows event log
 		virtual void 	ReportEventError(LPCTSTR str) = 0;

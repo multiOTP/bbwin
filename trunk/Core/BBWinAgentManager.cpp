@@ -18,6 +18,8 @@
 #include <windows.h>
 #include <assert.h>
 
+#include <stdarg.h>
+
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -251,8 +253,8 @@ void				BBWinAgentManager::FreeConfigurationRange(PBBWINCONFIGRANGE range) {
 }
 
 
-// Report Functions : report in the bbwin log file
-void 	BBWinAgentManager::ReportError(LPCTSTR str) {
+// Report Functions
+void 	BBWinAgentManager::Log(const int level, LPCTSTR str, ...) {
 	string 		log;
 	
 	assert(str != NULL);
@@ -260,40 +262,10 @@ void 	BBWinAgentManager::ReportError(LPCTSTR str) {
 	log += m_agentName;
 	log += "]: ";
 	log += str;
-	m_log->logError(log);
-}
-
-void 	BBWinAgentManager::ReportInfo(LPCTSTR str) {
-	string 	log;
-	
-	assert(str != NULL);
-	log += "[";
-	log += m_agentName;
-	log += "]: ";
-	log += str;
-	m_log->logInfo(log);
-}
-
-void 	BBWinAgentManager::ReportDebug(LPCTSTR str) {
-	string 	log;
-	
-	assert(str != NULL);
-	log += "[";
-	log += m_agentName;
-	log += "]: ";
-	log += str;
-	m_log->logDebug(log);
-}
-
-void 	BBWinAgentManager::ReportWarn(LPCTSTR str) {
-	string 	log;
-	
-	assert(str != NULL);
-	log += "[";
-	log += m_agentName;
-	log += "]: ";
-	log += str;
-	m_log->logWarn(log);
+	va_list		ap;
+	va_start(ap, str);
+	m_log->vlog(level, log.c_str(), ap);
+	va_end(ap);
 }
 
 // Event Report Functions : report in the Windows event log
@@ -318,6 +290,13 @@ void 	BBWinAgentManager::ReportEventWarn(LPCTSTR str) {
 	m_log->reportWarnEvent(BBWIN_AGENT, EVENT_MESSAGE_AGENT, 2, arg);
 }
 
+
+void			BBWinAgentManager::PrepareBBWinNetObj(BBWinNet & hobNet) {
+	hobNet.SetHostName(m_setting["hostname"]);
+	if (m_setting["useproxy"] == "true")
+		hobNet.SetProxy(m_setting["proxy"]);
+}
+
 void			BBWinAgentManager::Pager(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime) {
 	bbpager_t::iterator	itr;
 	BBWinNet			hobNet;
@@ -337,7 +316,7 @@ void			BBWinAgentManager::Pager(LPCTSTR testName, LPCTSTR color, LPCTSTR text, L
 			}
 		}
 		if (matchColor) {
-			hobNet.SetHostName(m_setting["hostname"]);
+			PrepareBBWinNetObj(hobNet);
 			for ( itr = m_bbpager.begin(); itr != m_bbpager.end(); ++itr) {
 				hobNet.SetBBPager((*itr));
 				try {
@@ -366,7 +345,7 @@ void 			BBWinAgentManager::Status(LPCTSTR testName, LPCTSTR color, LPCTSTR text,
 	assert(text != NULL);
 	assert(lifeTime != NULL);
 	Pager(testName, color, text, lifeTime);
-	hobNet.SetHostName(m_setting["hostname"]);
+	PrepareBBWinNetObj(hobNet);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -390,7 +369,7 @@ void		BBWinAgentManager::Notify(LPCTSTR testName, LPCTSTR text) {
 		
 	assert(testName != NULL);
 	assert(text != NULL);
-	hobNet.SetHostName(m_setting["hostname"]);
+	PrepareBBWinNetObj(hobNet);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -414,7 +393,7 @@ void		BBWinAgentManager::Data(LPCTSTR dataName, LPCTSTR text) {
 		
 	assert(dataName != NULL);
 	assert(text != NULL);
-	hobNet.SetHostName(m_setting["hostname"]);
+	PrepareBBWinNetObj(hobNet);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -439,7 +418,7 @@ void 		BBWinAgentManager::Disable(LPCTSTR testName, LPCTSTR duration, LPCTSTR te
 	assert(testName != NULL);
 	assert(duration != NULL);
 	assert(text != NULL);
-	hobNet.SetHostName(m_setting["hostname"]);
+	PrepareBBWinNetObj(hobNet);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -462,7 +441,7 @@ void		BBWinAgentManager::Enable(LPCTSTR testName) {
 	BBWinNet						hobNet;
 		
 	assert(testName != NULL);
-	hobNet.SetHostName(m_setting["hostname"]);
+	PrepareBBWinNetObj(hobNet);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -484,7 +463,7 @@ void		BBWinAgentManager::Drop()  {
 	bbdisplay_t::iterator			itr;
 	BBWinNet						hobNet;
 		
-	hobNet.SetHostName(m_setting["hostname"]);
+	PrepareBBWinNetObj(hobNet);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -508,7 +487,7 @@ void		BBWinAgentManager::Drop(LPCTSTR testName) {
 	BBWinNet						hobNet;
 		
 	assert(testName != NULL);
-	hobNet.SetHostName(m_setting["hostname"]);
+	PrepareBBWinNetObj(hobNet);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -531,7 +510,7 @@ void		BBWinAgentManager::Rename(LPCTSTR newHostName) {
 	BBWinNet						hobNet;
 		
 	assert(newHostName != NULL);
-	hobNet.SetHostName(m_setting["hostname"]);
+	PrepareBBWinNetObj(hobNet);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -556,7 +535,7 @@ void		BBWinAgentManager::Rename(LPCTSTR oldTestName, LPCTSTR newTestName) {
 		
 	assert(oldTestName != NULL);
 	assert(newTestName != NULL);
-	hobNet.SetHostName(m_setting["hostname"]);
+	PrepareBBWinNetObj(hobNet);
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
 		try {
@@ -620,6 +599,7 @@ void		BBWinAgentManager::Message(LPCTSTR message, LPTSTR dest, DWORD size) {
 	}
 	for ( itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 		hobNet.SetBBDisplay((*itr));
+		PrepareBBWinNetObj(hobNet);
 		try {
 			hobNet.Message(message, result);
 		} catch (BBWinNetException ex) {
@@ -652,6 +632,7 @@ void		BBWinAgentManager::Config(LPCTSTR fileName, LPCTSTR dest) {
 	assert(dest != NULL);
 	itr = m_bbdisplay.begin(); 
 	hobNet.SetBBDisplay((*itr));
+	PrepareBBWinNetObj(hobNet);
 	try {
 		hobNet.Config(fileName, dest);
 	} catch (BBWinNetException ex) {
@@ -674,6 +655,7 @@ void		BBWinAgentManager::Query(LPCTSTR testName, LPTSTR dest, DWORD size) {
 	assert(dest != NULL);
 	itr = m_bbdisplay.begin();
 	hobNet.SetBBDisplay((*itr));
+	PrepareBBWinNetObj(hobNet);
 	try {
 		hobNet.Query(testName, result);
 	} catch (BBWinNetException ex) {
@@ -706,6 +688,7 @@ void		BBWinAgentManager::Download(LPCTSTR fileName, LPCTSTR dest) {
 	assert(dest != NULL);
 	itr = m_bbdisplay.begin();
 	hobNet.SetBBDisplay((*itr));
+	PrepareBBWinNetObj(hobNet);
 	result = dest;
 	try {
 		hobNet.Download(fileName, result);

@@ -30,17 +30,15 @@ cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
 	
 ## uptime dependencies
 
-uptime_objs = 	uptime.obj ../common/SystemCounters.obj
+uptime_objs = 	uptime.obj 
 
 uptime.res: uptime.rc
 	$(rc) $(rcflags) $(rcvars) /fo uptime.res uptime.rc
 	
-uptime.dll: $(uptime_objs) uptime.res
-    $(link) /DLL $(dllldebug) $(uptime_objs) uptime.res -out:uptime.dll $(BOOST_LIB) 
+uptime.dll: $(uptime_objs) uptime.res ../common/SystemCounters.obj
+    $(link) /DLL $(dllldebug) $(uptime_objs) ../common/SystemCounters.obj uptime.res -out:uptime.dll $(BOOST_LIB) 
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
 	copy /Y uptime.dll ..\..\..\Release
-
 	
 clean:
-		erase /Q /S uptime.res uptime.obj uptime.dll uptime.exp uptime.lib
-
+		erase /Q /S $(uptime_objs)

@@ -41,6 +41,4 @@ stats.dll: $(stats_objs) stats.res
 	copy /Y stats.dll ..\..\..\Release
 	
 clean:
-		erase /Q /S stats.res stats.obj stats.dll stats.exp stats.lib $(stats_objs)
-
-
+		erase /Q /S $(stats_objs)

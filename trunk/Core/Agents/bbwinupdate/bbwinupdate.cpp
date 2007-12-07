@@ -206,7 +206,12 @@ bool		AgentBBWinUpdate::Init() {
 			m_server = value;
 		}*/
 		if (name == "filename" && value.length() > 0) {
-			m_configFiles.push_back(value);
+			TCHAR		buf[FILENAME_MAX];
+			string		filename;
+
+			ExpandEnvironmentStrings(value.c_str(), buf, FILENAME_MAX);
+			filename = buf;
+			m_configFiles.push_back(filename);
 		}
 	}
 	while (m_mgr.IterateConfigurationRange(range));

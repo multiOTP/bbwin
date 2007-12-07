@@ -86,7 +86,7 @@ void AgentUptime::Run() {
 			m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
 		}
 	} else {
-		reportData << uptime << " sec" << endl;
+		reportData << "sec: " << uptime << endl;
 		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
 	}
 }

@@ -29,7 +29,7 @@ DIRS = \
     procs\~   		\
     sample\~   		\
 	bbwinupdate\~   \
-
+	who\~   \
 
 !include <sdkpropbld.mak>
 	
@@ -37,3 +37,33 @@ all: $(DIRS)
 
 $(DIRS):
 !include <sdkbld.mak>
+
+
+clean:
+	cd common
+	nmake clean
+	cd ..\externals
+	nmake clean
+	cd ..\uptime
+	nmake clean
+	cd ..\cpu
+	nmake clean
+	cd ..\disk
+	nmake clean
+	cd ..\memory
+	nmake clean
+	cd ..\msgs
+	nmake clean
+	cd ..\stats
+	nmake clean
+	cd ..\procs
+	nmake clean
+	cd ..\sample
+	nmake clean
+	cd ..\bbwinupdate
+	nmake clean
+	cd ..\who
+	nmake clean
+	cd ..
+
+	

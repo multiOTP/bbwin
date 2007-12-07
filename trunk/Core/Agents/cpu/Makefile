@@ -41,6 +41,8 @@ cpu.dll: $(cpu_objs) cpu.res $(common_objs)
 	copy /Y cpu.dll ..\..\..\Release
 
 clean:
-		erase /Q /S cpu.res cpu.obj cpu.dll cpu.exp cpu.lib $(cpu_objs)
+		erase /Q /S $(cpu_objs)
+
+
 
 

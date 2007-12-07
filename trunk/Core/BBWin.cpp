@@ -199,7 +199,9 @@ BBWin::BBWin() :
 	m_defaultSettings[ "pagerlevels" ] = &BBWin::callback_AddSimpleSetting;
 	m_defaultSettings[ "autoreload"] = &BBWin::callback_SetAutoReload;
 	m_defaultSettings[ "hostname" ] = &BBWin::callback_AddSimpleSetting;
-	
+	m_defaultSettings[ "proxy" ] = &BBWin::callback_AddSimpleSetting;
+	m_defaultSettings[ "useproxy" ] = &BBWin::callback_AddSimpleSetting;
+
 	m_defaultSettings[ "mode" ] = &BBWin::callback_SetBBWinMode;
 	m_defaultSettings[ "configclass" ] = &BBWin::callback_AddSimpleSetting;
 
@@ -254,6 +256,8 @@ void			BBWin::InitSettings() {
 	m_setting[ "pagerlevels" ] = "red purple";
 	m_setting[ "hostname" ] = "%COMPUTERNAME%";
 	m_setting[ "configclass" ] = "win32";
+	m_setting[ "usepager" ] = "false";
+	m_setting[ "useproxy" ] = "false";
 }
 
 
@@ -666,7 +670,7 @@ void			BBWin::StartAgents() {
 	}
 	// second start 
 	if (m_centralMode) {
-		m_log->logDebug("Starting hobbit client agent.");
+		m_log->log(LOGLEVEL_DEBUG, "Starting hobbit client agent.");
 		m_centralClient->start();
 	}
 }
@@ -689,26 +693,26 @@ void			BBWin::StopAgents() {
 	map<string, BBWinLocalHandler * >::iterator itr;
 
 	// first stop the agents with local configuration which have their own threads
-	m_log->logDebug("Listing Agents Threads to terminate.");
+	m_log->log(LOGLEVEL_DEBUG, "Listing Agents Threads to terminate.");
 	for (itr = m_localHandlers.begin(); itr != m_localHandlers.end(); ++itr)
 		;
-	m_log->logDebug("Agents Threads Terminating.");
+	m_log->log(LOGLEVEL_DEBUG, "Agents Threads Terminating.");
 	for (itr = m_localHandlers.begin(); itr != m_localHandlers.end(); ++itr) {
 		if (m_do_stop == true && m_report_stop != NULL) {
 			m_report_stop();
 		}
 		(*itr).second->stop();
 	}
-	m_log->logDebug("Agents Threads Terminated.");
+	m_log->log(LOGLEVEL_DEBUG, "Agents Threads Terminated.");
 	for (itr = m_localHandlers.begin(); itr != m_localHandlers.end(); ++itr) {
 		delete (*itr).second;
 	}
-	m_log->logDebug("Agents Threads Deleted.");
+	m_log->log(LOGLEVEL_DEBUG, "Agents Threads Deleted.");
 	m_localHandlers.clear();
-	m_log->logDebug("Agents Threads Table Clear Done.");
+	m_log->log(LOGLEVEL_DEBUG, "Agents Threads Table Clear Done.");
 	// second : we stop the thread for the centralized agent part
 	if (m_centralMode) {
-		m_log->logDebug("Stopping hobbit client agent.");
+		m_log->log(LOGLEVEL_DEBUG, "Stopping hobbit client agent.");
 		m_centralClient->stop();
 		delete m_centralClient;
 	}
@@ -753,7 +757,7 @@ void				BBWin::LoadAgents() {
 										GetSeconds(m_setting[ "timer" ])};
 			m_centralClient = new BBWinCentralHandler(data);
 		} catch (std::bad_alloc ex) {
-			m_log->logError("no more memory");
+			m_log->log(LOGLEVEL_ERROR, "no more memory");
 			m_centralMode = false;
 		}
 	}
@@ -785,7 +789,7 @@ void				BBWin::LoadAgents() {
 			try {
 				hand = new BBWinHandler(data);
 			} catch (std::bad_alloc ex) {
-				m_log->logError("no more memory");
+				m_log->log(LOGLEVEL_ERROR, "no more memory");
 				continue ;
 			}
 			//
@@ -821,11 +825,11 @@ void				BBWin::LoadAgents() {
 void				BBWin::UnloadAgents() {
 	map<string, BBWinHandler * >::iterator	itr;
 	
-	m_log->logDebug("Listing Agents to unload.");
+	m_log->log(LOGLEVEL_DEBUG, "Listing Agents to unload.");
 	for (itr = m_agents.begin(); itr != m_agents.end(); ++itr) {
 		delete (*itr).second;
 	}
-	m_log->logDebug("Agents deleted.");
+	m_log->log(LOGLEVEL_DEBUG, "Agents deleted.");
 	m_agents.clear();
 }
 
@@ -903,7 +907,7 @@ void		BBWin::_Start() {
 			// we do not exit the program anymore
 		}
 	}
-	m_log->logInfo("bbwin is started.");
+	m_log->log(LOGLEVEL_INFO, "bbwin is started %i.", 123456);
 	LPCTSTR		argStart[] = {SZSERVICENAME, m_setting["hostname"].c_str(), NULL};
 	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_STARTED, 2, argStart);
 }
@@ -923,7 +927,7 @@ void		BBWin::_Start() {
 //  COMMENTS:
 //
 void		BBWin::Reload() {
-	m_log->logInfo("bbwin is reloading the configuration.");
+	m_log->log(LOGLEVEL_INFO, "bbwin is reloading the configuration.");
 	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_RELOAD, 0, NULL);
 	SetEvent(m_hEvents[BBWIN_STOP_HANDLE]);
 	StopAgents();
@@ -984,7 +988,7 @@ void 			BBWin::Stop(void (*report_stop)(void)) {
 	m_report_stop = report_stop;
 	StopAgents();
 	UnloadAgents();
-	m_log->logInfo("bbwin is stopped.");
+	m_log->log(LOGLEVEL_INFO, "bbwin is stopped.");
 	LPCTSTR		argStop[] = {SZSERVICENAME, NULL};
 	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_STOPPED, 1, argStop);
 }

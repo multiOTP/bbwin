@@ -18,6 +18,7 @@
 
 #include <windows.h>
 #include <time.h>
+#include <stdarg.h>
 
 #include <string>
 #include <iostream>
@@ -31,123 +32,35 @@ using namespace std;
 CRITICAL_SECTION  		m_logCriticalSection;
 CRITICAL_SECTION  		m_eventCriticalSection;
 
-//
-//  FUNCTION: Logging
-//
-//  PURPOSE: constructor
-//
-//  PARAMETERS:
-//   none
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-// 
-//
 Logging::Logging() {
 	InitializeCriticalSection(&m_logCriticalSection);
 	InitializeCriticalSection(&m_eventCriticalSection);
 	m_logLevel = LOGLEVEL_DEFAULT;
-	m_logFile = new ofstream;
+	m_fileHandle = NULL;
 }
 
-//
-//  FUNCTION: Logging::setFileName
-//
-//  PURPOSE: set the filename
-//
-//  PARAMETERS:
-//   fileName		file name of the log file
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-// 
-//
 void Logging::setFileName(const std::string & fileName) {
 	m_fileName = fileName;
 }
 
 
-//
-//  FUNCTION: Logging::open
-//
-//  PURPOSE: open the file
-//
-//  PARAMETERS:
-//   none
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-// 
-//
 void Logging::open() {
-	m_logFile->open(m_fileName.c_str(), ios::out | ios::app);
-	if (!m_logFile->is_open()) {
+	if ((m_fileHandle = fopen(m_fileName.c_str(), "a")) == NULL) {
 		throw LoggingException("Failed to create log file");
 	}
 }
 
-//
-//  FUNCTION: Logging::close
-//
-//  PURPOSE: close the file
-//
-//  PARAMETERS:
-//   none
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-// 
-//
 void Logging::close() {
-	m_logFile->close();
+	if (m_fileHandle != NULL) fclose(m_fileHandle);
 }
 
-
-//
-//  FUNCTION: ~Logging
-//
-//  PURPOSE: destructor
-//
-//  PARAMETERS:
-//   none
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-// 
-//
 Logging::~Logging() {
-	delete m_logFile;
 	DeleteCriticalSection(&m_logCriticalSection);
 	DeleteCriticalSection(&m_eventCriticalSection);
 }
 
-//
-//  FUNCTION: Logging::write
-//
-//  PURPOSE: write the string to a file
-//
-//  PARAMETERS:
-//   log         
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//  the functions is implemented to work in multithreading environnment. 
-//  that's why critical sections are used
-//
 #define TIME_BUF			256
-void Logging::write(const string & log) {
+void Logging::write(LPCTSTR log, va_list ap) {
 	struct _SYSTEMTIME  ts;
 	string				time, date;
 	TCHAR				timebuf[TIME_BUF + 1];
@@ -171,122 +84,45 @@ void Logging::write(const string & log) {
 	} else {
 		date = "unkwown";
 	}
-	*m_logFile << date << " " << time << " ";
-	*m_logFile << log << endl;
+	fprintf(m_fileHandle, "%s %s ", date.c_str(), time.c_str());
+	vfprintf(m_fileHandle, log, ap);
+	fprintf(m_fileHandle, "\n");
 	close();
     LeaveCriticalSection(&m_logCriticalSection);
 }
 
-//
-//  FUNCTION: Logging::logInfo
-//
-//  PURPOSE:  log information in the file
-//
-//  PARAMETERS:
-//   log         log string
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//  
-//
-void Logging::logInfo(const string & log) {
-	if (m_logLevel >= LOGLEVEL_INFO) {
-		string _log("[INFO]: ");
-		
+void Logging::log(const int level, LPCTSTR log, ...) {
+	va_list ap;
+	va_start( ap, log );
+	vlog(level, log, ap);
+	va_end(ap);
+}
+
+void Logging::vlog(const int level, LPCTSTR log, va_list ap) {
+	if (level <= m_logLevel) {
+		string	_log;
+
+		switch (level) {
+			case LOGLEVEL_INFO :
+				_log = "[INFO]: ";
+				break ;
+			case LOGLEVEL_ERROR :
+				_log = "[ERROR]: ";
+				break ;
+			case LOGLEVEL_WARN :
+				_log = "[WARN]: ";
+				break ;
+			case LOGLEVEL_DEBUG :
+				_log = "[DEBUG]: ";
+				break ;
+			default :
+				_log = "[UNKOWN]: ";
+		}
 		_log += log;
-		write(_log);
+		write(_log.c_str(), ap);
 	}
 }
 
-//
-//  FUNCTION: Logging::logError
-//
-//  PURPOSE:  log error in the file
-//
-//  PARAMETERS:
-//   log         log string
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//  
-//
-void Logging::logError(const string & log) {
-	if (m_logLevel >= LOGLEVEL_ERROR) {
-		string _log("[ERROR]: ");
-		
-		_log += log;
-		write(_log);
-	}
-}
-
-//
-//  FUNCTION: Logging::logWarn
-//
-//  PURPOSE:  log warning in the file
-//
-//  PARAMETERS:
-//   log         log string
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//  
-//
-void Logging::logWarn(const string & log) {
-	if (m_logLevel >= LOGLEVEL_WARN) {
-		string _log("[WARNING]: ");
-		
-		_log += log;
-		write(_log);
-	}
-}
-
-//
-//  FUNCTION: Logging::logDebug
-//
-//  PURPOSE:  log debug in the file
-//
-//  PARAMETERS:
-//   log         log string
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//  
-//
-void Logging::logDebug(const string & log) {
-		if (m_logLevel >= LOGLEVEL_DEBUG) {
-		string _log("[DEBUG]: ");
-		
-		_log += log;
-		write(_log);
-	}
-}
-
-//
-//  FUNCTION: Logging::reportEvent
-//
-//  PURPOSE:  report an event to the log event
-//
-//  PARAMETERS:
-//   type 		event type
-//   category	bbwin categories
-//   eventID	bbwin event id
-//   nbStr		Nb of strings
-//  str 		table of strings
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//  
-//
 void Logging::reportEvent(WORD type, WORD category, DWORD eventId, WORD nbStr, LPCTSTR *str) {
 	HANDLE		hEvent;
 	
@@ -299,25 +135,6 @@ void Logging::reportEvent(WORD type, WORD category, DWORD eventId, WORD nbStr, L
 	DeregisterEventSource(hEvent);
 	LeaveCriticalSection(&m_eventCriticalSection);
 }
-
-
-//
-//  FUNCTION: Logging::report%%Event
-//
-//  PURPOSE:  report an event to the log event
-//
-//  PARAMETERS:
-//   category	bbwin categories
-//   eventID	bbwin event id
-//   nbStr		Nb of strings
-//  str 		table of strings
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//  multiple public methods used for the developer to log events
-//
 
 void Logging::reportInfoEvent(WORD category, DWORD eventId, WORD nbStr, LPCTSTR *str) {
 	reportEvent(EVENTLOG_INFORMATION_TYPE, category, eventId, nbStr, str);
@@ -334,8 +151,6 @@ void Logging::reportErrorEvent(WORD category, DWORD eventId, WORD nbStr, LPCTSTR
 void Logging::reportWarnEvent(WORD category, DWORD eventId, WORD nbStr, LPCTSTR *str) {
 	reportEvent(EVENTLOG_WARNING_TYPE, category, eventId, nbStr, str);
 }
-
-
 
 void Logging::setLogLevel(DWORD level) {
 	m_logLevel = level;

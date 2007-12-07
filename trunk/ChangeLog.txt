@@ -2,6 +2,30 @@ ChangeLog file for BBWin
 ==============================================================
 
 
+BBWin 0.10 - XX  2007
+-------------------
+
++New Features
+* Msgs agent reports parts of description events when the message file contening the 
+  static string can't be found. It will reports as the Windows Event Viewer, just like this :
+  "The description for Event ID ( XXX ) in Source ( XXX ) cannot be found.
+  The local computer may not have the necessary registry information or message
+  DLL files to display messages from a remote computer. You may be able to use
+  the /AUXSOURCE= flag to retrieve this description; see Help and Support for details.
+  The following information is part of the event: XXXXX, XXXXX."
+* You can use environment variables in the bbwinupdate agent. Example :
+  <setting name="filename" value="bbwin\%COMPUTERNAME%.cfg" />
+* svcs services rules can be used with comments
+* new indicator for the memory. Called Real Memory, it is used as the new reference for 
+  the memory agent.
+* disk agent can monitor free space from XX-rom drive and not only if a media is inserted.
+             (feature requested to monitor dvd-ram burning state)
+* Proxy access : BBWin can access to your hobbit server through a proxy (http proxy)
+  You can specify a user/password if you use http proxy basic authentification.
+* disk agent will alert you if a disk monitored with a custum rule disappear from the Server.
+  (Example : external usb harddrive turned off)
+
+
 BBWin 0.9 Preview version - December 5th 2006
 -------------------
 

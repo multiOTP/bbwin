@@ -103,5 +103,12 @@ $(DIRS):
 !include <sdkbld.mak>
 	
 clean:
-		erase /Q /S BBWinMessages.h BBWinMessages.rc
         $(CLEANUP)
+
+fclean: clean
+		cd Agents
+		nmake clean
+		cd ..
+		cd Digest
+		nmake clean
+		cd ..

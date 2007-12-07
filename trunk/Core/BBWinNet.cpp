@@ -1,5 +1,5 @@
 //this file is part of BBWin
-//Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+//Copyright (C)2006-2007 Etienne GRIGNON  ( etienne.grignon@gmail.com )
 //
 //This program is free software; you can redistribute it and/or
 //modify it under the terms of the GNU General Public License
@@ -15,6 +15,13 @@
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+// proxy part inspired from the information page 
+// http://www.codeproject.com/internet/akashhttpproxy.asp
+// Documention from HTTP/1.1 RFC 
+// http://www.ietf.org/rfc/rfc2068.txt
+//
+
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <wspiapi.h>
@@ -27,13 +34,14 @@
 #include <sstream>
 using namespace std;
 
+#include "Base64.h"
 #include "BBWinNet.h"
 
 
 //
-//  FUNCTION: BBWinNet::Open
+//  FUNCTION: BBWinNet::Connect
 //
-//  PURPOSE: open a connection to the hobbit server
+//  PURPOSE: open a connection to an host
 //
 //  PARAMETERS:
 //    none
@@ -42,24 +50,20 @@ using namespace std;
 //    none
 //
 //  COMMENTS:
-//  main function to open the socket
+//  generic function to open the socket to an host
 //
-void	 BBWinNet::Open()
-{
+void	 BBWinNet::Connect(const string & host, const string & port) {
 	struct addrinfo 	hints;
 	struct addrinfo 	*addrptr = NULL;
 	DWORD				retval;
 	
-	if (m_bbDisplay.length() == 0) {
-		throw BBWinNetException("No bb display specified");
-	}
 	memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
-    retval = getaddrinfo(m_bbDisplay.c_str(), m_port.c_str(), &hints, &addrptr);
+	retval = getaddrinfo(host.c_str(), port.c_str(), &hints, &addrptr);
 	if (retval != 0 || addrptr == NULL) {
-       throw BBWinNetException("can't understand host");
+       throw BBWinNetException("can't understand proxy host");
     }
     m_conn = socket(addrptr->ai_family, addrptr->ai_socktype, addrptr->ai_protocol);
 	if (m_conn == INVALID_SOCKET) {
@@ -79,7 +83,111 @@ void	 BBWinNet::Open()
 		freeaddrinfo(addrptr);
 		throw BBWinNetException("can't connect to host");
     }
+}
+
+
+//
+//  FUNCTION: BBWinNet::ConnectProxy
+//
+//  PURPOSE: open a connection to the proxy
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//  main function to open the socket through a proxy
+//
+void	 BBWinNet::ConnectProxy()
+{
+	try {
+		Connect(m_proxyHost, m_proxyPort);
+	} catch (BBWinNetException ex) {
+
+	}
+	if (m_bbDisplay.length() == 0) {
+		Close();
+		throw BBWinNetException("No bb display specified");
+	}
+
+	// connected to the proxy
+	// send the request to connect to the bbdisplay
+
+	ostringstream 	query;
+	int				rBuf;
+	char			buf[BB_LEN_RECV + 1];
+	string			res, dest;
+
+	query << "CONNECT " << m_bbDisplay << ":" << m_port << " HTTP/1.0\r\n";
+	if (m_proxyUser.size() > 0 && m_proxyPass.size() > 0) {
+		query << "Proxy-Authorization: Basic ";
+		string authStr = m_proxyUser + ":" + m_proxyPass;
+		std::string encoded = base64_encode(reinterpret_cast<const unsigned char*>(authStr.c_str()), authStr.length());
+		query << encoded << "\r\n";
+	}
+	query << "\r\n";
+	res = query.str();
+	try {
+		Send(res);
+	} catch (BBWinNetException ex) {
+		throw ex;
+	}
+	while((rBuf = recv(m_conn, buf, BB_LEN_RECV,0)) && rBuf != SOCKET_ERROR) {
+		size_t		end;
+
+		buf[rBuf] = '\0';
+		dest += buf;
+		end = dest.find("\r\n\r\n");
+		if (end > 0 && end < dest.size()) {
+			break ;
+		}
+	}
+	if (rBuf == SOCKET_ERROR) {
+		throw BBWinNetException("Can't receive query answer");
+	}
+	// check that we are connect to the 
+	size_t		chkconn = dest.find(" 200 ");
+	if (chkconn == 0 || chkconn > dest.size()) {
+		Close();
+		throw BBWinNetException("Failed to connect bbdisplay through the proxy server");
+	}
 	m_connected = true;
+}
+//
+//  FUNCTION: BBWinNet::Open
+//
+//  PURPOSE: open a connection to the hobbit server
+//
+//  PARAMETERS:
+//    none
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//  main function to open the socket
+//
+void	 BBWinNet::Open()
+{
+	if (m_proxyHost.size() > 0) {
+		try { 
+			ConnectProxy();
+		} catch (BBWinNetException ex) {
+			throw ex;
+		}
+	} else {
+		if (m_bbDisplay.length() == 0) {
+			throw BBWinNetException("No bb display specified");
+		}
+		try {
+			Connect(m_bbDisplay, m_port);
+		} catch (BBWinNetException ex) {
+			throw ex;
+		}
+		m_connected = true;
+	}
 }
 
 //
@@ -141,6 +249,7 @@ void	BBWinNet::Init() {
 	}
 	m_connected = false;
 	m_port = BB_TCP_PORT;
+	m_proxyPort = PROXY_PORT;
 	m_debug = false;
 }
 
@@ -321,6 +430,49 @@ void	BBWinNet::SetBBDisplay(const string & bbDisp) {
 const string	&BBWinNet::GetBBDisplay() {
 	return m_bbDisplay;
 }
+
+//
+//  FUNCTION: BBWinNet::SetProxy
+//
+//  PURPOSE: set the proxy (used to connect)
+//
+//  PARAMETERS:
+//    proxy			proxy server(IP or dns name. Port can be attached)
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+void	BBWinNet::SetProxy(const string & proxy) {
+	string 	proxyStr = proxy;
+	size_t		sep;
+	
+	if (proxyStr.size() == 0)
+		return ;
+	sep = proxyStr.find('@');
+	// check if there is authentification part. Style : user:pass@host:port
+	if (sep > 0 && sep <= proxyStr.size()) {
+		string authPart = proxyStr.substr(0, sep);
+		proxyStr = proxyStr.substr(sep + 1, proxyStr.size() + 1);
+		sep = authPart.find(':');
+		// parse the user and password
+		if (sep > 0 && sep <= authPart.size()) {
+			m_proxyPass = authPart.substr(sep + 1, proxy.size() + 1);
+			authPart = authPart.substr(0, sep);
+		}
+		m_proxyUser = authPart;
+	}
+	// parse the proxy host and port
+	sep = proxyStr.find(':');
+	if (sep > 0 && sep <= proxyStr.size()) {
+		string 	portStr =  proxyStr.substr(sep + 1, proxy.size() + 1);
+		proxyStr = proxyStr.substr(0, sep);
+		m_proxyPort = portStr;
+	} 
+	m_proxyHost = proxyStr;
+}
+
 
 
 //
