@@ -46,6 +46,7 @@ class BBWinCentralHandler : public Thread {
 
 	private :
 		// RunAgents
+		void	GetClock(std::ofstream	&report);
 		// SendReport
 
 
