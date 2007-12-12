@@ -72,41 +72,55 @@ BBWinCentralHandler::BBWinCentralHandler(bbwinhandler_data_t & data) :
 	reportPath = reportSavePath + (string)"." + pid.str();
 }
 
-void	BBWinCentralHandler::GetClock(std::ofstream	&report) {
-	//char timebuf[26], ampm[] = "AM";
-	//time_t ltime;
-	//struct tm today, gmt;
-	//errno_t err;
+void	BBWinCentralHandler::GetClock() {
+	char timebuf[26], ampm[] = "AM";
+	time_t					ltime;
+	struct tm				today, gmt;
+	errno_t					err;
+	stringstream			report;
 
-	//report << "[clock]" << endl;
-	//_tzset();
-	//// Get UNIX-style time and display as number and string. 
-	//time( &ltime );
-	//report << boost::format("epoch: %ld") % (long int)ltime << endl;
-	//err = _localtime64_s( &today, &ltime );
-	//if (err) {
- //      printf("_localtime64_s failed due to an invalid argument.");
-	//   return ;
- //   }
-	//err = ctime_s(timebuf, 26, &ltime);
-	//if (err) {
- //      printf("ctime_s failed due to an invalid argument.");
- //      return ;
- //   }
- //   printf( "UNIX time and date:\t\t\t%s", timebuf );
- //   // Display UTC. 
- //   err = _gmtime64_s( &gmt, &ltime );
- //   if (err) {
- //      printf("_gmtime64_s failed due to an invalid argument.");
- //   }
- //   err = asctime_s(timebuf, 26, &gmt);
- //   if (err) {
- //      printf("asctime_s failed due to an invalid argument.");
- //      exit(1);
- //   }
- //   printf( "Coordinated universal time:\t\t%s", timebuf );
+	_tzset();
+	// Get UNIX-style time and display as number and string. 
+	time( &ltime );
+	report << boost::format("epoch: %ld") % (long int)ltime << endl;
+	err = _localtime64_s( &today, &ltime );
+	if (err) {
+		string	errmesg;
 
+		GetLastErrorString(errmesg);
+		m_log->log(LOGLEVEL_ERROR, "failed _localtime64_s : %s", errmesg);
+	   return ;
+    }
+	err = ctime_s(timebuf, 26, &ltime);
+	if (err) {
+		string	errmesg;
 
+		GetLastErrorString(errmesg);
+		m_log->log(LOGLEVEL_ERROR, "failed ctime_s : %s", errmesg);
+       return ;
+    }
+	timebuf[24] = '\0';
+	report << boost::format("local: %s") % timebuf << endl;
+    // Display UTC. 
+    err = _gmtime64_s( &gmt, &ltime );
+    if (err) {
+       string	errmesg;
+
+		GetLastErrorString(errmesg);
+		m_log->log(LOGLEVEL_ERROR, "failed _gmtime64_s : %s", errmesg);
+	   return ;
+    }
+    err = asctime_s(timebuf, 26, &gmt);
+    if (err) {
+       string	errmesg;
+
+		GetLastErrorString(errmesg);
+		m_log->log(LOGLEVEL_ERROR, "failed asctime_s : %s", errmesg);
+	   return ;
+    }
+	timebuf[24] = '\0';
+    report << boost::format("UTC: %s") % timebuf << endl;
+	bbwinClientData_callback("clock", report.str());
 }
 
 void BBWinCentralHandler::run() {
@@ -115,20 +129,18 @@ void BBWinCentralHandler::run() {
 	string		configUpdateFile = m_data.setting["tmppath"] + (string)"\\bbwin." + m_data.setting["hostname"] + (string)".cfg";
 
 	for (;;) {
-		std::ofstream	report(reportPath.c_str(), std::ios_base::trunc);
+		std::ofstream	report(reportPath.c_str(), std::ios_base::trunc | ios_base::binary);
 		bool		created = false;
 
 		if (report) {
-			report << "client " << m_data.setting["hostname"] << ".bbwin " << m_data.setting["configclass"] << endl;
-			ptime 				now;
-			
-			now = second_clock::local_time();
-			report << "[date]\n" << to_simple_string(now) << endl;
+			report << "client " << m_data.setting["hostname"] << ".bbwin " << m_data.setting["configclass"] << "\n";
 			report.close();
 			created = true;
-
-
-
+			// get the local date
+			ptime 				now;
+			now = second_clock::local_time();
+			bbwinClientData_callback("date", to_simple_string(now));
+			GetClock();
 		} else {
 			string mess, err;
 
@@ -178,11 +190,16 @@ void BBWinCentralHandler::run() {
 }
 
 void			BBWinCentralHandler::bbwinClientData_callback(const std::string & dataName, const std::string & data) {
-	std::ofstream	report(reportPath.c_str(), std::ios_base::app);
-
+	std::ofstream	report(reportPath.c_str(), std::ios_base::app | ios_base::binary);
+		
 	if (report) {
-		report << "[" << dataName << "]" << endl;
-		report << data << endl;
+		string		dataFormated;
+
+		report << "[" << dataName << "]\n";
+		dataFormated = data;
+		// remove '\r; characters before sending
+		dataFormated.erase(std::remove(dataFormated.begin(), dataFormated.end(), '\r'), dataFormated.end());
+		report << dataFormated << "\n";
 	}
 }
 
