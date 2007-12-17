@@ -32,8 +32,8 @@
 #define DEF_VIRT_PANIC	99
 #define DEF_PAGE_WARN	80		/* page-file (swap) */
 #define DEF_PAGE_PANIC	90
-#define DEF_REAL_WARN	101		/* real memory use Used Page / Total Physical */
-#define DEF_REAL_PANIC	105
+//#define DEF_REAL_WARN	101		/* real memory use Used Page / Total Physical */
+//#define DEF_REAL_PANIC	105
 
 #define	PHYS_MEM_TYPE	0
 #define	VIRT_MEM_TYPE	1
