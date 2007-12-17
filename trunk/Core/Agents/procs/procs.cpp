@@ -165,14 +165,13 @@ static DWORD 		CountProcesses(const string & name) {
 
 //
 // only used with the centralized mode
-// generate a table with list of process with their count number
+// generate a table with list of process 
 //
-static void 		ReportCountProcesses(stringstream & reportData) {
+static void 		ReportProcesses(stringstream & reportData) {
 	string									procname;
 	DWORD									maxlen = 0;
-	std::map<std::string, DWORD>			procs;
-	std::map<std::string, DWORD>::iterator	itr;
 
+	reportData << format("PID Name") << endl;
 	HINSTANCE hNtDll;
 	NTSTATUS (WINAPI * pZwQuerySystemInformation)(UINT, PVOID, ULONG, PULONG);
 	hNtDll = GetModuleHandle("ntdll.dll");
@@ -217,23 +216,13 @@ static void 		ReportCountProcesses(stringstream & reportData) {
 		WideCharToMultiByte(CP_ACP, 0, pszProcessName, -1,
 			szProcessName, MAX_PATH, NULL, NULL);
 		procname = szProcessName;
-		if (maxlen < procname.size())
-			maxlen = procname.size();
-		itr = procs.find(procname);
-		if (itr != procs.end()) {
-			++procs[procname];
-		} else {
-			procs.insert(pair<std::string, DWORD>(procname, 1));
-		}
+		reportData << format("%-6d %-16s") % pProcesses->ProcessId % procname << endl;
 		if (pProcesses->NextEntryDelta == 0)
 			break ;
 		pProcesses = (PSYSTEM_PROCESS_INFORMATION)(((LPBYTE)pProcesses)
 			+ pProcesses->NextEntryDelta);
 	}
 	HeapFree(hHeap, 0, pBuffer);
-	for (itr = procs.begin(); itr != procs.end(); ++itr) {
-		reportData << format("%-16s %u") % (*itr).first % (*itr).second << endl;
-	}
 }
 
 
@@ -297,7 +286,7 @@ void AgentProcs::Run() {
 		reportData << endl;
 		m_mgr.Status(m_testName.c_str(), bbcolors[finalState], reportData.str().c_str());
 	} else {
-		ReportCountProcesses(reportData);
+		ReportProcesses(reportData);
 		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
 	}
 }
