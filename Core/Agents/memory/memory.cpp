@@ -137,8 +137,6 @@ void		AgentMemory::SendStatusReport() {
     ptime now = second_clock::local_time();
 	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] " << m_status << endl;
 	reportData << endl;
-	reportData << format("&%s real memory usage: %3lu%%\n\n") % bbcolors[m_memData[REAL_MEM_TYPE].color] % 
-		m_memData[REAL_MEM_TYPE].value;
 	reportData << format("    Memory  %6s  %6s  %s\n") % "Used" % "Total" % "Pctg";
 	reportData << format("&%s Physical:  %6luM %6luM  %3lu%%\n") % bbcolors[m_memData[PHYS_MEM_TYPE].color] %
 			m_memData[PHYS_MEM_TYPE].used % m_memData[PHYS_MEM_TYPE].total % m_memData[PHYS_MEM_TYPE].value;
@@ -152,11 +150,10 @@ void		AgentMemory::SendStatusReport() {
 void		AgentMemory::SendClientData() {
 	stringstream 			reportData;	
 
-	reportData << format("real memory usage:  %3lu%%\n") % m_memData[REAL_MEM_TYPE].value;
-	reportData << format("memory  %6s  %6s  %s\n") % "Used" % "Total" % "Pctg";
-	reportData << format("physical:  %6luM %6luM  %3lu%%\n") % m_memData[PHYS_MEM_TYPE].used % m_memData[PHYS_MEM_TYPE].total % m_memData[PHYS_MEM_TYPE].value;
-	reportData << format("virtual:   %6luM %6luM  %3lu%%\n") % m_memData[VIRT_MEM_TYPE].used % m_memData[VIRT_MEM_TYPE].total % m_memData[VIRT_MEM_TYPE].value;
-	reportData << format("page:      %6luM %6luM  %3lu%%\n") % m_memData[PAGE_MEM_TYPE].used % m_memData[PAGE_MEM_TYPE].total % m_memData[PAGE_MEM_TYPE].value;
+	reportData << format("memory  %6s  %6s\n") % "Total" % "Used";
+	reportData << format("physical:  %6lu %6lu\n") % m_memData[PHYS_MEM_TYPE].total % m_memData[PHYS_MEM_TYPE].used;
+	reportData << format("virtual:   %6lu %6lu\n") % m_memData[VIRT_MEM_TYPE].total % m_memData[VIRT_MEM_TYPE].used;
+	reportData << format("page:      %6lu %6lu\n") % m_memData[PAGE_MEM_TYPE].total % m_memData[PAGE_MEM_TYPE].used;
 	m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
 }
 
@@ -238,11 +235,11 @@ bool AgentMemory::Init() {
 					panic = (sPanic == "") ? DEF_VIRT_PANIC : m_mgr.GetNbr(sPanic.c_str());
 					SetMemDataLevels(m_memData[VIRT_MEM_TYPE], warn, panic);
 				}
-				if (name == "real") {
-					warn = (sWarn == "") ? DEF_REAL_WARN : m_mgr.GetNbr(sWarn.c_str());
-					panic = (sPanic == "") ? DEF_REAL_PANIC : m_mgr.GetNbr(sPanic.c_str());
-					SetMemDataLevels(m_memData[REAL_MEM_TYPE], warn, panic);
-				}
+				//if (name == "real") {
+				//	warn = (sWarn == "") ? DEF_REAL_WARN : m_mgr.GetNbr(sWarn.c_str());
+				//	panic = (sPanic == "") ? DEF_REAL_PANIC : m_mgr.GetNbr(sPanic.c_str());
+				//	SetMemDataLevels(m_memData[REAL_MEM_TYPE], warn, panic);
+				//}
 			}
 		}
 		m_mgr.FreeConfigurationRange(range);
