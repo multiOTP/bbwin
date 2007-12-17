@@ -55,6 +55,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Iphlpapi.lib"
 				GenerateDebugInformation="true"
 			/>
 			<Tool
@@ -121,6 +122,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="Iphlpapi.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
