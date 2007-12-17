@@ -78,6 +78,8 @@ void AgentUptime::Run() {
 	seconds -= hour * 3600;
 	min = seconds / 60;
 	seconds -= min * 60;
+	if (m_mgr.IsCentralModeEnabled())
+		reportData << "sec: " << uptime << endl;
 	reportData << day  << " days " << hour << " hours " << min << " minutes " << seconds << " seconds" << endl;
 	if (m_mgr.IsCentralModeEnabled() == false) {
 		if (alert){
@@ -86,7 +88,6 @@ void AgentUptime::Run() {
 			m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
 		}
 	} else {
-		reportData << "sec: " << uptime << endl;
 		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
 	}
 }
