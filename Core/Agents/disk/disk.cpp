@@ -14,30 +14,31 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
+
+#define BBWIN_AGENT_EXPORTS
 
 #include <windows.h>
-
 #include <sstream>
 #include <iostream>
 #include <sstream>
 #include <fstream>
 #include <vector>
 #include <string>
-using namespace std;
-
-#define BBWIN_AGENT_EXPORTS
-
+#include <list>
+#include <map>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
+#include "disk.h"
+#include "utils.h"
 
+using namespace std;
 using boost::format;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
-#include "disk.h"
-
 static const char *bbcolors[] = { "green", "yellow", "red", NULL };
-
 
 static const BBWinAgentInfo_t 		diskAgentInfo =
 {
@@ -70,8 +71,6 @@ static const disk_type_t		disk_type_table[] =
 	{NULL, 0},
 };
 
-
-
 static const char * GetDiskTypeStr(DWORD type) {
 	DWORD		inc;
 
@@ -93,6 +92,50 @@ bool			AgentDisk::GetSizeValue(const string & level, __int64 & val) {
 		}
 	}
 	return false;
+}
+
+void			AgentDisk::GetMountPointData(LPTSTR driveName) {
+	if (m_findFirstVolumeMountPoint == NULL || m_findNextVolumeMountPoint == NULL || m_findVolumeMountPointClose == NULL) 
+		return;
+	TCHAR 			mountPoint[BUFFER_SIZE + 1];
+	HANDLE			h;
+	disk_t			*disk;
+	DWORD			driveType;
+	BOOL			ret = 1, fResult;
+
+	for (h = m_findFirstVolumeMountPoint(driveName, mountPoint, BUFFER_SIZE); 
+		h != INVALID_HANDLE_VALUE && ret != 0; 
+		ret = m_findNextVolumeMountPoint(h, mountPoint, BUFFER_SIZE)) {
+		string		fullMountPoint = string(driveName) + string("\\") + string(mountPoint);
+		driveType = GetDriveType(fullMountPoint.c_str());
+		if (driveType != DRIVE_REMOVABLE) { // no floppy 
+			try {
+				disk = new disk_t;
+			} catch (std::bad_alloc ex) {
+				continue ;
+			}
+			if (disk == NULL)
+				continue ;
+			ZeroMemory(disk, sizeof(*disk));
+			disk->type = driveType;
+			std::string::size_type	end = fullMountPoint.find_last_of("\\", fullMountPoint.size() - 1);
+			std::string::size_type	begin = fullMountPoint.find_last_of("\\", end - 1);
+			string dir = fullMountPoint.substr(begin + 1, end - begin - 1);
+			strncpy(disk->letter, dir.c_str(), 7);
+			disk->letter[8] = '\0';
+			fResult = GetDiskFreeSpaceEx(fullMountPoint.c_str(), (PULARGE_INTEGER)&(disk->i64FreeBytesToCaller), 
+				(PULARGE_INTEGER)&(disk->i64TotalBytes), (PULARGE_INTEGER)&(disk->i64FreeBytes));
+			if (fResult != 0) {
+				GetVolumeInformation(fullMountPoint.c_str(), disk->volumeName, MAXNAMELEN, &(disk->volumeSerialNumber), 
+				 &(disk->maximumComponentLength), &(disk->fileSystemFlags), disk->fileSystemName, MAXNAMELEN);
+			}
+			if (disk->i64TotalBytes > 0)
+				disk->percent = (DWORD)(((disk->i64TotalBytes - disk->i64FreeBytes) * 100) / disk->i64TotalBytes);
+			m_disks.push_back(disk);
+		} 
+	} 
+	if (h != INVALID_HANDLE_VALUE) 
+		m_findVolumeMountPointClose(h);
 }
 
 bool			AgentDisk::GetDisksData() {
@@ -132,10 +175,11 @@ bool			AgentDisk::GetDisksData() {
 			if (fResult != 0) {
 				GetVolumeInformation(driveName, disk->volumeName, MAXNAMELEN, &(disk->volumeSerialNumber), 
 				 &(disk->maximumComponentLength), &(disk->fileSystemFlags), disk->fileSystemName, MAXNAMELEN);
-			} 
+			}
 			if (disk->i64TotalBytes > 0)
 				disk->percent = (DWORD)(((disk->i64TotalBytes - disk->i64FreeBytes) * 100) / disk->i64TotalBytes);
 			m_disks.push_back(disk);
+			GetMountPointData(driveName);
 		} 
 		pos += strlen(driveName) + 1;
 	}
@@ -304,7 +348,7 @@ void		AgentDisk::SendStatusReport() {
 		if (disk->ignore || (disk->type == DRIVE_FIXED && disk->i64TotalBytes == 0))
 			continue ;
 		GenerateSummary(*disk, summary);
-		reportData << format("%s             %10.0f %10.0f %10.0f   %3d%%       /%s/%s      %s") %
+		reportData << format("%-13s %10.0f %10.0f %10.0f   %3d%%       /%s/%-8s %s") %
 			disk->letter % (disk->i64TotalBytes / 1024) % ((disk->i64TotalBytes - disk->i64FreeBytes) / 1024) % 
 			(disk->i64FreeBytes / 1024) % disk->percent % GetDiskTypeStr(disk->type) % 
 			disk->letter % summary.str();
@@ -343,6 +387,9 @@ AgentDisk::AgentDisk(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	m_checkCdrom = false;
 	m_alwaysgreen = false;
 	m_testName = "disk";
+	m_findFirstVolumeMountPoint = NULL;
+	m_findNextVolumeMountPoint = NULL;
+	m_findVolumeMountPointClose = NULL;
 }
 
 void		AgentDisk::BuildRule(disk_rule_t & rule, const string & warnlevel, const string & paniclevel) {
@@ -415,6 +462,35 @@ void		AgentDisk::AddRule(const string & label, const string & warnlevel, const s
 }
 
 bool		AgentDisk::Init() {
+	m_mgr.Log(LOGLEVEL_DEBUG, "init disk agent %s", __FUNCTION__);
+	HMODULE hm = GetModuleHandle("kernel32.dll");
+	if (hm == NULL) {
+		string err; 
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_ERROR, "GetModuleHandle(kernel32.dll) failed : %s", err.c_str());
+	}
+    m_findFirstVolumeMountPoint = (MYFINDFIRSTVOLUMEMOUNTPOINT)GetProcAddress(hm, "FindFirstVolumeMountPointA");
+	if (m_findFirstVolumeMountPoint == NULL) {
+		string err; 
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_DEBUG, "GetProcAddress(FindFirstVolumeMountPointA) failed : %s", err.c_str());
+	}
+	m_findNextVolumeMountPoint = (MYFINDNEXTVOLUMEMOUNTPOINT)GetProcAddress(hm, "FindNextVolumeMountPointA");
+	if (m_findNextVolumeMountPoint == NULL) {
+		string err; 
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_DEBUG, "GetProcAddress(FindNextVolumeMountPointA) failed : %s", err.c_str());
+	}
+	m_findVolumeMountPointClose = (MYFINDVOLUMEMOUNTPOINTCLOSE)GetProcAddress(hm, "FindVolumeMountPointClose");
+	if (m_findVolumeMountPointClose == NULL) {
+		string err; 
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_DEBUG, "GetProcAddress(FindVolumeMountPointClose) failed : %s", err.c_str());
+	}
 	if (m_mgr.IsCentralModeEnabled() == false) {
 		PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 

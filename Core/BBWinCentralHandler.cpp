@@ -56,6 +56,7 @@ using namespace boost::gregorian;
 //
 static std::string						reportPath;
 static std::string						reportSavePath;
+static std::string						clientLocalCfgPath;
 
 BBWinCentralHandler::BBWinCentralHandler(bbwinhandler_data_t & data) :
 						m_data (data),
@@ -126,8 +127,8 @@ void	BBWinCentralHandler::GetClock() {
 void BBWinCentralHandler::run() {
 	DWORD 		dwWait;
 	std::list<BBWinHandler *>::iterator		itr;
-	string		configUpdateFile = m_data.setting["tmppath"] + (string)"\\bbwin." + m_data.setting["hostname"] + (string)".cfg";
-
+	
+	clientLocalCfgPath = m_data.setting["tmppath"] + (string)"\\clientlocal.cfg";
 	for (;;) {
 		std::ofstream	report(reportPath.c_str(), std::ios_base::trunc | ios_base::binary);
 		bool		created = false;
@@ -140,6 +141,9 @@ void BBWinCentralHandler::run() {
 			ptime 				now;
 			now = second_clock::local_time();
 			bbwinClientData_callback("date", to_simple_string(now));
+			string		osversion;
+			uname(osversion);
+			bbwinClientData_callback("osversion", osversion);
 			GetClock();
 		} else {
 			string mess, err;
@@ -166,7 +170,7 @@ void BBWinCentralHandler::run() {
 			itr = m_bbdisplay.begin();
 			hobNet.SetBBDisplay((*itr));
 			try {
-				hobNet.ClientData(reportPath, configUpdateFile);
+				hobNet.ClientData(reportPath, clientLocalCfgPath);
 			} catch (BBWinNetException ex) {
 				string mess, err;
 

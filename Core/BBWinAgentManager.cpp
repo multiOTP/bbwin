@@ -705,7 +705,6 @@ void		BBWinAgentManager::Download(LPCTSTR fileName, LPCTSTR dest) {
 
 
 void		BBWinAgentManager::ClientData(LPCTSTR dataName, LPCTSTR text) {
-	if (m_clientdata_callback != NULL) {
+	if (m_clientdata_callback != NULL)
 		m_clientdata_callback(dataName, text);
-	}
 }

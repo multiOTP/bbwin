@@ -34,8 +34,8 @@ static const BBWinAgentInfo_t 		bbwinupdateAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
 	"bbwinupdate",    					// agentName;
-	"bbwinupdate agent : update the local configuration from central point",        // agentDescription;
-	0 
+	"bbwinupdate agent : used to update",        // agentDescription;
+	BBWIN_AGENT_CENTRALIZED_COMPATIBLE 
 };                
 
 // return true if the 2 files are identical

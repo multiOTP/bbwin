@@ -4,13 +4,13 @@
  <LINK rel="StyleSheet" href="../BBWin.css">
  <TITLE>Disk</TITLE>
  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
- <meta name="copyright" content="Copyright &copy; 2006 by Etienne Grignon. Licenced under GPL.">
+ <meta name="copyright" content="Copyright &copy; 2007 by Etienne Grignon. Licenced under GPL.">
 </HEAD>
 <BODY>
  <H1>Disk</H1>
  <H3>Description</H3>
 <p>
-Disk agent is used to monitor disk usage. 
+Disk agent is used to monitor disk usage. It can also monitor mount points. Name too long for mount points are truncated.
 </p>
 <H3>Configuration</H3>
 <UL>
@@ -92,7 +92,7 @@ If the name value is not one of the generic settings, then, disk will understand
 		name
 		</td>
 		<td class="OptionValue" vAlign="top">
-		name attribute must be the drive letter of the drive to check.
+		name attribute must be the drive letter or the shortname of a mount point of the drive to check.
 		If name is "default", it will be the default settings for all drives.
 		If the drive letter is for the dvd or cd rom drive. It will check the free space of the media. It can be useful to check if there is free space to burn data.
 		<b>This parameter is required</b><br>
