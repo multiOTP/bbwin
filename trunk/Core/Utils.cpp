@@ -146,7 +146,6 @@ void		GetLastErrorString(string & str) {
 	str = buf;
 }
 
-
 //
 //  FUNCTION: GetNbr
 //

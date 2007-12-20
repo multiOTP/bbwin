@@ -4,6 +4,7 @@ Microsoft Visual Studio Solution File, Format Version 9.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BBWin", "Core\Core.vcproj", "{98DF289A-CD24-47CD-B811-603C09881B88}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1} = {E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}
+		{1B583223-2C92-41B3-8955-837939209FFB} = {1B583223-2C92-41B3-8955-837939209FFB}
 		{EFE4D26B-F137-4F92-93C3-123046934A2C} = {EFE4D26B-F137-4F92-93C3-123046934A2C}
 	EndProjectSection
 EndProject
@@ -27,6 +28,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cpu", "Core\Agents\cpu\cpu.
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "disk", "Core\Agents\disk\disk.vcproj", "{057AF2BB-A6A4-4608-B6C7-A6C5BE20ADB3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1B583223-2C92-41B3-8955-837939209FFB} = {1B583223-2C92-41B3-8955-837939209FFB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "externals", "Core\Agents\externals\externals.vcproj", "{D459464C-59F8-464B-A6C1-A069136E78E5}"
 EndProject
@@ -44,12 +48,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "svcs", "Core\Agents\svcs\sv
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msgs", "Core\Agents\msgs\msgs.vcproj", "{AB3AF868-F5E9-406F-AF02-A73FE6FEE3D6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1B583223-2C92-41B3-8955-837939209FFB} = {1B583223-2C92-41B3-8955-837939209FFB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbwinupdate", "Core\Agents\bbwinupdate\bbwinupdate.vcproj", "{44A9B2B1-08C7-4E52-9887-AFD3D7C33468}"
 	ProjectSection(ProjectDependencies) = postProject
-		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1} = {E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}
 		{50006BAE-7E93-428A-9B13-14B5B31BB6E4} = {50006BAE-7E93-428A-9B13-14B5B31BB6E4}
 		{EFE4D26B-F137-4F92-93C3-123046934A2C} = {EFE4D26B-F137-4F92-93C3-123046934A2C}
+		{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1} = {E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyxml", "Core\tinyxml.vcproj", "{E8DE6718-B0FF-4E77-AE86-AE90AA6CEFE1}"
@@ -59,6 +66,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BBWinNet", "Core\BBWinNet.vcproj", "{EFE4D26B-F137-4F92-93C3-123046934A2C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "who", "Core\Agents\who\who.vcproj", "{2CB84EBA-BC33-4C12-B083-FD9508B0B9F5}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utils", "Core\Utils.vcproj", "{1B583223-2C92-41B3-8955-837939209FFB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -142,6 +151,10 @@ Global
 		{2CB84EBA-BC33-4C12-B083-FD9508B0B9F5}.Debug|Win32.Build.0 = Debug|Win32
 		{2CB84EBA-BC33-4C12-B083-FD9508B0B9F5}.Release|Win32.ActiveCfg = Release|Win32
 		{2CB84EBA-BC33-4C12-B083-FD9508B0B9F5}.Release|Win32.Build.0 = Release|Win32
+		{1B583223-2C92-41B3-8955-837939209FFB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{1B583223-2C92-41B3-8955-837939209FFB}.Debug|Win32.Build.0 = Debug|Win32
+		{1B583223-2C92-41B3-8955-837939209FFB}.Release|Win32.ActiveCfg = Release|Win32
+		{1B583223-2C92-41B3-8955-837939209FFB}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

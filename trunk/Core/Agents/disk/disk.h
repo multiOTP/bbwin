@@ -14,14 +14,12 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
 #ifndef		__DISK_H__
 #define		__DISK_H__
 
-
-#include <list>
-#include <map>
-#include <string>
 #include "IBBWinAgent.h"
 
 /*
@@ -38,6 +36,13 @@
 #define DEF_DISK_PANIC	"95%"
 
 #define DEFAULT_RULE_NAME		"default"
+
+
+// volume management
+typedef 	HANDLE (__stdcall *MYFINDFIRSTVOLUMEMOUNTPOINT) (LPTSTR, LPTSTR, DWORD);
+typedef 	BOOL(__stdcall *MYFINDNEXTVOLUMEMOUNTPOINT) (HANDLE, LPTSTR, DWORD);
+typedef		BOOL(__stdcall *MYFINDVOLUMEMOUNTPOINTCLOSE) (HANDLE);
+
 
 //
 // simple struct to store disk rules
@@ -101,13 +106,17 @@ class AgentDisk : public IBBWinAgent
 		std::map<std::string, disk_rule_t *>	m_rules;
 		std::list<disk_t *>						m_disks;
 		std::string								m_testName;
-		
+		MYFINDFIRSTVOLUMEMOUNTPOINT				m_findFirstVolumeMountPoint;
+		MYFINDNEXTVOLUMEMOUNTPOINT				m_findNextVolumeMountPoint;
+		MYFINDVOLUMEMOUNTPOINTCLOSE				m_findVolumeMountPointClose;
+
 	private :
 		void 		AddRule(const std::string & label, const std::string & warnlevel, 
 								const std::string & paniclevel,	const std::string & ignore);
 		void		BuildRule(disk_rule_t & rule, const std::string & warnlevel, const std::string & paniclevel);
-		void		GenerateSummary(const disk_t & disk, stringstream & summary);
+		void		GenerateSummary(const disk_t & disk, std::stringstream & summary);
 		bool		GetSizeValue(const std::string & level, __int64 & val);
+		void		GetMountPointData(LPTSTR driveName);
 		bool		GetDisksData();
 		void		FreeDisksData();
 		void		ApplyRules();

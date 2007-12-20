@@ -29,6 +29,8 @@
 
 #include "BBWinHandlerData.h"
 
+void		uname(std::string & version);
+
 // 
 // inherit from the nice thread class written by Vijay Mathew Pandyalakal
 // this class handle each agent and execute agent code
@@ -58,7 +60,6 @@ class BBWinCentralHandler : public Thread {
 		void	SetEvents(HANDLE *events) { m_hEvents = events; }
 		void	AddAgentHandler(BBWinHandler *handler);
 		static	void bbwinClientData_callback(const std::string & dataName, const std::string & data);
-
 		void run();
 };
 

@@ -225,7 +225,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Utils.cpp"
+				RelativePath=".\uname.cpp"
 				>
 			</File>
 		</Filter>
@@ -292,10 +292,6 @@
 			</File>
 			<File
 				RelativePath=".\Singleton.hxx"
-				>
-			</File>
-			<File
-				RelativePath=".\Utils.h"
 				>
 			</File>
 			<File
