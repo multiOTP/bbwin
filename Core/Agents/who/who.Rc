@@ -46,7 +46,7 @@
         BLOCK "040904E4"
           BEGIN
             VALUE "CompanyName", COMPANY_NAME
-            VALUE "FileDescription", "who agent : list current users on the local computer\0"
+            VALUE "FileDescription", "who agent : list current users logged on the computer\0"
             VALUE "FileVersion", BBWINFILEVERSION_STR
             VALUE "LegalCopyright", BBWIN_COPYRIGHT
             VALUE "ProductName", BBWINNAME_STR

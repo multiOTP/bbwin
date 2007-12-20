@@ -14,26 +14,29 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
-
+#define BBWIN_AGENT_EXPORTS
 
 #include <windows.h>
-
 #include <tchar.h>
 #include <stdio.h>
 #include <assert.h>
 #include <lm.h>
-
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <vector>
 #include <string>
-using namespace std;
-
-#define BBWIN_AGENT_EXPORTS
-
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "boost/format.hpp"
 #include "who.h"
+
+using boost::format;
+using namespace boost::posix_time;
+using namespace boost::gregorian;
+using namespace std;
 
 #define MAX_NAME_STRING   1024
 
@@ -41,7 +44,7 @@ static const BBWinAgentInfo_t 		whoAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
 	"who",    					// agentName;
-	"agent used to list current connected users",        // agentDescription;
+	"list current connected users",        // agentDescription;
 	BBWIN_AGENT_CENTRALIZED_COMPATIBLE			// flags
 };                
 
@@ -52,11 +55,11 @@ void AgentWho::PrintWin32Error(LPSTR ErrorMessage, DWORD ErrorCode) {
 					NULL, ErrorCode, 
 					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 					(LPSTR) &lpMsgBuf, 0, NULL );
-	printf("%s: %s\n", ErrorMessage, lpMsgBuf );
+	m_mgr.Log(LOGLEVEL_ERROR, "%s: %s", ErrorMessage, lpMsgBuf);
 	LocalFree( lpMsgBuf );
 }
 
-void DisplayLogonTime(PSYSTEMTIME LogonTime) {
+void DisplayLogonTime(PSYSTEMTIME LogonTime, stringstream & reportData) {
 	TCHAR	logonDateString[MAX_PATH];
 	TCHAR	logonTimeString[MAX_PATH];
 
@@ -66,7 +69,7 @@ void DisplayLogonTime(PSYSTEMTIME LogonTime) {
 	GetTimeFormat( LOCALE_USER_DEFAULT, 0,
 				   LogonTime, NULL, 
 				   logonTimeString, sizeof(logonTimeString)/sizeof(TCHAR));
-	printf("     %s %s    ", logonDateString, logonTimeString );
+	reportData << format("     %s %s    ") % logonDateString % logonTimeString;
 }
 
 void GetSessionLogonTime( DWORD Seconds, PSYSTEMTIME LogonTime)
@@ -119,7 +122,7 @@ bool GetLocalLogonTime(HKEY hCurrentUsers, LPSTR UserSid, PSYSTEMTIME LogonTime)
 }
 
 
-bool DisplayLocalLogons( BOOLEAN ShowDetail, LPSTR UserName  )
+bool DisplayLocalLogons(LPSTR UserName , stringstream & reportData)
 {
 	bool		first = true;
     TCHAR		userName[MAX_NAME_STRING], domainName[MAX_NAME_STRING];
@@ -220,24 +223,19 @@ bool DisplayLocalLogons( BOOLEAN ShowDetail, LPSTR UserName  )
 						//
 					   if( first && !UserName ) {
 						   
-							printf("Users logged on locally:\n");
+							reportData << "Users logged on locally:\n";
 							first = false;
 					   }
 					   if( !UserName || !_stricmp( UserName, userName )) {
-						
 						   first = false;
-						   if( ShowDetail ) {
-
-							   if( GetLocalLogonTime( usersKey, subKeyName, &logonTime )) {
-
-									DisplayLogonTime( &logonTime );
-
-							   } 
-						   }
 						   if( UserName ) 
-							   printf("%s\\%s logged onto locally.\n", domainName, UserName);
+							  reportData << format("%s\\%s logged onto locally.") % domainName % UserName;
 						   else			  
-							   printf("%s\\%s\n    ", domainName, userName );
+							   reportData << format("%s\\%s") % domainName % userName;
+						   if( GetLocalLogonTime( usersKey, subKeyName, &logonTime )) {
+								DisplayLogonTime( &logonTime , reportData);
+						   } 
+						   reportData << "\n";
 					   } 						
 					}
                 }               
@@ -250,11 +248,11 @@ bool DisplayLocalLogons( BOOLEAN ShowDetail, LPSTR UserName  )
 	RegCloseKey( usersKey );
 
 	if( first && !UserName ) 
-		printf("No one is logged on locally.\n");
+		reportData << "No one is logged on locally.\n";
 	return !first;
 }
 
-bool DisplaySessionLogons( bool ShowDetail, LPSTR UserName )
+bool		DisplaySessionLogons(LPSTR UserName , stringstream & reportData)
 {
    LPSESSION_INFO_10 pBuf = NULL;
    LPSESSION_INFO_10 pTmpBuf;
@@ -301,7 +299,7 @@ bool DisplaySessionLogons( bool ShowDetail, LPSTR UserName )
 
                if (pTmpBuf == NULL) {
 
-                  fprintf(stderr, "An access violation has occurred\n");
+                  reportData << "An access violation has occurred\n";
                   break;
                }
 
@@ -317,7 +315,7 @@ bool DisplaySessionLogons( bool ShowDetail, LPSTR UserName )
 
 				   if( first && !UserName ) {
 					   
-						printf("\nUsers logged on via resource shares:\n");
+						reportData << "\nUsers logged on via resource shares:\n";
 						first = false;
 				   }
 				   if( LookupAccountName( pTmpBuf->sesi10_cname ,
@@ -331,33 +329,30 @@ bool DisplaySessionLogons( bool ShowDetail, LPSTR UserName )
 					   if( !UserName || !_stricmp( UserName, pTmpBuf->sesi10_username )) {
 
 							first = false;
-							if( ShowDetail ) {
-
-								GetSessionLogonTime( pTmpBuf->sesi10_time, &logonTime );
-								DisplayLogonTime( &logonTime );
-							}
 							if( UserName ) 
-								printf("%s\\%s logged onto remotely.\n", 
-												domainName, UserName);
-							else   		  
-								printf("%s%s\\%s\n", ShowDetail ? L"" : L"     ", 
-												domainName, pTmpBuf->sesi10_username );
+								reportData << format("%s\\%s logged onto remotely.") % domainName % UserName;
+							else {
+								printf("%p %p %s %s\n", domainName, pTmpBuf->sesi10_username, domainName, pTmpBuf->sesi10_username);
+								reportData << format("%s\\%s") % domainName % pTmpBuf->sesi10_username ;
+							}
+							GetSessionLogonTime( pTmpBuf->sesi10_time, &logonTime );
+							DisplayLogonTime( &logonTime , reportData);
+							reportData << "\n";
 					   }
 
 				   } else {
 						
 					   if( !UserName || !_stricmp( UserName, pTmpBuf->sesi10_username )) {
-
 							first = false;
-							if( ShowDetail ) {
-
-								GetSessionLogonTime( pTmpBuf->sesi10_time, &logonTime );
-								DisplayLogonTime( &logonTime );
+							if( UserName ) 
+								reportData << format("\r\\%s logged onto remotely.") % UserName ;
+							else {
+								printf("%p %s\n", pTmpBuf->sesi10_username, pTmpBuf->sesi10_username);
+								reportData << format("\\%s") % pTmpBuf->sesi10_username ;
 							}
-							if( UserName ) printf("\r\\%s logged onto remotely.\n", 
-													UserName );
-							else		  printf("%s\\%s\n", ShowDetail ? L"" : L"      ", 
-													pTmpBuf->sesi10_username );
+							GetSessionLogonTime( pTmpBuf->sesi10_time, &logonTime );
+							DisplayLogonTime( &logonTime , reportData);
+							reportData << "\n";
 					   }
 				   }
 			   }
@@ -368,7 +363,7 @@ bool DisplaySessionLogons( bool ShowDetail, LPSTR UserName )
          }
       } else {
 
-		  printf("Unable to query resource logons\n");
+		  reportData << "Unable to query resource logons\n";
 		  first = false;
 	  }
 
@@ -381,22 +376,26 @@ bool DisplaySessionLogons( bool ShowDetail, LPSTR UserName )
 
    if (pBuf != NULL)
       NetApiBufferFree(pBuf);
-	if( first && !UserName ) printf("\nNo one is logged on via resource shares.\n");
+	if( first && !UserName ) reportData << "\nNo one is logged on via resource shares.\n";
 	return !first;
 }
 
 
 void 		AgentWho::Run() {
 	stringstream 	reportData;	
-        
-	reportData << "who monitoring agent\n" << endl;
-	DisplayLocalLogons(1, NULL);
-	DisplaySessionLogons(1, NULL);
+    
+	
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		ptime now = second_clock::local_time();
+		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "]" << endl;
+	}
+	DisplayLocalLogons(NULL, reportData);
+	//DisplaySessionLogons(NULL, reportData);
 
-	//if (m_mgr.IsCentralModeEnabled())
-	//	m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
-	//else
-	//	m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
+	if (m_mgr.IsCentralModeEnabled())
+		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
+	else
+		m_mgr.Status(m_testName.c_str(), "green", reportData.str().c_str());
 }
 
 AgentWho::AgentWho(IBBWinAgentManager & mgr) : m_mgr(mgr) {
@@ -404,24 +403,26 @@ AgentWho::AgentWho(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 }
 
 bool		AgentWho::Init() {
-	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
-	if (conf == NULL)
-		return false;
-	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string name, value;
-		
-		name = m_mgr.GetConfigurationRangeValue(range, "name");
-		value = m_mgr.GetConfigurationRangeValue(range, "value");
-		if (name == "testname") {
-			m_testName = value;
-		}
-	}	
-	m_mgr.FreeConfigurationRange(range);
-	m_mgr.FreeConfiguration(conf);
+		if (conf == NULL)
+			return false;
+		PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			string name, value;
+
+			name = m_mgr.GetConfigurationRangeValue(range, "name");
+			value = m_mgr.GetConfigurationRangeValue(range, "value");
+			if (name == "testname") {
+				m_testName = value;
+			}
+		}	
+		m_mgr.FreeConfigurationRange(range);
+		m_mgr.FreeConfiguration(conf);
+	}
 	return true;
 }
 
