@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
-	<Product Name='BBWin 0.9' Id='C4677524-0BDF-4c75-BA0A-AF5BDE88F7DD'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
-		Language='1033' Codepage='1252' Version='0.9' Manufacturer='GNU'>
+	<Product Name='BBWin 0.10' Id='D7B9B0D6-B5D3-415b-B634-D77148CF0174'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
+		Language='1033' Codepage='1252' Version='0.10' Manufacturer='GNU'>
 
-    <Package Id='09AAD29F-87F3-40b5-8A75-A911DB836BEA' Keywords='Installer'
-      Description="BBWin 0.9 Installer"
+    <Package Id='1752A21F-49FF-4518-AD83-A051E1FF0532' Keywords='Installer'
+      Description="BBWin 0.10 Installer"
       Comments='BBWin : Big Brother Hobbit Windows Client' Manufacturer='GNU'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
@@ -99,7 +99,9 @@
 						<File Id='uptime.dll' Name="uptime.dll" LongName='uptime.dll' DiskId='1' src='../Release/Uptime.dll' />
 					</Component>
 					
-				
+					<Component Id='WhoC' Guid='527166B4-B06A-40e2-B79F-4AC0F50B7DCB'>
+						<File Id='who.dll' Name="who.dll" LongName='who.dll' DiskId='1' src='../Release/Who.dll' />
+					</Component>
 				
 					
 				</Directory>
@@ -169,7 +171,7 @@
 					</Component>
 					<Directory Id='SdkCompiledD' Name="Compiled">
 						<Component Id="SampleCompiledC" Guid='65116387-4564-400b-810F-61C5A62CAB08'>
-							<File Id='sample.dll' Name="sample.dll" LongName='sample.dll' DiskId='1' src='../Core/Agents/Sample/sample.dll'/>
+							<File Id='sample.dll' Name="sample.dll" LongName='sample.dll' DiskId='1' src='../Release/sample.dll'/>
 						</Component>
 					</Directory>
 				</Directory>
@@ -249,6 +251,10 @@
 			<Feature Id='Uptime' Title='Uptime' Description='Monitor the uptime. It will warn if a reboot has been done recently.'
 			TypicalDefault='install' Level='1'>
 				<ComponentRef Id='UptimeC' />
+			</Feature>
+			<Feature Id='Who' Title='Who' Description='List current users connected to the server.'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='WhoC' />
 			</Feature>
 		</Feature>	
 		<Feature Id='Externals' Title='Externals' Description='BBWin Externals.'
