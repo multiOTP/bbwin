@@ -14,26 +14,23 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
 #include <windows.h>
-
 #include <assert.h>
-
 #include <string>    // inclut aussi <cctype> et donc tolower
 #include <sstream>
 #include <fstream>
 #include <iostream>  // pour cout
 #include <algorithm> // pour transform
-
 #include <boost/regex.hpp>
 #include "boost/format.hpp"
-
 #include "EventLog.h"
 
 using namespace boost;
 using namespace std;
 using namespace EventLog;
-
 using boost::format;
 
 //
@@ -540,36 +537,38 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	DWORD		color = BB_GREEN;	
 	
 	assert(ev != NULL);
-	result = false;
-	// check if one of the rules match the event
-	for (itr = m_matchRules.begin(); itr != m_matchRules.end(); ++itr) {
-		if (ApplyRule((*itr), ev)) {
-			result = true;
-			color = (*itr).GetAlarmColor();
-			priority = (*itr).GetPriority();
-			(*itr).IncrementCurrentCount();
-			if ((*itr).GetCount() != 0 && (*itr).GetCount() > (*itr).GetCurrentCount())
-				result = false;
-			break ;
-		}
-	}
-	if (result == false) // not matched
-		return BB_GREEN;
-	m_match++;
-	// if one of the ignore rules matches, then the event is ignored
-	for (itr = m_ignoreRules.begin(); itr != m_ignoreRules.end(); ++itr) {
-		if (ApplyRule((*itr), ev)) {
-			if ((*itr).GetPriority() != 0 && priority != 0 && (*itr).GetPriority() < priority) {
+	if (m_centralized == false) {
+		result = false;
+		// check if one of the rules match the event
+		for (itr = m_matchRules.begin(); itr != m_matchRules.end(); ++itr) {
+			if (ApplyRule((*itr), ev)) {
+				result = true;
+				color = (*itr).GetAlarmColor();
+				priority = (*itr).GetPriority();
+				(*itr).IncrementCurrentCount();
+				if ((*itr).GetCount() != 0 && (*itr).GetCount() > (*itr).GetCurrentCount())
+					result = false;
 				break ;
 			}
-			m_ignore++;
-			m_match--;
-			result = false;
-			break ;
 		}
+		if (result == false) // not matched
+			return BB_GREEN;
+		m_match++;
+		// if one of the ignore rules matches, then the event is ignored
+		for (itr = m_ignoreRules.begin(); itr != m_ignoreRules.end(); ++itr) {
+			if (ApplyRule((*itr), ev)) {
+				if ((*itr).GetPriority() != 0 && priority != 0 && (*itr).GetPriority() < priority) {
+					break ;
+				}
+				m_ignore++;
+				m_match--;
+				result = false;
+				break ;
+			}
+		}
+		if (result == false)
+			return BB_GREEN;
 	}
-	if (result == false)
-		return BB_GREEN;
 	string desc, user;
 	GetEventDescription(ev, desc);
 	GetEventUser(ev, user);
@@ -591,13 +590,19 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	} else {
 		date = "unkwown";
 	}
-	reportData << "&" << bbcolors[color] << " " << m_logfile << ": " << type << " - ";
+	if (m_centralized == false)
+		reportData << "&" << bbcolors[color] << " " << m_logfile << ": ";
+	reportData << type << " - ";
 	reportData << date << " " << time << " - ";
 	reportData << (LPSTR) ((LPBYTE) ev + sizeof(EVENTLOGRECORD)) << " (" << (ev->EventID & MSG_ID_MASK) << ") - ";
-	reportData << user << " \n";
-	FormatEventDescription(desc);
-	reportData << " \"" << desc << "\"";
-	reportData << "\n" << endl;
+	if (m_centralized == false) {
+		reportData << user << " \n";
+		FormatEventDescription(desc);
+		reportData << " \"" << desc << "\"";
+		reportData << "\n" << endl;
+	} else {
+		reportData << desc << endl;
+	}
 	return color;
 }
 
@@ -652,18 +657,17 @@ DWORD			Session::Execute(stringstream & reportData) {
 }
 
 
-
 //
 // Manager methods
 //
 
 	
 Manager::Manager() : 
-	m_checkFullLogFile(false)
+	m_checkFullLogFile(false),
+	m_centralized(false)
 {
 	GetLogFileList();
 }
-
 
 Manager::~Manager() {
 	std::map<std::string, Session *>::iterator	itr;
@@ -699,9 +703,40 @@ void		Manager::AddRule(const std::string & logfile, const Rule & rule) {
 		}
 		assert(ses != NULL);
 		ses->AddRule(rule);
+//		cout << "debug2 " << originalname << endl;
 		m_sessions.insert(std::pair<std::string, Session*>(originalname, ses));
 	} else {
 		(*itr).second->AddRule(rule);
+	}
+}
+
+void		Manager::AddLogFile(const std::string & logfile) {
+	std::string	logfilename = logfile;
+	std::map<std::string, Session *>::iterator	itr;
+	std::list< std::string >::iterator			logitr;
+	std::string				originalname;
+	size_t					res;
+	
+	std::transform(logfilename.begin(), logfilename.end(), logfilename.begin(), tolower);
+	for (logitr = m_logFileList.begin(); logitr != m_logFileList.end(); ++logitr) {
+		res = (*logitr).find(logfilename);
+		if (res >= 0 && res < (*logitr).size()) 
+			originalname = (*logitr);
+	}
+	if (originalname.size() == 0)  {
+		return ;
+	}
+	itr = m_sessions.find(originalname);
+	if (itr == m_sessions.end()) {
+		Session		* ses;
+		try {
+			 ses = new Session(originalname);
+		} catch (std::bad_alloc & ) {
+			return ;
+		}
+		assert(ses != NULL);
+//		cout << "debug " << originalname << endl;
+		m_sessions.insert(std::pair<std::string, Session*>(originalname, ses));
 	}
 }
 
@@ -711,13 +746,17 @@ DWORD		Manager::Execute(stringstream & reportData) {
 	DWORD	tmp;
 
 	for (itr = m_sessions.begin(); itr != m_sessions.end(); ++itr) {
+		if (m_centralized)
+			reportData << "[msgs:eventlog_" << (*itr).first << "]\n";
 		tmp = (*itr).second->Execute(reportData);
 		if (tmp > color)
 			color = tmp;
 	}
-	tmp = AnalyzeLogFilesSize(reportData, m_checkFullLogFile);
-	if (tmp > color)
-		color = tmp;
+	if (m_centralized == false) {
+		tmp = AnalyzeLogFilesSize(reportData, m_checkFullLogFile);
+		if (tmp > color)
+			color = tmp;
+	}
 	return color;
 }
 
