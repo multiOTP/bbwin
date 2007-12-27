@@ -26,8 +26,7 @@ using namespace std;
 
 #define BB_DISP_LEN		512
 
-// Version
-static const string version = "0.9 - 2006/12/05";
+#include "version.h"
 
 typedef struct 	messageTable_s {
 	string		argument;
@@ -272,7 +271,7 @@ void	help()
 	cout << "You can set your default hobbit server by setting the environment variable BBDISPLAY.\n";
 	cout << "To use your environment variable, replace the <bbdisplay>[:<port>] argument by the character $\n";
 	cout << "\n\n";
-	cout << "You are using bbwincmd v" << version << ".\n";
+	cout << "You are using bbwincmd v" << BBWINFILEVERSION_STR << " " << BBWINDATE_STR << ".\n";
 	cout << "This tool is free and under GPL licence.\n";
 	cout << "Please read the associated licence file.\n" << endl;
 }
