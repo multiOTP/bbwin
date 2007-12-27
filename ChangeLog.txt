@@ -25,6 +25,7 @@ BBWin 0.10 Preview version -  December 28th 2007
   You can specify a user/password if you use http proxy basic authentification.
 * disk agent will alert you if a disk monitored with a custum rule disappear from the Server.
   (Example : external usb harddrive turned off)
+* who agent : report current connected users on the servers
 
 ** Centralized mode for agents cpu, disk, memory, msgs, netstat, ports, procs, timediff, uptime
 ** Centralized mode graphing network traffic
