@@ -2,7 +2,7 @@ ChangeLog file for BBWin
 ==============================================================
 
 
-BBWin 0.10 - XX  2007
+BBWin 0.10 Preview version -  December 28th 2007
 -------------------
 
 +New Features
@@ -20,10 +20,15 @@ BBWin 0.10 - XX  2007
   the memory agent.
 * disk agent can monitor free space from XX-rom drive and not only if a media is inserted.
              (feature requested to monitor dvd-ram burning state)
+* disk agent can monitor volume mount points
 * Proxy access : BBWin can access to your hobbit server through a proxy (http proxy)
   You can specify a user/password if you use http proxy basic authentification.
 * disk agent will alert you if a disk monitored with a custum rule disappear from the Server.
   (Example : external usb harddrive turned off)
+
+** Centralized mode for agents cpu, disk, memory, msgs, netstat, ports, procs, timediff, uptime
+** Centralized mode graphing network traffic
+** See the bbWin webpage 
 
 
 BBWin 0.9 Preview version - December 5th 2006
