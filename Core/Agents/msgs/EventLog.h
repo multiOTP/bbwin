@@ -14,6 +14,9 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
+
 
 #ifndef __EVENTMANAGER_H__
 #define __EVENTMANAGER_H__
@@ -104,7 +107,8 @@ class Session {
 		DWORD								m_maxDelay;
 		DWORD								m_now;
 		std::string							m_logfile;
-		
+		bool								m_centralized; 
+
 		// counters 
 		DWORD								m_total;
 		DWORD								m_match;
@@ -127,7 +131,8 @@ class Session {
 		DWORD		GetMatchCount() { return m_match; }
 		DWORD		GetIgnoreCount() { return m_ignore; }
 		DWORD		GetTotalCount() { return m_total; }
-
+		bool		GetCentralized() const { return m_centralized; }
+		void		SetCentralized(bool centralized) { m_centralized = centralized; }
 		DWORD			Execute(std::stringstream & reportData);
 		static LONG		Now();
 		void			AddRule(const Rule & rule);
@@ -145,6 +150,7 @@ class Manager {
 		std::map< std::string, Session * >			m_sessions;
 		std::list< std::string >					m_logFileList;
 		bool										m_checkFullLogFile;
+		bool										m_centralized;
 
 	private:
 		DWORD				AnalyzeLogFilesSize(std::stringstream & reportData, bool checking);
@@ -153,10 +159,13 @@ class Manager {
 
 	public :
 		void		AddRule(const std::string & logfile, const Rule & rule);
+		void		AddLogFile(const std::string & logfile);
 		DWORD		Execute(std::stringstream & reportData);
 		DWORD		GetMatchCount();
 		DWORD		GetIgnoreCount();
 		DWORD		GetTotalCount();
+		bool		GetCentralized() const { return m_centralized; }
+		void		SetCentralized(bool centralized) { m_centralized = centralized; }
 		bool		GetCheckFullLogFile() const { return m_checkFullLogFile; }
 		void		SetCheckFullLogFile(bool checkFullLogFile) { m_checkFullLogFile = checkFullLogFile; }
 		Manager();

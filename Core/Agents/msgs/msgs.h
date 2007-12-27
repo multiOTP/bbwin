@@ -40,12 +40,14 @@ class AgentMsgs : public IBBWinAgent
 		bool						m_alwaysgreen;		// no alerts if true
 		std::string					m_testName;			// testname for the column
 		Logs::Manager				m_logs;				// logs file manager
+		std::string					m_clientLocalCfgPath;
 
 	private :
 		void	AddEventLogRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile);
 		void	AddLogRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile);
 		void	AddRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile);
 		bool	LoadConfig(const std::string name);
+		bool	InitCentralMode();
 
 	public :
 		AgentMsgs(IBBWinAgentManager & mgr);

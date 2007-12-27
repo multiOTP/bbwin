@@ -14,33 +14,32 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-#include <windows.h>
-
-#include <iostream>
-#include <sstream>
-#include <fstream>
-
-#include <string>
-using namespace std;
+//
+// $Id$
 
 #define BBWIN_AGENT_EXPORTS
 
+#include <windows.h>
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <string>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
+#include "msgs.h"
+#include "Utils.h"
 
 using boost::format;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
-
-#include "msgs.h"
+using namespace std;
 
 static const BBWinAgentInfo_t 		msgsAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
 	"msgs",								// agentName;
 	"msgs agent : check the event logs",        // agentDescription;
-	0	// flags
+	BBWIN_AGENT_CENTRALIZED_COMPATIBLE	// flags
 };                
 
 //
@@ -49,12 +48,54 @@ static const BBWinAgentInfo_t 		msgsAgentInfo =
 static const char	*bbcolors[] = {"green", "yellow", "red", NULL};
 
 
+static bool		parseStrGetNext(const std::string & str, const std::string & match, std::string & next) {
+	std::string::size_type		res = str.find(match);
+
+	if (res >= 0 && res < str.size()) {
+		next = str.substr(match.size());
+		return true;
+	}
+	return false;
+}
 
 //
 // AgentMsgs methods
 //
 //
 
+bool	AgentMsgs::InitCentralMode() {
+	string clientLocalCfgPath = m_mgr.GetSetting("tmppath") + (string)"\\clientlocal.cfg";
+
+	m_mgr.Log(LOGLEVEL_DEBUG, "start %s", __FUNCTION__);
+	m_mgr.Log(LOGLEVEL_DEBUG, "checking file %s", clientLocalCfgPath.c_str());
+	ifstream		conf(clientLocalCfgPath.c_str());
+
+	if (!conf) {
+		string	err;
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_INFO, "can't open %s : %s", clientLocalCfgPath.c_str(), err.c_str());
+		return false;
+	}
+	m_mgr.Log(LOGLEVEL_DEBUG, "reading file %s", clientLocalCfgPath.c_str());
+	string		buf, eventlog, ignore, trigger;
+	while (!conf.eof()) {
+		string		value;
+
+		std::getline(conf, buf);
+		if (parseStrGetNext(buf, "eventlog:", value)) {
+			m_mgr.Log(LOGLEVEL_DEBUG, "create eventlog rule %s", value.c_str());
+			m_eventlog.AddLogFile(value);
+		} else if (parseStrGetNext(buf, "ignore ", value)) {
+			m_mgr.Log(LOGLEVEL_DEBUG, "create ignore rule %s", value.c_str());
+		} else if (parseStrGetNext(buf, "trigger ", value)) {
+			m_mgr.Log(LOGLEVEL_DEBUG, "create trigger rule %s", value.c_str());
+		} else if (parseStrGetNext(buf, "log:", value)) {
+			m_mgr.Log(LOGLEVEL_DEBUG, "create log rule %s", value.c_str());
+		} 
+	}
+	return false;
+}
 
 //
 // Run method
@@ -64,20 +105,27 @@ void AgentMsgs::Run() {
 	stringstream 					reportData;	
 	DWORD							finalState;
 	
-    ptime now = second_clock::local_time();
-	finalState = GREEN;
-	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
-	reportData << endl;
-	finalState = m_eventlog.Execute(reportData);
-	if (m_alwaysgreen)
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		ptime now = second_clock::local_time();
 		finalState = GREEN;
+		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
+		reportData << endl;
+		finalState = m_eventlog.Execute(reportData);
+		if (m_alwaysgreen)
+			finalState = GREEN;
 
-	reportData << "\nSummary:\n" << endl;
-	reportData << format("- Events Analyzed: %6u") % m_eventlog.GetTotalCount() << endl ;
-	reportData << format("- Events Matched:  %6u") % m_eventlog.GetMatchCount() << endl ;
-	reportData << format("- Events Ignored:  %6u") % m_eventlog.GetIgnoreCount() << endl ;
-	reportData << endl;
-	m_mgr.Status(m_testName.c_str(), bbcolors[finalState], reportData.str().c_str());
+		reportData << "\nSummary:\n" << endl;
+		reportData << format("- Events Analyzed: %6u") % m_eventlog.GetTotalCount() << endl ;
+		reportData << format("- Events Matched:  %6u") % m_eventlog.GetMatchCount() << endl ;
+		reportData << format("- Events Ignored:  %6u") % m_eventlog.GetIgnoreCount() << endl ;
+		reportData << endl;
+		m_mgr.Status(m_testName.c_str(), bbcolors[finalState], reportData.str().c_str());
+	} else {
+		m_eventlog.SetCentralized(true);
+		InitCentralMode();
+		m_eventlog.Execute(reportData);
+		m_mgr.ClientData("", reportData.str().c_str());
+	}
 }
 
 void	AgentMsgs::AddEventLogRule(PBBWINCONFIGRANGE range, bool ignore, const string defLogFile = "") {
@@ -148,7 +196,7 @@ void	AgentMsgs::AddRule(PBBWINCONFIGRANGE range, bool ignore, const std::string 
 	//cout << "B '" << defLogFile.substr(0, 1) << "'" << endl;
 	//cout << "E '" << defLogFile.substr(defLogFile.len	, 1) << "'" << endl;
 	if	(defLogFile.substr(0, 1) == "`" && defLogFile.substr(defLogFile.length(), 1) == "`") {
-		cout << "Debug " << defLogFile << endl;
+		//cout << "Debug " << defLogFile << endl;
 		return ;
 	}
 	res = defLogFile.find(":\\");
@@ -201,55 +249,57 @@ bool	AgentMsgs::LoadConfig(const string config) {
 // init function
 //
 bool AgentMsgs::Init() {
-	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
-	
-	if (conf == NULL)
-		return false;
-	m_mgr.Log(LOGLEVEL_DEBUG, "Begin Msgs Initialization");
-	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
-		string  value = m_mgr.GetConfigurationRangeValue(range, "value");
-		if (name == "alwaysgreen" && value == "true")
-			m_alwaysgreen = true;
-		if (name == "checkfulleventlog" && value == "true")
-			m_eventlog.SetCheckFullLogFile(true);
-		if (name == "testname" && value.length() > 0)
-			m_testName = value;
-		if (name == "delay" && value.length() > 0) {
-			DWORD del = m_mgr.GetSeconds(value.c_str());
-			if (del >= 60)
-				m_delay = del;
+	m_mgr.Log(LOGLEVEL_DEBUG, "Begin Msgs Initialization %s", __FUNCTION__);
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
+
+		if (conf == NULL)
+			return false;
+		PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
+			string  value = m_mgr.GetConfigurationRangeValue(range, "value");
+			if (name == "alwaysgreen" && value == "true")
+				m_alwaysgreen = true;
+			if (name == "checkfulleventlog" && value == "true")
+				m_eventlog.SetCheckFullLogFile(true);
+			if (name == "testname" && value.length() > 0)
+				m_testName = value;
+			if (name == "delay" && value.length() > 0) {
+				DWORD del = m_mgr.GetSeconds(value.c_str());
+				if (del >= 60)
+					m_delay = del;
+			}
 		}
-	}
-	m_mgr.FreeConfigurationRange(range);
-	range = m_mgr.GetConfigurationRange(conf, "match");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		AddEventLogRule(range, false);
-	}
-	m_mgr.FreeConfigurationRange(range);
-	range = m_mgr.GetConfigurationRange(conf, "ignore");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		AddEventLogRule(range, true);
-	}
-	m_mgr.FreeConfigurationRange(range);
-	range = m_mgr.GetConfigurationRange(conf, "config");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
-		if (name.length() > 0) {
-			LoadConfig(name);
+		m_mgr.FreeConfigurationRange(range);
+		range = m_mgr.GetConfigurationRange(conf, "match");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			AddEventLogRule(range, false);
 		}
+		m_mgr.FreeConfigurationRange(range);
+		range = m_mgr.GetConfigurationRange(conf, "ignore");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			AddEventLogRule(range, true);
+		}
+		m_mgr.FreeConfigurationRange(range);
+		range = m_mgr.GetConfigurationRange(conf, "config");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
+			if (name.length() > 0) {
+				LoadConfig(name);
+			}
+		}
+		m_mgr.FreeConfigurationRange(range);
+		m_mgr.FreeConfiguration(conf);
 	}
-	m_mgr.FreeConfigurationRange(range);
-	m_mgr.FreeConfiguration(conf);
 	m_mgr.Log(LOGLEVEL_DEBUG,"Ending Msgs Initialization");
 	return true;
 }
