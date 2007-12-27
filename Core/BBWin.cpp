@@ -906,7 +906,7 @@ void		BBWin::_Start() {
 			// we do not exit the program anymore
 		}
 	}
-	m_log->log(LOGLEVEL_INFO, "bbwin is started %i.", 123456);
+	m_log->log(LOGLEVEL_INFO, "bbwin is started.");
 	LPCTSTR		argStart[] = {SZSERVICENAME, m_setting["hostname"].c_str(), NULL};
 	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_STARTED, 2, argStart);
 }
