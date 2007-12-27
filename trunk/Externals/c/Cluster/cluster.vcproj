@@ -22,6 +22,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe . ..\..\..\Core\version_template.h version.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -89,6 +90,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="SubWCRev.exe . ..\..\..\Core\version_template.h version.h"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
