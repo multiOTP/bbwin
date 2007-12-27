@@ -199,7 +199,8 @@ void			BBWinCentralHandler::bbwinClientData_callback(const std::string & dataNam
 	if (report) {
 		string		dataFormated;
 
-		report << "[" << dataName << "]\n";
+		if (dataName.size() > 0)
+			report << "[" << dataName << "]\n";
 		dataFormated = data;
 		// remove '\r; characters before sending
 		dataFormated.erase(std::remove(dataFormated.begin(), dataFormated.end(), '\r'), dataFormated.end());
