@@ -16,8 +16,6 @@ BBWin 0.10 Preview version -  December 28th 2007
 * You can use environment variables in the bbwinupdate agent. Example :
   <setting name="filename" value="bbwin\%COMPUTERNAME%.cfg" />
 * svcs services rules can be used with comments
-* new indicator for the memory. Called Real Memory, it is used as the new reference for 
-  the memory agent.
 * disk agent can monitor free space from XX-rom drive and not only if a media is inserted.
              (feature requested to monitor dvd-ram burning state)
 * disk agent can monitor volume mount points
