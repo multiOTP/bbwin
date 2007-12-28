@@ -192,19 +192,6 @@ void	AgentMsgs::AddLogRule(PBBWINCONFIGRANGE range, bool ignore, const std::stri
 void	AgentMsgs::AddRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile) {
 	string::size_type		res;
 	
-	
-	//cout << "B '" << defLogFile.substr(0, 1) << "'" << endl;
-	//cout << "E '" << defLogFile.substr(defLogFile.len	, 1) << "'" << endl;
-	if	(defLogFile.substr(0, 1) == "`" && defLogFile.substr(defLogFile.length(), 1) == "`") {
-		//cout << "Debug " << defLogFile << endl;
-		return ;
-	}
-	res = defLogFile.find(":\\");
-	if (res > 0 && res < defLogFile.length()) {
-		
-		return ;
-	}
-
 	AddEventLogRule(range, ignore, defLogFile);
 }
 
