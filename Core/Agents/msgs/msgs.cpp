@@ -190,8 +190,6 @@ void	AgentMsgs::AddLogRule(PBBWINCONFIGRANGE range, bool ignore, const std::stri
 // determine if the rule is for eventlogs or logs, then call the good Add*Rule method
 //
 void	AgentMsgs::AddRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile) {
-	string::size_type		res;
-	
 	AddEventLogRule(range, ignore, defLogFile);
 }
 
