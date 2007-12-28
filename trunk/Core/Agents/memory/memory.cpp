@@ -14,34 +14,31 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+// 
+// $Id$
 
 //
 // This agent is in part inspired from the original bb_memory
 //
 
+#define BBWIN_AGENT_EXPORTS
 
 #include <windows.h>
-
 #include <set>
 #include <list>
 #include <iostream>
 #include <sstream>
 #include <fstream>
-
 #include <string>
-using namespace std;
-
-#define BBWIN_AGENT_EXPORTS
-
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
+#include "Memory.h"
 
+using namespace std;
 using boost::format;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 
-
-#include "Memory.h"
 
 static const char *bbcolors[] = { "green", "yellow", "red", NULL };
 
@@ -105,8 +102,8 @@ bool		AgentMemory::GetMemoryData() {
     m_memData[PAGE_MEM_TYPE].used  = m_statex.ullTotalPageFile - m_statex.ullAvailPageFile;
     m_memData[PAGE_MEM_TYPE].value = (m_memData[PAGE_MEM_TYPE].used * 100) / m_statex.ullTotalPageFile;
 	/* calculate the real memory usage */
-	if (m_memData[PHYS_MEM_TYPE].total != 0)
-		m_memData[REAL_MEM_TYPE].value = (DWORDLONG)(((float)m_memData[PAGE_MEM_TYPE].used / (float)m_memData[PHYS_MEM_TYPE].total) * (float)100.00);
+	//if (m_memData[PHYS_MEM_TYPE].total != 0)
+	//	m_memData[REAL_MEM_TYPE].value = (DWORDLONG)(((float)m_memData[PAGE_MEM_TYPE].used / (float)m_memData[PHYS_MEM_TYPE].total) * (float)100.00);
 	return true;
 }
 

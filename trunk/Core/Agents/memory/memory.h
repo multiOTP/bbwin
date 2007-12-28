@@ -14,11 +14,11 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
 #ifndef		__MEMORY_H__
 #define		__MEMORY_H__
-
-#include <string>
 
 #include "IBBWinAgent.h"
 
@@ -38,8 +38,8 @@
 #define	PHYS_MEM_TYPE	0
 #define	VIRT_MEM_TYPE	1
 #define	PAGE_MEM_TYPE	2
-#define	REAL_MEM_TYPE	3
-#define	MAX_MEM_TYPE	4
+//#define	REAL_MEM_TYPE	3
+#define	MAX_MEM_TYPE	3
 
 #define MEM_DIV		1048576
 
