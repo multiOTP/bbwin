@@ -70,6 +70,10 @@ void AgentUptime::Run() {
 			reportData << "&" << m_alarmColor << " machine rebooted recently" << endl;
 			reportData << endl;
 			alert = true;
+		} else if (seconds >= m_maxDelay) {
+			reportData << "&" << m_alarmColor << " machine has been up more than " << (m_maxDelay / 86400) << " days" << endl;
+			reportData << endl;
+			alert = true;
 		}
 	}
 	day = seconds / 86400;
@@ -109,6 +113,10 @@ bool AgentUptime::Init() {
 				DWORD		seconds = m_mgr.GetSeconds(value.c_str());
 				m_delay = seconds;
 			}
+			if (name == "maxdelay" && value != "") {
+				DWORD		seconds = m_mgr.GetSeconds(value.c_str());
+				m_maxDelay = seconds;
+			}
 			if (name == "alarmcolor" && value != "") {
 				m_alarmColor = value;
 			}
@@ -124,6 +132,7 @@ bool AgentUptime::Init() {
 
 AgentUptime::AgentUptime(IBBWinAgentManager & mgr) : m_mgr(mgr) {
 	m_delay = m_mgr.GetSeconds(UPTIME_DELAY);
+	m_maxDelay = m_mgr.GetSeconds(UPTIME_MAX_DELAY);
 	m_alarmColor = "yellow";
 	m_testName = "uptime";
 }

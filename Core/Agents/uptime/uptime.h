@@ -21,12 +21,14 @@
 #include "IBBWinAgent.h"
 
 #define	 UPTIME_DELAY		"30m"
+#define	 UPTIME_MAX_DELAY	"365d"
 
 class AgentUptime : public IBBWinAgent
 {
 	private :
 		IBBWinAgentManager & m_mgr;
 		DWORD					m_delay;
+		DWORD					m_maxDelay;
 		std::string				m_alarmColor;
 		std::string				m_testName;
 		
