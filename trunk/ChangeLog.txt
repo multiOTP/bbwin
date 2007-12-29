@@ -2,7 +2,7 @@ ChangeLog file for BBWin
 ==============================================================
 
 
-BBWin 0.10 Preview version -  December 28th 2007
+BBWin 0.10 Preview version -  December 30th 2007
 -------------------
 
 +New Features
