@@ -245,7 +245,8 @@ bool		Rule::SetType(const std::string &type) {
 
 Session::Session(const std::string logfile) :
 		m_logfile(logfile),
-		m_maxDelay(0)
+		m_maxDelay(0),
+		m_centralized(false)
 {
 	InitCounters();
 }
@@ -746,8 +747,10 @@ DWORD		Manager::Execute(stringstream & reportData) {
 	DWORD	tmp;
 
 	for (itr = m_sessions.begin(); itr != m_sessions.end(); ++itr) {
-		if (m_centralized)
+		if (m_centralized) {
 			reportData << "[msgs:eventlog_" << (*itr).first << "]\n";
+			(*itr).second->SetCentralized(true);
+		}
 		tmp = (*itr).second->Execute(reportData);
 		if (tmp > color)
 			color = tmp;
