@@ -32,6 +32,7 @@ You should use at least BBWin 0.10 or upper
 <li>Get the <a href='download/bbwin_4.2.patch'>bbwin patch for hobbit</a>
 <li>Apply the bbwin patch using GNU patch. "cd" to the hobbit-4.2.0 directory,
 		then run &quot;<tt>patch -p0 &lt;bbwin_4.2.patch</tt>&quot;.
+<li>Build and install hobbit as usual
 </ul>
 
 <h3>With Hobbit snapshot release (4.3)</h3>
@@ -40,8 +41,17 @@ You should use at least BBWin 0.10 or upper
 <li>Get the <a href='download/bbwin_4.3_20071228.patch'>bbwin patch for hobbit</a>
 <li>Apply the bbwin patch using GNU patch. "cd" to the snapshot directory,
 		then run &quot;<tt>patch -p0 &lt;bbwin_4.3.patch</tt>&quot;.
+<li>Build and install hobbit as usual
 </ul>
 </p>
+
+<h3>Configure BBWin for the centralized mode</h3>
+To enable the centralized mode in BBWin 0.10, turn it on with these lines in your bbwin.cfg file :
+<pre>
+&lt;!-- bbwin mode local or central --&gt;
+&lt;setting name="mode" value="central" /&gt;
+&lt;setting name="configclass" value="win32" /&gt;
+</pre>
 
 <h3>Example of hobbit-clients.cfg for Windows usage</h3>
 <pre>
