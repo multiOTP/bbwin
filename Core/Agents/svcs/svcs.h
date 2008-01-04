@@ -14,12 +14,11 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
 #ifndef		__SVCS_H__
 #define		__SVCS_H__
-
-#include <string>
-#include <map>
 
 #include "IBBWinAgent.h"
 
@@ -61,7 +60,7 @@ class AgentSvcs : public IBBWinAgent
 		bool						m_alwaysGreen;
 		bool						m_autoReset; // restart automatically automatic services that are stopped
 		DWORD						m_delay; // time to wait before the svcs start if a computer restart has been done
-		std::map<string, SvcRule>	m_rules;
+		std::map<std::string, SvcRule>	m_rules;
 		
 	private :
 		void		CheckServices(std::stringstream & reportData);
