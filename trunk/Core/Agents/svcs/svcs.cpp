@@ -14,36 +14,33 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-#include <windows.h>
-
-#include <iostream>
-#include <sstream>
-#include <fstream>
-
-#include <string>
-using namespace std;
+//
+// $Id$
 
 #define BBWIN_AGENT_EXPORTS
 
+#include <windows.h>
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <string>
+#include <map>
 #include "SystemCounters.h"
-
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
-
-using namespace boost::posix_time;
-using namespace boost::gregorian;
-
 #include "svcs.h"
 
-
+using namespace std;
+using namespace boost::posix_time;
+using namespace boost::gregorian;
+using boost::format;
 
 static const BBWinAgentInfo_t 		svcsAgentInfo =
 {
 	BBWIN_AGENT_VERSION,					// bbwinVersion;
 	"svcs",									// agentName;
 	"svcs agent : check Windows services",  // agentDescription;
-	0										// flags
+	BBWIN_AGENT_CENTRALIZED_COMPATIBLE		// flags
 };                
 
 //
@@ -120,7 +117,7 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 	if (scs == NULL) {
 		string		sName = tempName;
 		string 		mess = "can't open service" + sName;
-		m_mgr.Log(LOGLEVEL_INFO, mess.c_str());
+		m_mgr.Log(LOGLEVEL_DEBUG, mess.c_str());
 		return ;
 	}
 	retVal = QueryServiceConfig(scs, NULL, 0, &bytesNeeded);
@@ -143,7 +140,7 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 					map<string, SvcRule>::iterator	itr;
 
 					itr = m_rules.find(name);
-					if (itr != m_rules.end()) { // treat the defined rule
+					if (itr != m_rules.end() && m_mgr.IsCentralModeEnabled() == false) { // treat the defined rule
 						SvcRule	& rule = itr->second;
 						if (rule.GetSvcState() != servStatus.dwCurrentState) {
 							if (servStatus.dwCurrentState == SERVICE_STOPPED) { // service is stopped and should be running
@@ -176,6 +173,24 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 							reportData << " (" << rule.GetComment() << ")";
 						reportData << endl;
 					} else { // no rules found
+						// centralized mode 
+						if (m_mgr.IsCentralModeEnabled()) {
+							reportData << tempName << " ";
+							switch (lpServiceConfig->dwStartType) {
+								case SERVICE_AUTO_START: 
+									reportData << "automatic";
+									break;
+								case SERVICE_DISABLED:
+									reportData << "disabled";
+									break;
+								case SERVICE_DEMAND_START:
+									reportData << "manual";
+									break;
+								default:
+									reportData << "driver";
+							}
+							reportData << " " << findSvcStatus(servStatus.dwCurrentState) << " " << name << endl;
+						}
 						if (m_autoReset) {
 							if (servStatus.dwCurrentState == SERVICE_STOPPED 
 								&& lpServiceConfig->dwStartType == SERVICE_AUTO_START) {
@@ -207,7 +222,6 @@ void				AgentSvcs::CheckServices(stringstream & reportData) {
 	DWORD 					bytesNeeded, srvCount, resumeHandle = 0;
 	BOOL 					retVal;
 	
-	m_mgr.Log(LOGLEVEL_DEBUG, "OpenSCManager");
 	if ((scm = OpenSCManager(NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE)) == NULL) {
 		return ;
 	}
@@ -230,7 +244,6 @@ void				AgentSvcs::CheckServices(stringstream & reportData) {
 		}
 		delete [] lpservice;
     }
-	m_mgr.Log(LOGLEVEL_DEBUG, "CloseServiceHandle");
 	CloseServiceHandle(scm);
 }
 
@@ -240,104 +253,114 @@ void				AgentSvcs::CheckServices(stringstream & reportData) {
 //
 void AgentSvcs::Run() {
 	stringstream 					reportData;	
-	DWORD							seconds;
-	CSystemCounters					data;
 
-	seconds = data.GetSystemUpTime();
-    ptime now = second_clock::local_time();
-	m_pageColor = GREEN;
-	reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
-	if (m_rules.size() == 0)
-		reportData << "No service to check";
-	if (m_autoReset) {
-		reportData << " - Autoreset is On";
-	}
-	if (seconds < m_delay) {
-		reportData << " - Computer has restarted in the last " << m_delay << " seconds\n\nno check is done until the delay is passed";
-	} else {
-		reportData << "\n" << endl;
-		CheckServices(reportData);
-	}
-	reportData << endl;
-	if (m_alwaysGreen)
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		DWORD							seconds;
+		CSystemCounters					data;
+
+		seconds = data.GetSystemUpTime();
+		ptime now = second_clock::local_time();
 		m_pageColor = GREEN;
-	m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
+		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] ";
+		if (m_rules.size() == 0)
+			reportData << "No service to check";
+		if (m_autoReset) {
+			reportData << " - Autoreset is On";
+		}
+		if (seconds < m_delay) {
+			reportData << " - Computer has restarted in the last " << m_delay << " seconds\n\nno check is done until the delay is passed";
+		} else {
+			reportData << "\n" << endl;
+			CheckServices(reportData);
+		}
+		reportData << endl;
+		if (m_alwaysGreen)
+			m_pageColor = GREEN;
+		m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
+	} else {
+		CheckServices(reportData);
+		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
+	}
 }
 
 //
 // init function
 //
 bool AgentSvcs::Init() {
-	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
-	
-	if (conf == NULL)
-		return false;
-	PBBWINCONFIGRANGE  range = m_mgr.GetConfigurationRange(conf, "setting");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string		name, value;
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
-		name = m_mgr.GetConfigurationRangeValue(range, "name");
-		value = m_mgr.GetConfigurationRangeValue(range, "value");
-		if (name == "alwaysgreen") {
-			if (value == "true")
-				m_alwaysGreen = true;
-		} else if (name == "autoreset") {
-			if (value == "true")
-				m_autoReset = true;
-		} else if (name == "testname") {
-			if (value.length() > 0)
-				m_testName = value;
-		} else if (name == "delay") {
-			if (value.length() > 0)
-				m_delay = m_mgr.GetSeconds(value.c_str());
-		} else if (name == "alarmcolor") {
-			if (value.length() > 0) {
-				if (value == "red") 
-					m_alarmColor = RED;
-				else if (value == "yellow") 
-					m_alarmColor = YELLOW;
-				else if (value == "green") 
-					m_alarmColor = GREEN;
-			}
-		} else {
-			string	autoreset = m_mgr.GetConfigurationRangeValue(range, "autoreset");
-			string	color = m_mgr.GetConfigurationRangeValue(range, "alarmcolor");
-			string	comment = m_mgr.GetConfigurationRangeValue(range, "comment");
+		if (conf == NULL)
+			return false;
+		PBBWINCONFIGRANGE  range = m_mgr.GetConfigurationRange(conf, "setting");
+		if (range == NULL)
+			return false;
+		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
+			string		name, value;
 
-			if (name.length() > 0 && value.length() > 0) {
-				SvcRule		rule;
-				map<string, SvcRule>::iterator		itr;
+			name = m_mgr.GetConfigurationRangeValue(range, "name");
+			value = m_mgr.GetConfigurationRangeValue(range, "value");
+			if (name == "alwaysgreen") {
+				if (value == "true")
+					m_alwaysGreen = true;
+			} else if (name == "autoreset") {
+				if (value == "true") {
+					cout << "autoreset" << endl;
+					m_autoReset = true;
+				}
+			} else if (name == "testname") {
+				if (value.length() > 0)
+					m_testName = value;
+			} else if (name == "delay") {
+				if (value.length() > 0)
+					m_delay = m_mgr.GetSeconds(value.c_str());
+			} else if (name == "alarmcolor") {
+				if (value.length() > 0) {
+					if (value == "red") 
+						m_alarmColor = RED;
+					else if (value == "yellow") 
+						m_alarmColor = YELLOW;
+					else if (value == "green") 
+						m_alarmColor = GREEN;
+				}
+			} else {
+				string	autoreset = m_mgr.GetConfigurationRangeValue(range, "autoreset");
+				string	color = m_mgr.GetConfigurationRangeValue(range, "alarmcolor");
+				string	comment = m_mgr.GetConfigurationRangeValue(range, "comment");
 
-				rule.SetName(name);
-				if (autoreset.length() > 0 && autoreset == "true") {
-					rule.SetReset(true);
-				}
-				if (value.length() > 0 && value == "stopped") {
-					rule.SetSvcState(SERVICE_STOPPED);
-				} else  {
-					rule.SetSvcState(SERVICE_RUNNING);
-				}
-				if (comment.length() > 0) 
-					rule.SetComment(comment);
-				if (color.length() > 0) {
-					if (color == "red") 
-						rule.SetAlarmColor(RED);
-					else if (color == "yellow") 
-						rule.SetAlarmColor(YELLOW);
-					else if (color == "green") 
-						rule.SetAlarmColor(GREEN);
-				}
-				itr = m_rules.find(name);
-				if (itr == m_rules.end()) {
-					m_rules.insert(pair<string, SvcRule>(name, rule));
+				if (name.length() > 0 && value.length() > 0) {
+					SvcRule		rule;
+					map<string, SvcRule>::iterator		itr;
+
+					rule.SetName(name);
+					if (autoreset.length() > 0 && autoreset == "true") {
+						rule.SetReset(true);
+					}
+					if (value.length() > 0 && value == "stopped") {
+						rule.SetSvcState(SERVICE_STOPPED);
+					} else  {
+						rule.SetSvcState(SERVICE_RUNNING);
+					}
+					if (comment.length() > 0) 
+						rule.SetComment(comment);
+					if (color.length() > 0) {
+						if (color == "red") 
+							rule.SetAlarmColor(RED);
+						else if (color == "yellow") 
+							rule.SetAlarmColor(YELLOW);
+						else if (color == "green") 
+							rule.SetAlarmColor(GREEN);
+					}
+					itr = m_rules.find(name);
+					if (itr == m_rules.end()) {
+						m_rules.insert(pair<string, SvcRule>(name, rule));
+					}
 				}
 			}
 		}
+		m_mgr.FreeConfigurationRange(range);
+		m_mgr.FreeConfiguration(conf);
 	}
-	m_mgr.FreeConfigurationRange(range);
-	m_mgr.FreeConfiguration(conf);
 	return true;
 }
 
