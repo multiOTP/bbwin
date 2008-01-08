@@ -57,14 +57,14 @@ namespace openutils {
 		// unsigned long* to the low-level thread object
 		unsigned long* m_hThread;
 		// a name to identify the thread
-		string m_strName;
+		std::string m_strName;
 
 	public:
 		Thread();
 		Thread(const char* nm);
 		~Thread();
 		void setName(const char* nm);
-		string getName() const;
+		std::string getName() const;
 		void start();
 		virtual void run();
 		void sleep(long ms);
@@ -98,13 +98,13 @@ namespace openutils {
 		// unsigned long* to the low-level mutex object
 		unsigned long* m_hMutex;
 		// name to identify the mutex
-		string m_strName;
+		std::string m_strName;
 	public:
 		Mutex();
 		Mutex(const char* nm);
 		void create(const char* nm);
 		unsigned long* getMutexHandle();
-		string getName();
+		std::string getName();
 		void release();
 		~Mutex();
 	};
@@ -115,10 +115,10 @@ namespace openutils {
 	**/
 	class ThreadException {
 	private:
-		string msg;
+		std::string msg;
 	public:
 		ThreadException(const char* m);
-		string getMessage() const;
+		std::string getMessage() const;
 	};	
 } // namespace openutils
 

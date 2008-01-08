@@ -69,7 +69,7 @@ class BBWinNet
 		void			SetProxy(const std::string & proxy);
 
 		void			SetPort(const std::string & port);
-		const string &	GetPort();
+		const std::string &	GetPort();
 		
 		void			SetDebug(bool debug);
 		
