@@ -14,39 +14,34 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
 #include <windows.h>
 #include <process.h>
 #include <assert.h>
 #include <time.h>
-
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <map>
-using namespace std;
-
 #include <sys/types.h>
 #include <sys/timeb.h>
-
-
 #include "ou_thread.h"
-using namespace openutils;
-
 #include "Logging.h"
 #include "BBWinNet.h"
 #include "BBWinHandler.h"
 #include "BBWinCentralHandler.h"
 #include "BBWinMessages.h"
 #include "BBWinService.h"
-
 #include "Utils.h"
-using namespace utils;
-
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
 
+using namespace openutils;
+using namespace utils;
+using namespace std;
 using boost::format;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
@@ -204,7 +199,9 @@ void			BBWinCentralHandler::bbwinClientData_callback(const std::string & dataNam
 		dataFormated = data;
 		// remove '\r; characters before sending
 		dataFormated.erase(std::remove(dataFormated.begin(), dataFormated.end(), '\r'), dataFormated.end());
-		report << dataFormated << "\n";
+		report << dataFormated;
+		if (dataFormated.size() > 1 && dataFormated.substr(dataFormated.size() - 1, 1) != "\n")
+			report << "\n";
 	}
 }
 

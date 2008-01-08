@@ -75,7 +75,7 @@ public:
 class BBWinHandlerException : IBBWinException {
 public:
 	BBWinHandlerException(const char* m);
-	string getMessage() const;
+	std::string getMessage() const;
 };	
 
 #endif // __BBWINHANDLER_H__

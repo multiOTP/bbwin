@@ -35,7 +35,7 @@ void		uname(std::string & version);
 // inherit from the nice thread class written by Vijay Mathew Pandyalakal
 // this class handle each agent and execute agent code
 // 
-class BBWinCentralHandler : public Thread {
+class BBWinCentralHandler : public openutils::Thread {
 	private:
 		std::list<BBWinHandler *>		m_agents;
 		bbwinhandler_data_t				m_data;
