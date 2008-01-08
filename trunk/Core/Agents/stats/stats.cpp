@@ -58,10 +58,10 @@ void				AgentStats::IfStat(stringstream & reportData) {
 	if (piftable = (PMIB_IFTABLE)GlobalAlloc(GMEM_FIXED, dwSize)) {
 		if (GetIfTable(piftable, &dwSize, FALSE) == NO_ERROR) {
 			for (DWORD inc = 0; inc < piftable->dwNumEntries; inc++) {
-				// Name MTU  Network        IP            Ibytes Obytes
-				// lnc0 1500 172.16.10.0/24 172.16.10.151 1818   1802 
-				//static const char *ifstat_netbsd_exprs[] = {
-				//"^([a-z0-9]+)\\s+\\d+\\s+[0-9.\\/]+\\s+[0-9.]+\\s+(\\d+)\\s+(\\d+)"
+				///* IP          Ibytes Obytes */
+				///* 192.168.0.1 1818   1802  */
+				//static const char *ifstat_bbwin_exprs[] = {
+				//"^([a-zA-Z0-9.:]+)\\s+([0-9]+)\\s+([0-9]+)"
 				//};
 
 				// interfaces with null mac ignored
@@ -69,18 +69,11 @@ void				AgentStats::IfStat(stringstream & reportData) {
 					piftable->table[inc].bPhysAddr[2] + piftable->table[inc].bPhysAddr[3] + piftable->table[inc].bPhysAddr[4]
 				+ piftable->table[inc].bPhysAddr[5]) == 0)
 					continue ;
-				char buf[3];
-				for (int mac = 0; mac < 6; mac++) {
-					sprintf(buf, "%2.2X", piftable->table[inc].bPhysAddr[mac]);
-					reportData << buf;
-				}
-				reportData << format(" %d") % piftable->table[inc].dwMtu;
-				reportData << format(" 0.0.0.0/24");
 				GetIpAddrTable(NULL, &dwSize, FALSE);
 				if (piptable = (PMIB_IPADDRTABLE)GlobalAlloc(GMEM_FIXED, dwSize)) {
 					GetIpAddrTable(piptable, &dwSize, FALSE);
 					piprow = &piptable->table[inc];
-					reportData << format(" %u.%u.%u.%u") %	(piprow->dwAddr & 0xFF) %
+					reportData << format("%u.%u.%u.%u") %	(piprow->dwAddr & 0xFF) %
 															((piprow->dwAddr >> 8) & 0xFF) %
 															((piprow->dwAddr >> 16) & 0xFF) %
 															((piprow->dwAddr >> 24) & 0xFF);
