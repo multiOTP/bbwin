@@ -175,21 +175,25 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 					} else { // no rules found
 						// centralized mode 
 						if (m_mgr.IsCentralModeEnabled()) {
-							reportData << tempName << " ";
+							string		startType;
 							switch (lpServiceConfig->dwStartType) {
 								case SERVICE_AUTO_START: 
-									reportData << "automatic";
+									startType = "automatic";
 									break;
 								case SERVICE_DISABLED:
-									reportData << "disabled";
+									startType = "disabled";
 									break;
 								case SERVICE_DEMAND_START:
-									reportData << "manual";
+									startType = "manual";
 									break;
 								default:
-									reportData << "driver";
+									startType = "driver";
 							}
-							reportData << " " << findSvcStatus(servStatus.dwCurrentState) << " " << name << endl;
+							reportData << format("%-35s %-12s %-14s %s") 
+								% tempName
+								% startType
+								% findSvcStatus(servStatus.dwCurrentState)
+								% name << endl;
 						}
 						if (m_autoReset) {
 							if (servStatus.dwCurrentState == SERVICE_STOPPED 
@@ -278,6 +282,11 @@ void AgentSvcs::Run() {
 			m_pageColor = GREEN;
 		m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
 	} else {
+		reportData << format("%-35s %-12s %-14s %s") 
+								% "Name"
+								% "StartupType"
+								% "Status"
+								% "DisplayName" << endl;
 		CheckServices(reportData);
 		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
 	}
