@@ -98,8 +98,6 @@ SvcRule::SvcRule(const SvcRule & rule) {
 
 
 
-
-
 void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstream & reportData) {
 	SC_HANDLE 				scs;
 	LPQUERY_SERVICE_CONFIG 	lpServiceConfig;
