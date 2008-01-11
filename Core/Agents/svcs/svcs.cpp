@@ -28,6 +28,7 @@
 #include "SystemCounters.h"
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
+#include "utils.h"
 #include "svcs.h"
 
 using namespace std;
@@ -53,12 +54,12 @@ static const struct _svcStatus {
 	LPCSTR		name;
 	DWORD		status;
 } svcStatusTable [] = {
-	{"continue pending", SERVICE_CONTINUE_PENDING},
-	{"pause pending", SERVICE_PAUSE_PENDING},
+	{"continue_pending", SERVICE_CONTINUE_PENDING},
+	{"pause_pending", SERVICE_PAUSE_PENDING},
 	{"paused", SERVICE_PAUSED},
 	{"started", SERVICE_RUNNING},
-	{"start pending", SERVICE_START_PENDING},
-	{"stop pending", SERVICE_STOP_PENDING},
+	{"start_pending", SERVICE_START_PENDING},
+	{"stop_pending", SERVICE_STOP_PENDING},
 	{"stopped", SERVICE_STOPPED},
 	{NULL, 0}
 };
@@ -97,8 +98,36 @@ SvcRule::SvcRule(const SvcRule & rule) {
 }
 
 
+bool		AgentSvcs::InitCentralMode() {
+	string clientLocalCfgPath = m_mgr.GetSetting("tmppath") + (string)"\\clientlocal.cfg";
 
-void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstream & reportData) {
+	m_mgr.Log(LOGLEVEL_DEBUG, "start %s", __FUNCTION__);
+	m_mgr.Log(LOGLEVEL_DEBUG, "checking file %s", clientLocalCfgPath.c_str());
+	ifstream		conf(clientLocalCfgPath.c_str());
+
+	if (!conf) {
+		string	err;
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_INFO, "can't open %s : %s", clientLocalCfgPath.c_str(), err.c_str());
+		return false;
+	}
+	m_mgr.Log(LOGLEVEL_DEBUG, "reading file %s", clientLocalCfgPath.c_str());
+	string		buf, eventlog, ignore, trigger;
+	while (!conf.eof()) {
+		string		value;
+
+		std::getline(conf, buf);
+		if (utils::parseStrGetNext(buf, "svcautorestart:", value)) {
+			m_mgr.Log(LOGLEVEL_DEBUG, "svcautorestart is %s", value.c_str());
+			if (value == "on") m_autoReset = true;
+		}
+	}
+	return false;
+}
+
+void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstream & reportData, 
+													  stringstream & autoRestartReportData) {
 	SC_HANDLE 				scs;
 	LPQUERY_SERVICE_CONFIG 	lpServiceConfig;
 	SERVICE_STATUS 			servStatus;
@@ -197,15 +226,22 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 							if (servStatus.dwCurrentState == SERVICE_STOPPED 
 								&& lpServiceConfig->dwStartType == SERVICE_AUTO_START) {
 								StartService(scs, 0, NULL);
-								reportData << "&" << bbcolors[m_alarmColor] << " " << name << " is stopped and will be restarted automatically" << endl;
+								if (m_mgr.IsCentralModeEnabled() == false)
+									reportData << "&" << bbcolors[m_alarmColor] << " " << name << " is stopped and will be restarted automatically" << endl;
+								else
+									autoRestartReportData << "&yellow " << name << " is stopped and will be restarted automatically" << endl;
 								if (m_pageColor < m_alarmColor)
 									m_pageColor = m_alarmColor;
 							} else if (servStatus.dwCurrentState != SERVICE_RUNNING 
 								&& lpServiceConfig->dwStartType == SERVICE_AUTO_START) {
-								reportData << "&" << bbcolors[m_alarmColor] << " " << name
-									<< " should be started and is in an unmanaged state (" << findSvcStatus(servStatus.dwCurrentState) << ")" << endl;
-								if (m_pageColor < m_alarmColor)
-									m_pageColor = m_alarmColor;
+									if (m_mgr.IsCentralModeEnabled() == false)
+										reportData << "&" << bbcolors[m_alarmColor] << " " << name
+										<< " should be started and is in an unmanaged state (" << findSvcStatus(servStatus.dwCurrentState) << ")" << endl;
+									else
+										autoRestartReportData << "&yellow " << name
+										<< " should be started and is in an unmanaged state (" << findSvcStatus(servStatus.dwCurrentState) << ")" << endl;
+									if (m_pageColor < m_alarmColor)
+										m_pageColor = m_alarmColor;
 							}
 						}
 					}
@@ -218,7 +254,7 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 
 // 
 // CheckServices method
-void				AgentSvcs::CheckServices(stringstream & reportData) {
+void				AgentSvcs::CheckServices(stringstream & reportData, stringstream & autoRestartReportData) {
 	SC_HANDLE 				scm;
 	ENUM_SERVICE_STATUS 	service_data, *lpservice;
 	DWORD 					bytesNeeded, srvCount, resumeHandle = 0;
@@ -242,7 +278,7 @@ void				AgentSvcs::CheckServices(stringstream & reportData) {
         EnumServicesStatus (scm, SERVICE_WIN32, SERVICE_STATE_ALL, lpservice, dwBytes,
 								&bytesNeeded, &srvCount, &resumeHandle);
         for(DWORD inc = 0; inc < srvCount; inc++) {
-			CheckSimpleService(scm, lpservice[inc].lpDisplayName, reportData);
+			CheckSimpleService(scm, lpservice[inc].lpDisplayName, reportData, autoRestartReportData);
 		}
 		delete [] lpservice;
     }
@@ -254,7 +290,7 @@ void				AgentSvcs::CheckServices(stringstream & reportData) {
 // called from init
 //
 void AgentSvcs::Run() {
-	stringstream 					reportData;	
+	stringstream 					reportData, autoRestartReportData;	
 
 	if (m_mgr.IsCentralModeEnabled() == false) {
 		DWORD							seconds;
@@ -273,20 +309,24 @@ void AgentSvcs::Run() {
 			reportData << " - Computer has restarted in the last " << m_delay << " seconds\n\nno check is done until the delay is passed";
 		} else {
 			reportData << "\n" << endl;
-			CheckServices(reportData);
+			CheckServices(reportData, autoRestartReportData);
 		}
 		reportData << endl;
 		if (m_alwaysGreen)
 			m_pageColor = GREEN;
 		m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
 	} else {
+		m_autoReset = false;
+		InitCentralMode();
 		reportData << format("%-35s %-12s %-14s %s") 
 								% "Name"
 								% "StartupType"
 								% "Status"
 								% "DisplayName" << endl;
-		CheckServices(reportData);
+		CheckServices(reportData, autoRestartReportData);
 		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
+		if (m_autoReset == true)
+			m_mgr.ClientData("svcautorestart", autoRestartReportData.str().c_str());
 	}
 }
 

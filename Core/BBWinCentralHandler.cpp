@@ -97,6 +97,7 @@ void	BBWinCentralHandler::GetClock() {
     }
 	timebuf[24] = '\0';
 	report << boost::format("local: %s") % timebuf << endl;
+	bbwinClientData_callback("date", timebuf);
     // Display UTC. 
     err = _gmtime64_s( &gmt, &ltime );
     if (err) {
@@ -132,14 +133,10 @@ void BBWinCentralHandler::run() {
 			report << "client " << m_data.setting["hostname"] << ".bbwin " << m_data.setting["configclass"] << "\n";
 			report.close();
 			created = true;
-			// get the local date
-			ptime 				now;
-			now = second_clock::local_time();
-			bbwinClientData_callback("date", to_simple_string(now));
+			GetClock();
 			string		osversion;
 			uname(osversion);
 			bbwinClientData_callback("osversion", osversion);
-			GetClock();
 		} else {
 			string mess, err;
 

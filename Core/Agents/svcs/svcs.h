@@ -63,8 +63,10 @@ class AgentSvcs : public IBBWinAgent
 		std::map<std::string, SvcRule>	m_rules;
 		
 	private :
-		void		CheckServices(std::stringstream & reportData);
-		void		CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, std::stringstream & reportData);
+		bool		InitCentralMode();
+		void		CheckServices(std::stringstream & reportData, std::stringstream & autoRestartReportData);
+		void		CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, 
+										std::stringstream & reportData, std::stringstream & autoRestartReportData);
 		
 	public :
 		AgentSvcs(IBBWinAgentManager & mgr);

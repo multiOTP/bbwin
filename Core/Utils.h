@@ -14,7 +14,8 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
+//
+// $Id$
 
 #ifndef		__UTILS_H__
 #define		__UTILS_H__
@@ -32,6 +33,7 @@ void			GetLastErrorString(std::string & str);
 DWORD			GetNbr(const std::string & str );
 void			GetEnvironmentVariable(const std::string & varname, std::string & dest);
 void			ReplaceEnvironmentVariableStr(std::string & str);
+bool			parseStrGetNext(const std::string & str, const std::string & match, std::string & next);
 
 }
 

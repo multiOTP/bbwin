@@ -14,16 +14,16 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
 #include <windows.h>
-
 #include <string>
 #include <iostream>
 #include <sstream>
+#include "Utils.h"
 
 using namespace std;
-
-#include "Utils.h"
 
 namespace	utils {
 
@@ -221,6 +221,16 @@ void			ReplaceEnvironmentVariableStr(string & str) {
 			ReplaceEnvironmentVariableStr(str);
 		}
 	}
+}
+
+bool		parseStrGetNext(const std::string & str, const std::string & match, std::string & next) {
+	std::string::size_type		res = str.find(match);
+
+	if (res >= 0 && res < str.size()) {
+		next = str.substr(match.size());
+		return true;
+	}
+	return false;
 }
 
 
