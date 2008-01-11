@@ -33,6 +33,7 @@ using boost::format;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
 using namespace std;
+using namespace utils;
 
 static const BBWinAgentInfo_t 		msgsAgentInfo =
 {
@@ -46,17 +47,6 @@ static const BBWinAgentInfo_t 		msgsAgentInfo =
 // common bb colors
 //
 static const char	*bbcolors[] = {"green", "yellow", "red", NULL};
-
-
-static bool		parseStrGetNext(const std::string & str, const std::string & match, std::string & next) {
-	std::string::size_type		res = str.find(match);
-
-	if (res >= 0 && res < str.size()) {
-		next = str.substr(match.size());
-		return true;
-	}
-	return false;
-}
 
 //
 // AgentMsgs methods

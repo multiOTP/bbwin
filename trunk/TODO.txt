@@ -7,42 +7,26 @@ $Id$
 Big things
 ----------
 
-- finish centralized mode
-- GUI
+- logfile for msgs agent
+- file and dir agents
 - perfmon agent
 - scheduled tasks agent
-- logfile for msgs agent
 - BBWinUpdate.exe for updating the Software (integrate zip library)
 - a better bbwincmd
-- who agent
 - procs agents : change match with compare function
-- add maxdelay to uptime agent
+- who alarms
+- create one log file for each agent
 
-
-Small things
-------------
-
-- send event logs events ignored
 
 Bugs
 ----
 
-- problem with deamon tools : 4.0.9.1. Improve disk debugging
-
-
+- disk network
+- disk usb
 
 
 Special Notes
 =============
-
-
-- faire le petit programme BBWinUpdate
-- faire partie file
-- faire partie dir
-- modifier les agents pour le mode hobbit
-- modifier message, config, pour qu'ils renvoie le path du fichier temporaire sauvegardée
-- faire bbwincmd à jour
-
 
 + Sections client :
 
