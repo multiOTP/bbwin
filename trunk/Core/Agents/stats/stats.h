@@ -14,11 +14,11 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
 #ifndef		__STATS_H__
 #define		__STATS_H__
-
-#include <string>
 
 #include "IBBWinAgent.h"
 
@@ -29,11 +29,11 @@ class AgentStats : public IBBWinAgent
 		std::string				m_testName;
 		
 	private :
-		void		NetstatLocal(const std::string & path, stringstream & reportData);
+		void		NetstatLocal(const std::string & path, std::stringstream & reportData);
 		void		NetstatCentralized(const std::string & path);
 		void		NetstatCentralizedStep(const std::string & cmd, const std::string & path, 
 			const std::string dataName);
-		void		IfStat(stringstream & reportData);
+		void		IfStat(std::stringstream & reportData);
 
 	public :
 		AgentStats(IBBWinAgentManager & mgr);

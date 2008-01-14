@@ -14,29 +14,25 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
-#include <windows.h>
-#include <iphlpapi.h>
-
-#include <iostream>
-#include <sstream>
-#include <fstream>
-
-#include <string>
-using namespace std;
+//
+// $Id$
 
 #define BBWIN_AGENT_EXPORTS
 
+#include <windows.h>
+#include <iphlpapi.h>
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <string>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
+#include "Stats.h"
 
+using namespace std;
 using boost::format;
 using namespace boost::posix_time;
 using namespace boost::gregorian;
-
-
-#include "Stats.h"
-
 
 static const BBWinAgentInfo_t 		statsAgentInfo =
 {
