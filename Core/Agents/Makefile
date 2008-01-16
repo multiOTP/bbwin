@@ -22,6 +22,7 @@ DIRS = \
     uptime\~   		\
     cpu\~   		\
     disk\~   		\
+	filesystem\~   	\
     memory\~   		\
     msgs\~   		\
     stats\~   		\
@@ -49,6 +50,8 @@ clean:
 	cd ..\cpu
 	nmake clean
 	cd ..\disk
+	nmake clean
+	cd ..\filesystem
 	nmake clean
 	cd ..\memory
 	nmake clean
