@@ -22,14 +22,35 @@
 
 #include "IBBWinAgent.h"
 
+
+enum hash_type_t { NONE, MD5, SHA1 };
+
+// Struct used for file monitoring
+typedef struct			fs_file_s {
+	std::string			path;
+	enum hash_type_t	hashtype;
+}						fs_file_t;
+
 class AgentFileSystem : public IBBWinAgent
 {
 	private :
+		std::list<fs_file_t>				m_files;
+		std::list<std::string>				m_dirs;
+
+	private :
 		IBBWinAgentManager 		& m_mgr;
 		std::string				m_testName;
-		
+		bool					InitCentralMode();
+		void					ExecuteRules();
+
+		void					ExecuteFileRule(const fs_file_t & file);
+		bool					GetFileAttributes(const std::string & path, std::stringstream & reportData);
+		bool					GetTimeString(const FILETIME & ftime, std::string & output);
+		void					ExecuteDirRule(const std::string & dir);
+		void					ListFiles(const std::string & path, std::stringstream & report);
+
 	public :
-		AgentFileSystem(IBBWinAgentManager & mgr);
+		AgentFileSystem(IBBWinAgentManager & mgr) ;
 		bool Init();
 		void Run();
 };
