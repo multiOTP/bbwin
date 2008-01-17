@@ -34,6 +34,7 @@ DWORD			GetNbr(const std::string & str );
 void			GetEnvironmentVariable(const std::string & varname, std::string & dest);
 void			ReplaceEnvironmentVariableStr(std::string & str);
 bool			parseStrGetNext(const std::string & str, const std::string & match, std::string & next);
+bool			parseStrGetLast(const std::string & str, const std::string & match, std::string & last);
 
 }
 

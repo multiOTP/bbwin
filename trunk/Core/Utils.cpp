@@ -233,6 +233,15 @@ bool		parseStrGetNext(const std::string & str, const std::string & match, std::s
 	return false;
 }
 
+bool		parseStrGetLast(const std::string & str, const std::string & match, std::string & last) {
+	std::string::size_type		res = str.find_last_of(match);
+
+	if (res >= 0 && res < str.size()) {
+		last = str.substr(res + 1);
+		return true;
+	}
+	return false;
+}
 
 } // namespace utils
 
