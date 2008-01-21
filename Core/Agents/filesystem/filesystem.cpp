@@ -167,16 +167,22 @@ bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & rep
 	return true;
 }
 
-void	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & report) {
+void	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & report, __int64 & size) {
 	WIN32_FIND_DATA		find_data;
-
-	HANDLE handle = FindFirstFile(path.c_str(), &find_data);
+	string				mypath = path + "\\*";
+	
+	HANDLE handle = FindFirstFile(mypath.c_str(), &find_data);
 	if (handle != INVALID_HANDLE_VALUE) {
-		cout << "list " << find_data.cFileName << endl;
+		 // skip "." and ".." directories
+		FindNextFile(handle, &find_data);
 		while (FindNextFile(handle, &find_data)) {
-			cout << "list " << find_data.cFileName << endl;
+			string	newpath = path + "\\" + find_data.cFileName;
+			report << format("%lu\t %s") % (((find_data.nFileSizeHigh * MAXDWORD) + find_data.nFileSizeLow) / 1024) % newpath << endl;
+			size += ((find_data.nFileSizeHigh * MAXDWORD) + find_data.nFileSizeLow);
+			if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+				ListFiles(newpath , report, size);
+			}
 		}
-		cout << "list " << find_data.cFileName << endl;
 		FindClose(handle);
 	} else {
 		string		err;
@@ -189,9 +195,12 @@ void	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & re
 
 void		AgentFileSystem::ExecuteDirRule(const std::string & dir) {
 	stringstream 		reportData;	
-	
+	__int64				size = 0;
+
 	string title = "dir:" + dir;
-	//ListFiles(dir, reportData);
+	ListFiles(dir, reportData, size);
+	if (reportData.str().substr(0, 5) != "ERROR")
+		reportData << format("%lu\t %s") % (size / 1024) % dir << endl;
 	m_mgr.ClientData(title.c_str(), reportData.str().c_str());
 }
 

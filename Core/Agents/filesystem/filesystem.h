@@ -47,7 +47,7 @@ class AgentFileSystem : public IBBWinAgent
 		bool					GetFileAttributes(const std::string & path, std::stringstream & reportData);
 		bool					GetTimeString(const FILETIME & ftime, std::string & output);
 		void					ExecuteDirRule(const std::string & dir);
-		void					ListFiles(const std::string & path, std::stringstream & report);
+		void					ListFiles(const std::string & path, std::stringstream & report, __int64 & size);
 
 	public :
 		AgentFileSystem(IBBWinAgentManager & mgr) ;
