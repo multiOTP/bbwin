@@ -66,9 +66,17 @@ void				AgentStats::IfStat(stringstream & reportData) {
 				+ piftable->table[inc].bPhysAddr[5]) == 0)
 					continue ;
 				GetIpAddrTable(NULL, &dwSize, FALSE);
+				// interfaces with null IP ignored
 				if (piptable = (PMIB_IPADDRTABLE)GlobalAlloc(GMEM_FIXED, dwSize)) {
 					GetIpAddrTable(piptable, &dwSize, FALSE);
 					piprow = &piptable->table[inc];
+					if ((piprow->dwAddr & 0xFF) == 0 
+					&& ((piprow->dwAddr >> 8) & 0xFF) == 0 
+					&& ((piprow->dwAddr >> 16) & 0xFF) == 0
+					&& ((piprow->dwAddr >> 24) & 0xFF) == 0) {
+						GlobalFree(piptable);
+						continue ;
+					}
 					reportData << format("%u.%u.%u.%u") %	(piprow->dwAddr & 0xFF) %
 															((piprow->dwAddr >> 8) & 0xFF) %
 															((piprow->dwAddr >> 16) & 0xFF) %
