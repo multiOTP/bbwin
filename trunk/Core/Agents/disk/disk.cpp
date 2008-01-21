@@ -118,9 +118,11 @@ void			AgentDisk::GetMountPointData(LPTSTR driveName) {
 				continue ;
 			ZeroMemory(disk, sizeof(*disk));
 			disk->type = driveType;
+			m_mgr.Log(LOGLEVEL_DEBUG, "found mount point : %s", fullMountPoint.c_str());
 			std::string::size_type	end = fullMountPoint.find_last_of("\\", fullMountPoint.size() - 1);
 			std::string::size_type	begin = fullMountPoint.find_last_of("\\", end - 1);
 			string dir = fullMountPoint.substr(begin + 1, end - begin - 1);
+			m_mgr.Log(LOGLEVEL_DEBUG, "will use mount point shortname : %s", dir.c_str());
 			strncpy(disk->letter, dir.c_str(), 7);
 			disk->letter[8] = '\0';
 			fResult = GetDiskFreeSpaceEx(fullMountPoint.c_str(), (PULARGE_INTEGER)&(disk->i64FreeBytesToCaller), 
@@ -150,6 +152,7 @@ bool			AgentDisk::GetDisksData() {
 	memset(driveString, 0, (BUFFER_SIZE + 1) * sizeof(TCHAR));
 	driveStringLen = GetLogicalDriveStrings(BUFFER_SIZE, (LPTSTR)driveString);
 	if (driveStringLen == 0) {
+		m_mgr.Log(LOGLEVEL_DEBUG, "GetLogicalDriveStrings failed");
 		return false;
 	}
 	count = 0;
@@ -157,6 +160,7 @@ bool			AgentDisk::GetDisksData() {
 	for (pos = 0;pos < driveStringLen; ++count)  {
 		driveName = &(driveString[pos]);
 		driveType = GetDriveType(driveName);
+		m_mgr.Log(LOGLEVEL_DEBUG, "drive string %s", driveName);
 		if (driveType != DRIVE_REMOVABLE) { // no floppy 
 			
 			try {
@@ -523,12 +527,13 @@ bool		AgentDisk::Init() {
 					m_mgr.GetConfigurationRangeValue(range, "ignore"));	
 			}
 		}
-		// if no default, create the default rule
-		if (m_rules.find(DEFAULT_RULE_NAME) == m_rules.end()) {
-			AddRule(DEFAULT_RULE_NAME, DEF_DISK_WARN, DEF_DISK_PANIC, "false");
-		}
+		
 		m_mgr.FreeConfigurationRange(range);
 		m_mgr.FreeConfiguration(conf);
+	}
+	// if no default, create the default rule
+	if (m_rules.find(DEFAULT_RULE_NAME) == m_rules.end()) {
+		AddRule(DEFAULT_RULE_NAME, DEF_DISK_WARN, DEF_DISK_PANIC, "false");
 	}
 	return true;
 }
