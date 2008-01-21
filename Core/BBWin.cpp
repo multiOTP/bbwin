@@ -798,6 +798,7 @@ void				BBWin::LoadAgents() {
 			if (m_centralMode && hand->GetAgentFlags() & BBWIN_AGENT_CENTRALIZED_COMPATIBLE) {
 				m_centralClient->AddAgentHandler(hand);
 			} else {
+				hand->Init();
 				m_agents.insert(pair< std::string, BBWinHandler * >(range.first->second["name"], hand));
 			}
 		} else {

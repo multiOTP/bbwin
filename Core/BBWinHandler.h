@@ -14,7 +14,8 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
+//
+// $Id$
 
 #ifndef __BBWINHANDLER_H__
 #define __BBWINHANDLER_H__
@@ -65,7 +66,7 @@ public:
 	DWORD				GetAgentFlags();
 	void				SetCentralMode(bool mode);
 	void				SetClientDataCallBack(clientdata_callback_t callback);
-
+	void				Init();
 	void				Run();
 };
 

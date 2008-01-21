@@ -243,6 +243,19 @@ bool		parseStrGetLast(const std::string & str, const std::string & match, std::s
 	return false;
 }
 
+//
+// from http://blogs.msdn.com/joshpoley/archive/2007/12/19/date-time-formats-and-conversions.aspx
+//
+void SystemTimeToTime_t(SYSTEMTIME *systemTime, time_t *dosTime) {
+	LARGE_INTEGER jan1970FT = {0};
+	
+	jan1970FT.QuadPart = 116444736000000000I64; // january 1st 1970
+    LARGE_INTEGER utcFT = {0};
+    SystemTimeToFileTime(systemTime, (FILETIME*)&utcFT);
+    unsigned __int64 utcDosTime = (utcFT.QuadPart - jan1970FT.QuadPart)/10000000;
+    *dosTime = (time_t)utcDosTime;
+}
+
 } // namespace utils
 
 

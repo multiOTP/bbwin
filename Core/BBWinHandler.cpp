@@ -14,43 +14,26 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
 #include <windows.h>
 #include <assert.h>
-
-
 #include <string>
 #include <vector>
 #include <map>
 #include <iostream>
 #include <sstream>
-using namespace std;
-
 #include "ou_thread.h"
-using namespace openutils;
-
 #include "BBWinNet.h"
 #include "BBWinHandler.h"
 #include "BBWinMessages.h"
-
 #include "Utils.h"
+
+using namespace std;
+using namespace openutils;
 using namespace utils;
 
-//
-//  FUNCTION: BBWinHandler
-//
-//  PURPOSE: constructor
-//
-//  PARAMETERS:
-//    
-//    
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//
-//
 BBWinHandler::BBWinHandler(bbwinhandler_data_t & data) : 
 							m_bbdisplay (data.bbdisplay), 
 							m_setting (data.setting),
@@ -81,24 +64,8 @@ BBWinHandler::BBWinHandler(bbwinhandler_data_t & data) :
 	}
 	m_loadSucceed = true;
 	checkAgentCompatibility();
-	m_initSucceed = m_agent->Init();
 }
 
-//
-//  FUNCTION: BBWinHandler
-//
-//  PURPOSE: destructor
-//
-//  PARAMETERS:
-//    
-//    
-//
-//  RETURN VALUE:
-//    none
-//
-//  COMMENTS:
-//
-//
 BBWinHandler::~BBWinHandler() {
 	string		mess;
 
@@ -232,6 +199,25 @@ void		BBWinHandler::checkAgentCompatibility() {
 	string result = oss.str();
 	LPCTSTR		arg[] = {m_agentFileName.c_str(), result.c_str(), NULL};
 	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_LOAD_AGENT_SUCCESS, 2, arg);
+}
+
+//
+//  FUNCTION: BBWinHandler::Init
+//
+//  PURPOSE: Call init agent function
+//
+//  PARAMETERS:
+//    none
+//    
+//
+//  RETURN VALUE:
+//    none
+//
+//  COMMENTS:
+//
+void BBWinHandler::Init() {
+	if (m_loadSucceed)
+		m_initSucceed = m_agent->Init();
 }
 
 //

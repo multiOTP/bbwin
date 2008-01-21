@@ -70,6 +70,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "who", "Core\Agents\who\who.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utils", "Core\Utils.vcproj", "{1B583223-2C92-41B3-8955-837939209FFB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "filesystem", "Core\Agents\filesystem\filesystem.vcproj", "{86F3827D-96B4-44BC-A60E-50FC51375F65}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1B583223-2C92-41B3-8955-837939209FFB} = {1B583223-2C92-41B3-8955-837939209FFB}
+		{50006BAE-7E93-428A-9B13-14B5B31BB6E4} = {50006BAE-7E93-428A-9B13-14B5B31BB6E4}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -156,6 +162,10 @@ Global
 		{1B583223-2C92-41B3-8955-837939209FFB}.Debug|Win32.Build.0 = Debug|Win32
 		{1B583223-2C92-41B3-8955-837939209FFB}.Release|Win32.ActiveCfg = Release|Win32
 		{1B583223-2C92-41B3-8955-837939209FFB}.Release|Win32.Build.0 = Release|Win32
+		{86F3827D-96B4-44BC-A60E-50FC51375F65}.Debug|Win32.ActiveCfg = Debug|Win32
+		{86F3827D-96B4-44BC-A60E-50FC51375F65}.Debug|Win32.Build.0 = Debug|Win32
+		{86F3827D-96B4-44BC-A60E-50FC51375F65}.Release|Win32.ActiveCfg = Release|Win32
+		{86F3827D-96B4-44BC-A60E-50FC51375F65}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
