@@ -8,7 +8,6 @@ Big things
 ----------
 
 - logfile for msgs agent
-- file and dir agents
 - perfmon agent
 - scheduled tasks agent
 - BBWinUpdate.exe for updating the Software (integrate zip library)
@@ -23,6 +22,7 @@ Bugs
 
 - disk network
 - disk usb
+- bug du callback iscentralized mode
 
 
 Special Notes

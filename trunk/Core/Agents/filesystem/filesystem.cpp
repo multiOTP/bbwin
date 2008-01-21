@@ -98,6 +98,7 @@ bool		AgentFileSystem::GetTimeString(const FILETIME & filetime, string & output)
 	__int64	ftime = (filetime.dwHighDateTime * MAXDWORD) + filetime.dwLowDateTime;
 	SYSTEMTIME	fsystime;
 	FILETIME	floctime;
+	time_t		epoch;
 
 	if (::FileTimeToLocalFileTime(&filetime, &floctime) == 0) {
 		return false;
@@ -105,9 +106,10 @@ bool		AgentFileSystem::GetTimeString(const FILETIME & filetime, string & output)
 	if (::FileTimeToSystemTime(&floctime, &fsystime) == 0) {
 		return false;
 	}
+	utils::SystemTimeToTime_t(&fsystime, &epoch);
 	stringstream reportData;
-	reportData << format("%lu (%02d/%02d/%d-%02d:%02d:%02d)") 
-					% ftime
+	reportData << format("%llu (%02d/%02d/%d-%02d:%02d:%02d)") 
+					% (unsigned __int64)epoch
 					% fsystime.wYear 
 					% fsystime.wMonth
 					% fsystime.wDay
@@ -177,8 +179,9 @@ void	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & re
 		FindNextFile(handle, &find_data);
 		while (FindNextFile(handle, &find_data)) {
 			string	newpath = path + "\\" + find_data.cFileName;
-			report << format("%lu\t %s") % (((find_data.nFileSizeHigh * MAXDWORD) + find_data.nFileSizeLow) / 1024) % newpath << endl;
-			size += ((find_data.nFileSizeHigh * MAXDWORD) + find_data.nFileSizeLow);
+			__int64 tmpsize = ((find_data.nFileSizeHigh * MAXDWORD) + find_data.nFileSizeLow);
+			report << format("%lu\t %s") % ((tmpsize < 1024 && tmpsize != 0) ? 1 : tmpsize / 1024) % newpath << endl;
+			size += tmpsize;
 			if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 				ListFiles(newpath , report, size);
 			}
@@ -200,7 +203,8 @@ void		AgentFileSystem::ExecuteDirRule(const std::string & dir) {
 	string title = "dir:" + dir;
 	ListFiles(dir, reportData, size);
 	if (reportData.str().substr(0, 5) != "ERROR")
-		reportData << format("%lu\t %s") % (size / 1024) % dir << endl;
+		reportData << format("%lu\t %s") % ((size < 1024 && size != 0) ? 1 : size / 1024) % dir << endl;
+	reportData << endl;
 	m_mgr.ClientData(title.c_str(), reportData.str().c_str());
 }
 

@@ -206,6 +206,7 @@ void	BBWinCentralHandler::AddAgentHandler(BBWinHandler *handler) {
 	assert(handler != NULL);
 	
 	handler->SetCentralMode(true);
+	handler->Init();
 	handler->SetClientDataCallBack(BBWinCentralHandler::bbwinClientData_callback);
 	m_agents.push_back(handler);
 }

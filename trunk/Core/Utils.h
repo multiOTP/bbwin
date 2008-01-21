@@ -22,6 +22,11 @@
 
 #include <string>
 
+#define _SECOND ((int64) 10000000)
+#define _MINUTE (60 * _SECOND)
+#define _HOUR   (60 * _MINUTE)
+#define _DAY    (24 * _HOUR)
+
 //
 // PURPOSE : BBWin utils functions
 //
@@ -35,6 +40,7 @@ void			GetEnvironmentVariable(const std::string & varname, std::string & dest);
 void			ReplaceEnvironmentVariableStr(std::string & str);
 bool			parseStrGetNext(const std::string & str, const std::string & match, std::string & next);
 bool			parseStrGetLast(const std::string & str, const std::string & match, std::string & last);
+void			SystemTimeToTime_t(SYSTEMTIME *systemTime, time_t *dosTime);
 
 }
 

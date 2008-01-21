@@ -2,6 +2,12 @@ ChangeLog file for BBWin
 ==============================================================
 
 
+BBWin 0.11 Preview version -  January XXth 2008
+-------------------
+
+*svcs centralized mode
+
+
 BBWin 0.10 Preview version -  December 30th 2007
 -------------------
 
