@@ -14,21 +14,24 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
+
+#define BBWIN_AGENT_EXPORTS
 
 #include <windows.h>
-
 #include <sstream>
 #include <fstream>
 #include <iostream>
 #include <vector>
 #include <string>
-using namespace std;
-
+#include "IBBWinAgent.h"
+#include <list>
+#include "tinyxml.h"
 #include "digest.h"
-
-#define BBWIN_AGENT_EXPORTS
-
 #include "BBWinUpdate.h"
+
+using namespace std;
 
 static const BBWinAgentInfo_t 		bbwinupdateAgentInfo =
 {
@@ -57,7 +60,7 @@ static bool			Compare2Files(const char * file1, const char * file2) {
 		OPEN_EXISTING, // default flags
 		0,   // asynchronous I/O
 		0);                  // no attr. template
-	if (file1 == INVALID_HANDLE_VALUE) 
+	if (hFile1 == INVALID_HANDLE_VALUE) 
 		return false;
 	while (ReadFile(hFile1, buf, 1024, &read, NULL)) {
 		if (read == 0)
@@ -73,7 +76,7 @@ static bool			Compare2Files(const char * file1, const char * file2) {
 		OPEN_EXISTING, // default flags
 		0,   // asynchronous I/O
 		0);                  // no attr. template
-	if (file2 == INVALID_HANDLE_VALUE) 
+	if (hFile2 == INVALID_HANDLE_VALUE) 
 		return false;
 	while (ReadFile(hFile2, buf, 1024, &read, NULL)) {
 		if (read == 0)

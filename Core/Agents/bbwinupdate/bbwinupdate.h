@@ -14,16 +14,11 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// $Id$
 
 #ifndef		__BBWINUPDATE_H__
 #define		__BBWINUPDATE_H__
-
-#include <string>
-#include "IBBWinAgent.h"
-#include <list>
-
-#include "tinyxml.h"
-
 
 #define FILE_MAX_CONFIG_SIZE		32768
 #define CONFIG_BUF_SIZE				1024
