@@ -43,6 +43,48 @@ static const BBWinAgentInfo_t 		filesystemAgentInfo =
 	BBWIN_AGENT_CENTRALIZED_COMPATIBLE			// flags
 };                
 
+static bool		IsBackQuotedString(const std::string & str) {
+	if (str.substr(0, 1) == "`" && str.substr(str.size() - 1, 1) == "`")
+		return true;
+	return false;
+}
+
+// execute backquoted commands
+void		AgentFileSystem::GetLinesFromCommand(const std::string & command, std::list<string> & list) {
+	utils::ProcInOut		process;
+	string					cmd, out;
+
+	// remove backquoted from command
+	cmd = command.substr(1, command.size() - 2);
+	if (process.Exec(cmd, out, MAX_TIME_BACKQUOTED_COMMAND)) {
+		// remove '\r; 
+		out.erase(std::remove(out.begin(), out.end(), '\r'), out.end());
+		std::string::size_type pos = 0;
+		if (out.size() == 0)
+			return ;
+		for ( ;pos < out.size(); ) {
+			std::string::size_type	next = out.find_first_of("\n", pos);
+			string					line;
+			if (next > 0 && next < out.size()) {
+				line = out.substr(pos, (next - pos));
+				if (line != "")
+					list.push_back(line);
+				pos += (next - pos) + 1;
+			} else {
+				line = out.substr(pos, out.size() - pos);
+				if (line != "")
+					list.push_back(line);
+				pos = out.size();
+			}
+			m_mgr.Log(LOGLEVEL_DEBUG, "find line %s", line.c_str());
+		}
+	} else {
+		string			err;
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_WARN, "%s command failed : %s", cmd.c_str(), err.c_str());
+	}
+}
 
 bool		AgentFileSystem::InitCentralMode() {
 	string clientLocalCfgPath = m_mgr.GetSetting("tmppath") + (string)"\\clientlocal.cfg";
@@ -85,10 +127,31 @@ bool		AgentFileSystem::InitCentralMode() {
 					m_mgr.Log(LOGLEVEL_WARN, "Unknow hash type for file configuration : %s", hash.c_str());
 				}
 			}
-			file.path = value;
-			m_files.push_back(file);
+			if (IsBackQuotedString(value)) {
+				std::list<string>			list;
+				std::list<string>::iterator	itr;
+
+				GetLinesFromCommand(value, list);
+				for (itr = list.begin(); itr != list.end(); ++itr) {
+					file.path = *itr;
+					m_files.push_back(file);
+				}
+			} else {
+				file.path = value;
+				m_files.push_back(file);
+			}
 		} else if (utils::parseStrGetNext(buf, "dir:", value)) {
-			m_dirs.push_back(value);	
+			if (IsBackQuotedString(value)) {
+				std::list<string>			list;
+				std::list<string>::iterator	itr;
+
+				GetLinesFromCommand(value, list);
+				for (itr = list.begin(); itr != list.end(); ++itr) {
+					m_dirs.push_back(*itr);
+				}
+			} else {
+				m_dirs.push_back(value);
+			}
 		}
 	}
 	return false;

@@ -5,7 +5,12 @@ ChangeLog file for BBWin
 BBWin 0.11 Preview version -  January XXth 2008
 -------------------
 
-*svcs centralized mode
+* svcs centralized mode with autorestart option
+* file client-local.cfg implemented : support md5 and sha1 checksum algorythms
+* dir client-local.cfg implemented
+* back quoted for FILENAME and DIRECTORY implemented.
+* fix initialisation error on bbwinupdate agent
+* prevent loading bbwin.cfg namespace when centralized mode enabled
 
 
 BBWin 0.10 Preview version -  December 30th 2007
