@@ -22,6 +22,8 @@
 
 #include "IBBWinAgent.h"
 
+#define MAX_TIME_BACKQUOTED_COMMAND		8000
+
 
 enum hash_type_t { NONE, MD5, SHA1 };
 
@@ -48,6 +50,7 @@ class AgentFileSystem : public IBBWinAgent
 		bool					GetTimeString(const FILETIME & ftime, std::string & output);
 		void					ExecuteDirRule(const std::string & dir);
 		void					ListFiles(const std::string & path, std::stringstream & report, __int64 & size);
+		void					GetLinesFromCommand(const std::string & command, std::list<std::string> & list);
 
 	public :
 		AgentFileSystem(IBBWinAgentManager & mgr) ;

@@ -1,5 +1,5 @@
 //this file is part of BBWin
-//Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+//Copyright (C)2006-2008 Etienne GRIGNON  ( etienne.grignon@gmail.com )
 //
 //This program is free software; you can redistribute it and/or
 //modify it under the terms of the GNU General Public License
@@ -256,7 +256,6 @@ void SystemTimeToTime_t(SYSTEMTIME *systemTime, time_t *dosTime) {
     *dosTime = (time_t)utcDosTime;
 }
 
+
 } // namespace utils
-
-
 
