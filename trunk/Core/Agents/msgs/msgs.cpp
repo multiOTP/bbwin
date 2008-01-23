@@ -75,7 +75,6 @@ bool	AgentMsgs::InitCentralMode() {
 		std::getline(conf, buf);
 		if (parseStrGetNext(buf, "eventlog:", value)) {
 			m_mgr.Log(LOGLEVEL_DEBUG, "create eventlog rule %s", value.c_str());
-			m_eventlog.AddLogFile(value);
 		} else if (parseStrGetNext(buf, "ignore ", value)) {
 			m_mgr.Log(LOGLEVEL_DEBUG, "create ignore rule %s", value.c_str());
 		} else if (parseStrGetNext(buf, "trigger ", value)) {
@@ -170,12 +169,6 @@ void	AgentMsgs::AddEventLogRule(PBBWINCONFIGRANGE range, bool ignore, const stri
 	m_eventlog.AddRule(logfile, rule);
 }
 
-
-void	AgentMsgs::AddLogRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile) {
-	
-}
-
-
 //
 // determine if the rule is for eventlogs or logs, then call the good Add*Rule method
 //
@@ -225,7 +218,7 @@ bool	AgentMsgs::LoadConfig(const string config) {
 //
 bool AgentMsgs::Init() {
 	m_mgr.Log(LOGLEVEL_DEBUG, "Begin Msgs Initialization %s", __FUNCTION__);
-	if (m_mgr.IsCentralModeEnabled() == false) {
+	//if (m_mgr.IsCentralModeEnabled() == false) {
 		PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
 		if (conf == NULL)
@@ -274,7 +267,7 @@ bool AgentMsgs::Init() {
 		}
 		m_mgr.FreeConfigurationRange(range);
 		m_mgr.FreeConfiguration(conf);
-	}
+	//}
 	m_mgr.Log(LOGLEVEL_DEBUG,"Ending Msgs Initialization");
 	return true;
 }

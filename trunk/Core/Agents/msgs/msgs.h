@@ -25,7 +25,6 @@
 #include "IBBWinAgent.h"
 
 #include "EventLog.h"
-#include "Logs.h"
 
 #define	MAX_TABLE_PROC	1024
 
@@ -39,12 +38,10 @@ class AgentMsgs : public IBBWinAgent
 		DWORD						m_delay;			// default delay used for match rules
 		bool						m_alwaysgreen;		// no alerts if true
 		std::string					m_testName;			// testname for the column
-		Logs::Manager				m_logs;				// logs file manager
 		std::string					m_clientLocalCfgPath;
 
 	private :
 		void	AddEventLogRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile);
-		void	AddLogRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile);
 		void	AddRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile);
 		bool	LoadConfig(const std::string name);
 		bool	InitCentralMode();
