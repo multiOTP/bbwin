@@ -163,10 +163,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Logs.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\msgs.cpp"
 				>
 			</File>
@@ -178,10 +174,6 @@
 			>
 			<File
 				RelativePath=".\EventLog.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Logs.h"
 				>
 			</File>
 			<File
