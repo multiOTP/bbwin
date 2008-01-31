@@ -48,6 +48,7 @@ static bool			Compare2Files(const char * file1, const char * file2) {
 	string			res1, res2;
 	char			buf[1024];
 	DWORD			read;
+	LPTSTR			res;
 
 	dig1 = digest_init("md5");
 	dig2 = digest_init("md5");
@@ -68,7 +69,9 @@ static bool			Compare2Files(const char * file1, const char * file2) {
 		digest_data(dig1, (unsigned char *)buf, read);
 	}
 	CloseHandle(hFile1);
-	res1 = digest_done(dig1);
+	res = digest_done(dig1);
+	res1 = res;
+	if (res) free(res);
 	hFile2 = CreateFile(file2,     // file to open
 		GENERIC_READ,         // open for reading
 		NULL, // do not share
@@ -84,7 +87,9 @@ static bool			Compare2Files(const char * file1, const char * file2) {
 		digest_data(dig2, (unsigned char *)buf, read);
 	}
 	CloseHandle(hFile2);
-	res2 = digest_done(dig2);
+	res = digest_done(dig2);
+	res2 = res;
+	if (res) free(res);
 	if (res1 == res2)
 		return true;
 	return false;

@@ -29,20 +29,15 @@ namespace utils {
 	class	ProcInOut {
 
 	protected :
-		//HANDLE				hChildStdinRd;
-		//HANDLE				hChildStdinWr;
-		//HANDLE  			hChildStdinWrDup;
 		HANDLE				hChildStdoutRd;
 		HANDLE  			hChildStdoutWr;
 		HANDLE  			hChildStdoutRdDup;
-		//HANDLE  			hSaveStdin;
 		HANDLE  			hSaveStdout;
 		SECURITY_ATTRIBUTES saAttr;
 		PROCESS_INFORMATION piProcInfo; 
 
 	protected :
 		bool				CreateChildProcess(const std::string & cmd);
-		//void				WriteToPipe(const std::string & in);
 		void				ReadFromPipe(std::string & out);
 
 	public :
