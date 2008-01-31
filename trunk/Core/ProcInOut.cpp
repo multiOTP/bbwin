@@ -42,8 +42,13 @@ bool		ProcInOut::Exec(const std::string & cmd, std::string & out, DWORD timeout)
 	if( !fSuccess )
 		return false;
 	CloseHandle(hChildStdoutRd);
-	if (! CreateChildProcess(cmd)) 
+	if (! CreateChildProcess(cmd)) {
+		CloseHandle(hChildStdoutWr);
+		CloseHandle(hChildStdoutRdDup);
+		CloseHandle(piProcInfo.hProcess);
+		CloseHandle(piProcInfo.hThread);
 		return false;
+	}
 	if (! SetStdHandle(STD_OUTPUT_HANDLE, hSaveStdout)) 
 		return false;
 	if (!CloseHandle(hChildStdoutWr)) 
@@ -71,6 +76,9 @@ bool		ProcInOut::Exec(const std::string & cmd, std::string & out, DWORD timeout)
 			break;			
 		}
 	}
+	CloseHandle(hChildStdoutRdDup);
+	CloseHandle(piProcInfo.hProcess);
+	CloseHandle(piProcInfo.hThread);
 	return true; 
 }
 

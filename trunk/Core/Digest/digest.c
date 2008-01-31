@@ -94,6 +94,7 @@ char *digest_done(digestctx_t *ctx)
 	*p = '\0';
 
 	free(md_value);
+	free(ctx->digestname);
 	free(ctx->mdctx);
 	free(ctx);
 
