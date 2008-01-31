@@ -26,6 +26,7 @@
 #include <vector>
 #include <string>
 #include <list>
+#include <io.h>
 #include "utils.h"
 #include "digest.h"
 #include "filesystem.h"
@@ -90,8 +91,10 @@ bool		AgentFileSystem::InitCentralMode() {
 	string clientLocalCfgPath = m_mgr.GetSetting("tmppath") + (string)"\\clientlocal.cfg";
 
 	m_mgr.Log(LOGLEVEL_DEBUG, "start %s", __FUNCTION__);
+	// clear existing rules. We parse client-local.cfg each run time
 	m_files.clear();
 	m_dirs.clear();
+	m_logfiles.clear();
 	m_mgr.Log(LOGLEVEL_DEBUG, "checking file %s", clientLocalCfgPath.c_str());
 	ifstream		conf(clientLocalCfgPath.c_str());
 
@@ -104,16 +107,21 @@ bool		AgentFileSystem::InitCentralMode() {
 	}
 	m_mgr.Log(LOGLEVEL_DEBUG, "reading file %s", clientLocalCfgPath.c_str());
 	string		buf, eventlog, ignore, trigger;
+	bool			skipNextLineFlag = false;
 	while (!conf.eof()) {
-		string		value;
+		string			value;
 
-		std::getline(conf, buf);
+		if (skipNextLineFlag == true) {
+			skipNextLineFlag = false;
+		} else {
+			std::getline(conf, buf);
+		}
 		if (utils::parseStrGetNext(buf, "file:", value)) {
-			fs_file_t	file;
-			string		hash;
+			fs_file_t		file;
+			string			hash;
 			
 			file.hashtype = NONE;
-			m_mgr.Log(LOGLEVEL_DEBUG, "will check file %s", value.c_str());
+			file.logfile = false;
 			// substr(3) : we do not parse C:\ to get the next part to ':' separator
 			if (utils::parseStrGetLast(value.substr(3), ":", hash)) {
 				value.erase(value.end() - (hash.size() + 1), value.end());
@@ -134,10 +142,12 @@ bool		AgentFileSystem::InitCentralMode() {
 				GetLinesFromCommand(value, list);
 				for (itr = list.begin(); itr != list.end(); ++itr) {
 					file.path = *itr;
+					m_mgr.Log(LOGLEVEL_DEBUG, "will check file %s", file.path.c_str());
 					m_files.push_back(file);
 				}
 			} else {
 				file.path = value;
+				m_mgr.Log(LOGLEVEL_DEBUG, "will check file %s", file.path.c_str());
 				m_files.push_back(file);
 			}
 		} else if (utils::parseStrGetNext(buf, "dir:", value)) {
@@ -147,12 +157,54 @@ bool		AgentFileSystem::InitCentralMode() {
 
 				GetLinesFromCommand(value, list);
 				for (itr = list.begin(); itr != list.end(); ++itr) {
+					m_mgr.Log(LOGLEVEL_DEBUG, "will check directory %s", (*itr).c_str());
 					m_dirs.push_back(*itr);
 				}
 			} else {
+				m_mgr.Log(LOGLEVEL_DEBUG, "will check directory %s", value.c_str());
 				m_dirs.push_back(value);
 			}
-		}
+		} else if (utils::parseStrGetNext(buf, "log:", value)) {
+			fs_logfile_t	logfile;
+			string			sizeStr;
+			
+			if (utils::parseStrGetLast(value.substr(3), ":", sizeStr)) {
+				value.erase(value.end() - (sizeStr.size() + 1), value.end());
+				std::istringstream iss(sizeStr);
+				iss >> logfile.maxdata;
+				m_mgr.Log(LOGLEVEL_DEBUG, "will use maxdata size : %u", logfile.maxdata);
+			} else {
+				continue ;
+			}
+			// read next arguments : ignore and trigger options
+			while (!conf.eof()) {
+				string			arg;
+				std::getline(conf, buf);
+				if (utils::parseStrGetNext(buf, "ignore ", arg)) {
+					m_mgr.Log(LOGLEVEL_DEBUG, "will ignore : %s", arg.c_str());
+					logfile.ignores.push_back(arg);
+				} else if (utils::parseStrGetNext(buf, "trigger ", arg)) {
+					m_mgr.Log(LOGLEVEL_DEBUG, "will trigger : %s", arg.c_str());
+					logfile.triggers.push_back(arg);
+				} else {
+					skipNextLineFlag = true;
+					break ;
+				}
+			}
+			if (IsBackQuotedString(value)) {
+				std::list<string>			list;
+				std::list<string>::iterator	itr;
+
+				GetLinesFromCommand(value, list);
+				for (itr = list.begin(); itr != list.end(); ++itr) {
+					logfile.path = (*itr);
+					m_logfiles.push_back(logfile);
+				}
+			} else {
+				logfile.path = value;
+				m_logfiles.push_back(logfile);
+			}
+		} 
 	}
 	return false;
 }
@@ -188,14 +240,15 @@ bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & rep
 	BY_HANDLE_FILE_INFORMATION		handle_file_info;
 	__int64							fsize;   
 
-	handle = CreateFile(path.c_str(), 
-				FILE_SHARE_READ, 
-				0,
-				NULL,
-				OPEN_EXISTING,
-				0,
-				NULL);
-	if (handle == INVALID_HANDLE_VALUE) {
+	FILE *f = _fsopen(path.c_str(), "rt", _SH_DENYNO);
+	if (f == NULL) {
+		string		err;
+
+		utils::GetLastErrorString(err);
+		reportData << "ERROR: " << err << endl;
+		return false;
+	}
+	if ((handle = (HANDLE)_get_osfhandle(f->_file)) == INVALID_HANDLE_VALUE) {
 		string		err;
 
 		utils::GetLastErrorString(err);
@@ -207,7 +260,7 @@ bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & rep
 
 		utils::GetLastErrorString(err);
 		reportData << "ERROR: " << err << endl;
-		CloseHandle(handle);
+		fclose(f);
 		return false;
 	}
 	fsize = (handle_file_info.nFileSizeHigh * MAXDWORD) + handle_file_info.nFileSizeLow;
@@ -228,7 +281,8 @@ bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & rep
 	reportData << "ctime:" << output << endl;
 	GetTimeString(handle_file_info.ftLastWriteTime, output);
 	reportData << "mtime:" << output << endl;
-	CloseHandle(handle);
+	fclose(f);
+	//CloseHandle(handle);
 	return true;
 }
 
@@ -271,10 +325,75 @@ void		AgentFileSystem::ExecuteDirRule(const std::string & dir) {
 	m_mgr.ClientData(title.c_str(), reportData.str().c_str());
 }
 
+bool		AgentFileSystem::GetDataFromLogFile(const fs_logfile_t & logfile, std::stringstream data) {
+	
+	return true;
+}
+
+void		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
+	std::map<std::string, fs_logfile_seekdata_t>::iterator	res;
+
+	// first exec file rule
+	fs_file_t		file;
+	file.hashtype = NONE;
+	file.path = logfile.path;
+	file.logfile = true;
+	ExecuteFileRule(file);
+	//FILE			*f;
+	//
+	//f = _fsopen(logfile.path.c_str(), "rt", _SH_DENYNO);
+	//if (f == NULL) {
+	//	return ;
+	//}
+
+	//TCHAR			buf[1024];
+	//size_t			size;
+
+	//cout << "Log " << logfile.path << endl;
+	//while ((size = fread(buf, 1, 1023, f)) != 0) {
+	//	/*cout << "size " << size << endl;
+	//	cout << "feof " << feof(f) << endl;
+	//	cout << "ferror  " << feof(f) << endl;*/
+	//}
+	//cout << "end read" << endl;
+	//fclose(f);
+
+//
+//std::map<std::string, fs_logfile_seekdata_t>::iterator	res = m_seekdata.find(logfile.path);
+//	
+//	if (res == m_seekdata.end()) { 
+//		//(*res).second
+//		// get last data
+//		cout << "Debug " << logfile.path << endl;
+//	} else { // create seek data
+//		fs_logfile_seekdata_t		seekdata;
+//		SecureZeroMemory(&seekdata, sizeof(seekdata));
+//		m_seekdata.insert(std::pair<std::string, fs_logfile_seekdata_t> (logfile.path, seekdata));
+//	}
+//	
+//	stringstream		reportData;
+//	if (GetDataFromLogFile(logfile, reportData)) {
+//		// send client data
+//	}
+//res = m_seekdata.find(logfile.path);
+//	if (res == m_seekdata.end())
+//		return ;
+//	// the seek data is used
+//	fs_logfile_seekdata_t & seekdata = (*res).second;
+//	seekdata.used = true;
+//	
+	
+}
+
 void		AgentFileSystem::ExecuteFileRule(const fs_file_t & file) {
 	stringstream 		reportData;	
-	
-	string	title = "file:" + file.path;
+	string				title;
+
+	if (file.logfile == true) {
+		title = "logfile:" + file.path;
+	} else {
+		title = "file:" + file.path;
+	}
 	if (this->GetFileAttributes(file.path, reportData) && file.hashtype != NONE) {
 		digestctx_t			*dig;
 		HANDLE				hFile;
@@ -288,6 +407,7 @@ void		AgentFileSystem::ExecuteFileRule(const fs_file_t & file) {
 			dig = digest_init("sha1");
 		}
 		if (dig != NULL) {
+			LPTSTR		tmp;
 			hFile = CreateFile(file.path.c_str(),     // file to open
 				GENERIC_READ,         // open for reading
 				NULL, // do not share
@@ -303,7 +423,9 @@ void		AgentFileSystem::ExecuteFileRule(const fs_file_t & file) {
 					digest_data(dig, (unsigned char *)buf, read);
 				}
 				CloseHandle(hFile);
-				digstr = digest_done(dig);
+				tmp = digest_done(dig);
+				digstr = tmp;
+				if (tmp) free(tmp);
 				reportData << digstr << endl;
 			}
 		}
@@ -318,6 +440,9 @@ void		AgentFileSystem::ExecuteRules() {
 	}
 	for (std::list<string>::iterator dir_itr = m_dirs.begin(); dir_itr != m_dirs.end(); ++ dir_itr) {
 		ExecuteDirRule(*dir_itr);
+	}
+	for (std::list<fs_logfile_t>::iterator logfile_itr = m_logfiles.begin(); logfile_itr != m_logfiles.end(); ++logfile_itr) {
+		ExecuteLogFileRule(*logfile_itr);
 	}
 }
 
