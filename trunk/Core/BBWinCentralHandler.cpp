@@ -68,6 +68,14 @@ BBWinCentralHandler::BBWinCentralHandler(bbwinhandler_data_t & data) :
 	reportPath = reportSavePath + (string)"." + pid.str();
 }
 
+BBWinCentralHandler::~BBWinCentralHandler() {
+	std::list<BBWinHandler *>::iterator		itr;
+
+	for (itr = m_agents.begin(); itr != m_agents.end(); ++itr) {
+		delete (*itr);
+	}
+}
+
 void	BBWinCentralHandler::GetClock() {
 	char timebuf[26], ampm[] = "AM";
 	time_t					ltime;

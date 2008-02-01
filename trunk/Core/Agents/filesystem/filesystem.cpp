@@ -235,7 +235,7 @@ bool		AgentFileSystem::GetTimeString(const FILETIME & filetime, string & output)
 	return true;
 }
 
-bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & reportData) {
+bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & reportData, bool logfile) {
 	HANDLE							handle;
 	BY_HANDLE_FILE_INFORMATION		handle_file_info;
 	__int64							fsize;   
@@ -264,6 +264,22 @@ bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & rep
 		return false;
 	}
 	fsize = (handle_file_info.nFileSizeHigh * MAXDWORD) + handle_file_info.nFileSizeLow;
+	// we get size information for logfile parsing
+	if (logfile == true) {
+		std::map<std::string, fs_logfile_seekdata_t>::iterator		res = m_seekdata.find(path);
+		if (res == m_seekdata.end()) { 
+			fs_logfile_seekdata_t		seekdata;
+			SecureZeroMemory(&seekdata, sizeof(seekdata));
+			seekdata.used = true;
+			seekdata.size = fsize;
+			m_seekdata.insert(std::pair<std::string, fs_logfile_seekdata_t> (path, seekdata));
+		} else {
+			// the seek data is used
+			fs_logfile_seekdata_t & seekdata = (*res).second;
+			seekdata.used = true;
+			seekdata.size = fsize;
+		}
+	}
 	reportData << format("type:0x%05x ") % handle_file_info.dwFileAttributes;
 	if (handle_file_info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		reportData << "(dir)" << endl;
@@ -282,11 +298,10 @@ bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & rep
 	GetTimeString(handle_file_info.ftLastWriteTime, output);
 	reportData << "mtime:" << output << endl;
 	fclose(f);
-	//CloseHandle(handle);
 	return true;
 }
 
-void	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & report, __int64 & size) {
+bool	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & report, __int64 & size) {
 	WIN32_FIND_DATA		find_data;
 	string				mypath = path + "\\*";
 	
@@ -309,20 +324,23 @@ void	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & re
 
 		utils::GetLastErrorString(err);
 		report << "ERROR: " << err << endl;
-		return ;
+		return false;
 	}
+	return true;
 }
 
-void		AgentFileSystem::ExecuteDirRule(const std::string & dir) {
+bool		AgentFileSystem::ExecuteDirRule(const std::string & dir) {
 	stringstream 		reportData;	
 	__int64				size = 0;
+	bool				ret;
 
 	string title = "dir:" + dir;
-	ListFiles(dir, reportData, size);
+	ret = ListFiles(dir, reportData, size);
 	if (reportData.str().substr(0, 5) != "ERROR")
 		reportData << format("%lu\t %s") % ((size < 1024 && size != 0) ? 1 : size / 1024) % dir << endl;
 	reportData << endl;
 	m_mgr.ClientData(title.c_str(), reportData.str().c_str());
+	return ret;
 }
 
 bool		AgentFileSystem::GetDataFromLogFile(const fs_logfile_t & logfile, std::stringstream data) {
@@ -330,71 +348,123 @@ bool		AgentFileSystem::GetDataFromLogFile(const fs_logfile_t & logfile, std::str
 	return true;
 }
 
-void		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
+bool		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
 	std::map<std::string, fs_logfile_seekdata_t>::iterator	res;
+	stringstream						reportData;
 
 	// first exec file rule
 	fs_file_t		file;
 	file.hashtype = NONE;
 	file.path = logfile.path;
 	file.logfile = true;
-	ExecuteFileRule(file);
-	//FILE			*f;
-	//
-	//f = _fsopen(logfile.path.c_str(), "rt", _SH_DENYNO);
-	//if (f == NULL) {
-	//	return ;
-	//}
+	if (ExecuteFileRule(file) == false) {
+		// first step failed
+		return false;
+	}
+	// get or create the seek data
+	res = m_seekdata.find(logfile.path);
+	if (res == m_seekdata.end()) { 
+		// should never append
+		return false;
+	}
+	FILE *f = _fsopen(logfile.path.c_str(), "rt", _SH_DENYNO);
+	if (f == NULL) {
+		return false;
+	}
+	// the seek data is used
+	fs_logfile_seekdata_t & seekdata = (*res).second;
+	seekdata.used = true;
+	TCHAR			buf[LOGFILE_BUFFER];
+	fpos_t			pos = 0;
 
-	//TCHAR			buf[1024];
-	//size_t			size;
+	cout << "OLDEST Point " << seekdata.point[SEEKDATA_START_POINT] << endl;
+	if (seekdata.point[SEEKDATA_START_POINT] > 0) {
+		// get the save point
+		cout << "Res " << fseek(f, (long)seekdata.point[SEEKDATA_START_POINT], 0) << endl;
+	} else {
+		// skip to end of file depending file size and logfile maxdata
+		if (seekdata.size > logfile.maxdata) {
+			fseek(f, (long)(seekdata.size - logfile.maxdata), 0);
+		}
+	}
+	while ((fgets(buf, LOGFILE_BUFFER, f) != NULL)) {
+		stringstream			tmp;
 
-	//cout << "Log " << logfile.path << endl;
-	//while ((size = fread(buf, 1, 1023, f)) != 0) {
-	//	/*cout << "size " << size << endl;
-	//	cout << "feof " << feof(f) << endl;
-	//	cout << "ferror  " << feof(f) << endl;*/
-	//}
-	//cout << "end read" << endl;
-	//fclose(f);
+		tmp << buf;
+		//while (tmp.getline()
+		reportData << tmp;
+	}
+	if (fgetpos(f, &pos) == 0) {
+		// failed
+	}
+	// skip oldest value to save current position
+	for (DWORD count = SEEKDATA_START_POINT; count > 0; --count) {
+		cout << seekdata.point[count] << "-" << seekdata.point[count - 1] << endl;
+		seekdata.point[count] = seekdata.point[count - 1];
+	}
+	seekdata.point[0] = pos;
+	fclose(f);
 
-//
-//std::map<std::string, fs_logfile_seekdata_t>::iterator	res = m_seekdata.find(logfile.path);
-//	
-//	if (res == m_seekdata.end()) { 
-//		//(*res).second
-//		// get last data
-//		cout << "Debug " << logfile.path << endl;
-//	} else { // create seek data
-//		fs_logfile_seekdata_t		seekdata;
-//		SecureZeroMemory(&seekdata, sizeof(seekdata));
-//		m_seekdata.insert(std::pair<std::string, fs_logfile_seekdata_t> (logfile.path, seekdata));
-//	}
-//	
-//	stringstream		reportData;
-//	if (GetDataFromLogFile(logfile, reportData)) {
-//		// send client data
-//	}
-//res = m_seekdata.find(logfile.path);
-//	if (res == m_seekdata.end())
-//		return ;
-//	// the seek data is used
-//	fs_logfile_seekdata_t & seekdata = (*res).second;
-//	seekdata.used = true;
-//	
-	
+	// prepare the title of the section
+	string title = "msgs:" + logfile.path;
+	reportData << endl;
+
+	string report = reportData.str();
+	// clean the data sent
+	if (report.size() > logfile.maxdata) {
+		report.insert(0, "<...SKIPPED...>\n");
+	}
+	report.erase(std::remove(report.begin(), report.end(), '\r'), report.end());
+	m_mgr.ClientData(title.c_str(), report.c_str());
+	return true;
 }
 
-void		AgentFileSystem::ExecuteFileRule(const fs_file_t & file) {
+void					AgentFileSystem::LoadSeekData() {
+
+}
+
+void					AgentFileSystem::SaveSeekData() {
+	string seekdataCfgPath = m_mgr.GetSetting("tmppath") + (string)"\\logfetch.status";
+	std::map<std::string, fs_logfile_seekdata_t>::iterator	itr;
+	
+	cout << seekdataCfgPath << endl;
+	Sleep(5000);
+	FILE *f = fopen(seekdataCfgPath.c_str(), "wt");
+	if (f == NULL) {
+		string		err;
+
+		utils::GetLastErrorString(err);
+		cout << "Error: " << err << endl;
+		return ;
+	}
+	for (itr = m_seekdata.begin(); itr != m_seekdata.end(); ++itr) {
+		if ((*itr).second.used == true) {
+			fprintf(f, "%s:%i:%i:%i:%i:%i:%i:%i\n", 
+				(*itr).first.c_str(),
+				(*itr).second.point[0],
+				(*itr).second.point[1],
+				(*itr).second.point[2],
+				(*itr).second.point[3],
+				(*itr).second.point[4],
+				(*itr).second.point[5],
+				(*itr).second.point[6]);
+		}
+	}
+	fclose(f);
+}
+
+
+bool		AgentFileSystem::ExecuteFileRule(const fs_file_t & file) {
 	stringstream 		reportData;	
 	string				title;
+	bool				ret;
 
 	if (file.logfile == true) {
 		title = "logfile:" + file.path;
 	} else {
 		title = "file:" + file.path;
 	}
-	if (this->GetFileAttributes(file.path, reportData) && file.hashtype != NONE) {
+	if ((ret = this->GetFileAttributes(file.path, reportData, file.logfile)) && file.hashtype != NONE) {
 		digestctx_t			*dig;
 		HANDLE				hFile;
 		string				digstr;
@@ -432,6 +502,7 @@ void		AgentFileSystem::ExecuteFileRule(const fs_file_t & file) {
 	}
 	reportData << endl;
 	m_mgr.ClientData(title.c_str(), reportData.str().c_str());
+	return ret;
 }
 
 void		AgentFileSystem::ExecuteRules() {
@@ -440,6 +511,14 @@ void		AgentFileSystem::ExecuteRules() {
 	}
 	for (std::list<string>::iterator dir_itr = m_dirs.begin(); dir_itr != m_dirs.end(); ++ dir_itr) {
 		ExecuteDirRule(*dir_itr);
+	}
+	// clean unused seekdata 
+	// may be files are not monitored anymore
+	std::map<std::string, fs_logfile_seekdata_t>::iterator	itr;
+	for (itr = m_seekdata.begin(); itr != m_seekdata.end(); ++itr) {
+		if ((*itr).second.used == false) {
+			m_seekdata.erase(itr);
+		}
 	}
 	for (std::list<fs_logfile_t>::iterator logfile_itr = m_logfiles.begin(); logfile_itr != m_logfiles.end(); ++logfile_itr) {
 		ExecuteLogFileRule(*logfile_itr);
@@ -455,10 +534,19 @@ void 		AgentFileSystem::Run() {
 }
 
 bool AgentFileSystem::Init() {
+	if (m_mgr.IsCentralModeEnabled() == false) {
+		m_mgr.Log(LOGLEVEL_ERROR, "filesystem agent only work with the BBWin centralized mode");
+		return false;
+	}
+	LoadSeekData();
 	return true;
 }
 
 AgentFileSystem::AgentFileSystem(IBBWinAgentManager & mgr) : m_mgr(mgr) {
+}
+
+AgentFileSystem::~AgentFileSystem() {
+	SaveSeekData();
 }
 
 BBWIN_AGENTDECL IBBWinAgent * CreateBBWinAgent(IBBWinAgentManager & mgr)

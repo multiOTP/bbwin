@@ -24,15 +24,21 @@
 
 #define MAX_TIME_BACKQUOTED_COMMAND		8000
 #define LOG_MAXDATA						10240
-#define MAX_SEEKDATA_POINT				6
+#define SEEKDATA_MAX_POINT				7
+#define SEEKDATA_START_POINT			6
+#define SEEKDATA_END_POINT				0
+
+#define LOGFILE_BUFFER					4096
 
 enum hash_type_t { NONE, MD5, SHA1 };
 
+
 // Struct used to save seek points 
 typedef struct				fs_logfile_seekdata_s {
-	DWORD					point[MAX_SEEKDATA_POINT];
+	fpos_t					point[SEEKDATA_MAX_POINT];
 	bool					used;	// tell if the logfile is still monitored 
 									//and that seek data are still necessary
+	__int64					size;	// current size
 }							fs_logfile_seekdata_t;
 
 // Struct used for log file monitoring
@@ -71,17 +77,22 @@ class AgentFileSystem : public IBBWinAgent
 		bool					InitCentralMode();
 		void					ExecuteRules();
 
-		void					ExecuteFileRule(const fs_file_t & file);
-		bool					GetFileAttributes(const std::string & path, std::stringstream & reportData);
+		bool					ExecuteFileRule(const fs_file_t & file);
+		bool					GetFileAttributes(const std::string & path, std::stringstream & reportData, bool logfile);
 		bool					GetTimeString(const FILETIME & ftime, std::string & output);
-		void					ExecuteDirRule(const std::string & dir);
-		void					ListFiles(const std::string & path, std::stringstream & report, __int64 & size);
+		bool					ExecuteDirRule(const std::string & dir);
+		bool					ListFiles(const std::string & path, std::stringstream & report, __int64 & size);
 		void					GetLinesFromCommand(const std::string & command, std::list<std::string> & list);
-		void					ExecuteLogFileRule(const fs_logfile_t & logfile);
+		bool					ExecuteLogFileRule(const fs_logfile_t & logfile);
 		bool					GetDataFromLogFile(const fs_logfile_t & logfile, std::stringstream data);
+		
+		void					LoadSeekData();
+		void					SaveSeekData();
+
 
 	public :
 		AgentFileSystem(IBBWinAgentManager & mgr) ;
+		~AgentFileSystem();
 		bool Init();
 		void Run();
 };
