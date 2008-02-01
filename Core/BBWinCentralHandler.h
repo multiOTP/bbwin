@@ -54,6 +54,7 @@ class BBWinCentralHandler : public openutils::Thread {
 
 	public:
 		BBWinCentralHandler(bbwinhandler_data_t & data);
+		~BBWinCentralHandler();
 		DWORD	GetTimer() const { return m_timer; }
 		void	SetTimer(DWORD timer) { m_timer = timer; }
 		void	SetEventCount(DWORD count) { m_hCount = count; }
