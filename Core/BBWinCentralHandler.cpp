@@ -164,25 +164,27 @@ void BBWinCentralHandler::run() {
 		}
 		if (created) {
 			bbdisplay_t::iterator			itr;
-			BBWinNet	hobNet;
+			
 			string		result;
 
-			itr = m_bbdisplay.begin();
-			hobNet.SetBBDisplay((*itr));
-			try {
-				hobNet.ClientData(reportPath, clientLocalCfgPath);
-			} catch (BBWinNetException ex) {
-				string mess, err;
+			for (itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
+				BBWinNet	hobNet;
+				hobNet.SetBBDisplay((*itr));
+				try {
+					hobNet.ClientData(reportPath, clientLocalCfgPath);
+				} catch (BBWinNetException ex) {
+					string mess, err;
 
-				GetLastErrorString(err);
-				mess = ex.getMessage();
-				LPCTSTR		args[] = {mess.c_str(), err.c_str(), NULL};
-				m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_HOBBIT_FAILED_CLIENTDATA, 2, args);
+					GetLastErrorString(err);
+					mess = ex.getMessage();
+					LPCTSTR		args[] = {mess.c_str(), err.c_str(), NULL};
+					m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_HOBBIT_FAILED_CLIENTDATA, 2, args);
+				}
+
+				DeleteFile(reportSavePath.c_str());
+				MoveFile(reportPath.c_str(), reportSavePath.c_str());
+				DeleteFile(reportPath.c_str());
 			}
-
-			DeleteFile(reportSavePath.c_str());
-			MoveFile(reportPath.c_str(), reportSavePath.c_str());
-			DeleteFile(reportPath.c_str());
 		}
 		dwWait = WaitForMultipleObjects(m_hCount, m_hEvents , FALSE, m_timer * 1000 );
 		if ( dwWait >= WAIT_OBJECT_0 && dwWait <= (WAIT_OBJECT_0 + m_hCount - 1) ) {    
