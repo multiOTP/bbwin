@@ -376,15 +376,23 @@ bool		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
 	seekdata.used = true;
 	TCHAR			buf[LOGFILE_BUFFER];
 	fpos_t			pos = 0;
+	bool			skipping = false;
 
-	cout << "OLDEST Point " << seekdata.point[SEEKDATA_START_POINT] << endl;
+	//cout << "OLDEST Point " << seekdata.point[SEEKDATA_START_POINT] << endl;
 	if (seekdata.point[SEEKDATA_START_POINT] > 0) {
 		// get the save point
-		cout << "Res " << fseek(f, (long)seekdata.point[SEEKDATA_START_POINT], 0) << endl;
-	} else {
-		// skip to end of file depending file size and logfile maxdata
-		if (seekdata.size > logfile.maxdata) {
-			fseek(f, (long)(seekdata.size - logfile.maxdata), 0);
+		if (fseek(f, (long)seekdata.point[SEEKDATA_START_POINT], 0)) {
+			m_mgr.Log(LOGLEVEL_INFO, "failed to seek position for file %s", logfile.path.c_str());
+			SecureZeroMemory(seekdata.point, sizeof(seekdata.point));
+		}
+	} 
+	// skip to end of file depending file size and logfile maxdata
+	if (seekdata.point[SEEKDATA_START_POINT] == 0 && seekdata.size > logfile.maxdata) {
+		if (fseek(f, (long)(seekdata.size - logfile.maxdata), SEEK_SET)) {
+			// failed to change position
+			SecureZeroMemory(seekdata.point, sizeof(seekdata.point));
+		} else {
+			skipping = true;
 		}
 	}
 	while ((fgets(buf, LOGFILE_BUFFER, f) != NULL)) {
@@ -392,26 +400,24 @@ bool		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
 
 		tmp << buf;
 		//while (tmp.getline()
-		reportData << tmp;
+		reportData << tmp.str();
 	}
 	if (fgetpos(f, &pos) == 0) {
 		// failed
 	}
 	// skip oldest value to save current position
 	for (DWORD count = SEEKDATA_START_POINT; count > 0; --count) {
-		cout << seekdata.point[count] << "-" << seekdata.point[count - 1] << endl;
 		seekdata.point[count] = seekdata.point[count - 1];
 	}
 	seekdata.point[0] = pos;
 	fclose(f);
-
 	// prepare the title of the section
 	string title = "msgs:" + logfile.path;
 	reportData << endl;
 
 	string report = reportData.str();
 	// clean the data sent
-	if (report.size() > logfile.maxdata) {
+	if (report.size() > logfile.maxdata || skipping == true) {
 		report.insert(0, "<...SKIPPED...>\n");
 	}
 	report.erase(std::remove(report.begin(), report.end(), '\r'), report.end());
@@ -419,38 +425,71 @@ bool		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
 	return true;
 }
 
+// load seek data from the logfetch.status
 void					AgentFileSystem::LoadSeekData() {
+	string seekdataCfgPath = m_mgr.GetSetting("tmppath") + (string)"\\logfetch.status";
+	
+	ifstream			ifstr(seekdataCfgPath.c_str());
+	if (!ifstr)  {
+		string		err;
 
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_INFO, "failed to save logfetch status %s : %s", seekdataCfgPath.c_str(), err.c_str());
+		return ;
+	}
+	while (!ifstr.eof()) {
+		fs_logfile_seekdata_t		data;
+
+		SecureZeroMemory(&data, sizeof(data));
+		string			buf;
+		std::getline(ifstr, buf);
+		for (DWORD count = 7; count >= 0; --count) {
+			size_t	res = buf.find_last_of(":");
+			if (count != 0 && res > 0 && res < buf.size()) {
+
+				string value = buf.substr(res + 1, buf.size() - res);
+				std::istringstream iss(value);
+				fpos_t pos = 0;
+				iss >> pos;
+				data.point[count] = pos;
+
+			} else if (count == 0) {
+				m_mgr.Log(LOGLEVEL_DEBUG, "loading seekdata for file %s", buf.c_str());
+				m_seekdata.insert(std::pair<std::string, fs_logfile_seekdata_t> (buf, data));
+			} else {
+				break  ;
+			}
+			buf.erase(res, buf.size() - res);
+		}
+	}
+	ifstr.close();
 }
 
+// save seek data from the logfetch.status
 void					AgentFileSystem::SaveSeekData() {
 	string seekdataCfgPath = m_mgr.GetSetting("tmppath") + (string)"\\logfetch.status";
 	std::map<std::string, fs_logfile_seekdata_t>::iterator	itr;
 	
-	cout << seekdataCfgPath << endl;
-	Sleep(5000);
-	FILE *f = fopen(seekdataCfgPath.c_str(), "wt");
-	if (f == NULL) {
+	ofstream			ofstr(seekdataCfgPath.c_str());
+
+	if (!ofstr)  {
 		string		err;
 
 		utils::GetLastErrorString(err);
-		cout << "Error: " << err << endl;
+		m_mgr.Log(LOGLEVEL_INFO, "failed to save logfetch status %s : %s", seekdataCfgPath.c_str(), err.c_str());
 		return ;
 	}
 	for (itr = m_seekdata.begin(); itr != m_seekdata.end(); ++itr) {
-		if ((*itr).second.used == true) {
-			fprintf(f, "%s:%i:%i:%i:%i:%i:%i:%i\n", 
-				(*itr).first.c_str(),
-				(*itr).second.point[0],
-				(*itr).second.point[1],
-				(*itr).second.point[2],
-				(*itr).second.point[3],
-				(*itr).second.point[4],
-				(*itr).second.point[5],
-				(*itr).second.point[6]);
+		if ((*itr).second.used == true)	{
+			fs_logfile_seekdata_t & seekdata = (*itr).second;
+			ofstr << (*itr).first.c_str();
+			for (int count = 0; count < 7; ++count) {
+				ofstr << ":" << seekdata.point[count];
+			}
+			ofstr << endl;
 		}
 	}
-	fclose(f);
+	ofstr.close();
 }
 
 
@@ -517,7 +556,7 @@ void		AgentFileSystem::ExecuteRules() {
 	std::map<std::string, fs_logfile_seekdata_t>::iterator	itr;
 	for (itr = m_seekdata.begin(); itr != m_seekdata.end(); ++itr) {
 		if ((*itr).second.used == false) {
-			m_seekdata.erase(itr);
+			//m_seekdata.erase(itr);
 		}
 	}
 	for (std::list<fs_logfile_t>::iterator logfile_itr = m_logfiles.begin(); logfile_itr != m_logfiles.end(); ++logfile_itr) {
