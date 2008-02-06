@@ -143,7 +143,7 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 	scs = OpenService(scm, tempName, SERVICE_QUERY_CONFIG | SERVICE_QUERY_STATUS | SERVICE_START | SERVICE_STOP);
 	if (scs == NULL) {
 		string		sName = tempName;
-		string 		mess = "can't open service" + sName;
+		string 		mess = "can't open service " + sName;
 		m_mgr.Log(LOGLEVEL_DEBUG, mess.c_str());
 		return ;
 	}
