@@ -30,6 +30,12 @@
 
 #define LOGFILE_BUFFER					4096
 
+#define MATCH_NONE						0
+#define MATCH_TRIGGER					1
+#define MATCH_IGNORE					2
+
+#define SKIP_STRING "<...SKIPPED...>"
+
 enum hash_type_t { NONE, MD5, SHA1 };
 
 
@@ -54,7 +60,6 @@ typedef struct				fs_linecount_s {
 	std::string				path;
 	std::list<std::string>	keywords;
 }							fs_linecount_t;
-
 
 // Struct used for file monitoring
 typedef struct			fs_file_s {
@@ -83,8 +88,8 @@ class AgentFileSystem : public IBBWinAgent
 		bool					ExecuteDirRule(const std::string & dir);
 		bool					ListFiles(const std::string & path, std::stringstream & report, __int64 & size);
 		void					GetLinesFromCommand(const std::string & command, std::list<std::string> & list);
-		bool					ExecuteLogFileRule(const fs_logfile_t & logfile);
-		bool					GetDataFromLogFile(const fs_logfile_t & logfile, std::stringstream data);
+		bool					ExecuteLogFileRule(fs_logfile_t & logfile);
+		DWORD					ApplyRulesOnLine(fs_logfile_t & logfile, std::string line);
 		
 		void					LoadSeekData();
 		void					SaveSeekData();

@@ -31,6 +31,7 @@
 #include "digest.h"
 #include "filesystem.h"
 #include "boost/format.hpp"
+#include <boost/regex.hpp>
 
 using namespace std;
 using namespace boost;
@@ -343,12 +344,29 @@ bool		AgentFileSystem::ExecuteDirRule(const std::string & dir) {
 	return ret;
 }
 
-bool		AgentFileSystem::GetDataFromLogFile(const fs_logfile_t & logfile, std::stringstream data) {
+DWORD		AgentFileSystem::ApplyRulesOnLine(fs_logfile_t & logfile, std::string line) {
+	std::list<string>::iterator		itr;
 	
-	return true;
+	// triggers first 
+	for (itr = logfile.triggers.begin(); itr != logfile.triggers.end(); ++itr) {
+		boost::regex e((*itr), boost::regbase::perl);
+		boost::match_results<std::string::const_iterator>	what;
+		if(boost::regex_search(line, what, e) != 0)	{
+			return MATCH_TRIGGER;
+		}
+	}
+	// ignore
+	for (itr = logfile.ignores.begin(); itr != logfile.ignores.end(); ++itr) {
+		boost::regex e((*itr), boost::regbase::perl);
+		boost::match_results<std::string::const_iterator>	what;
+		if(boost::regex_search(line, what, e) != 0)	{
+			return MATCH_IGNORE;
+		}
+	}
+	return MATCH_NONE;
 }
 
-bool		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
+bool		AgentFileSystem::ExecuteLogFileRule(fs_logfile_t & logfile) {
 	std::map<std::string, fs_logfile_seekdata_t>::iterator	res;
 	stringstream						reportData;
 
@@ -363,27 +381,21 @@ bool		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
 	}
 	// get or create the seek data
 	res = m_seekdata.find(logfile.path);
-	if (res == m_seekdata.end()) { 
-		// should never append
-		return false;
-	}
 	FILE *f = _fsopen(logfile.path.c_str(), "rt", _SH_DENYNO);
 	if (f == NULL) {
 		return false;
 	}
-	// the seek data is used
 	fs_logfile_seekdata_t & seekdata = (*res).second;
 	seekdata.used = true;
 	TCHAR			buf[LOGFILE_BUFFER];
 	fpos_t			pos = 0;
-	bool			skipping = false;
 
-	//cout << "OLDEST Point " << seekdata.point[SEEKDATA_START_POINT] << endl;
 	if (seekdata.point[SEEKDATA_START_POINT] > 0) {
-		// get the save point
-		if (fseek(f, (long)seekdata.point[SEEKDATA_START_POINT], 0)) {
-			m_mgr.Log(LOGLEVEL_INFO, "failed to seek position for file %s", logfile.path.c_str());
+		// if file has been rotated, we start from 0
+		if (seekdata.size < seekdata.point[SEEKDATA_START_POINT]) {
 			SecureZeroMemory(seekdata.point, sizeof(seekdata.point));
+		} else { // get the save point
+			fseek(f, (long)seekdata.point[SEEKDATA_START_POINT], SEEK_SET);
 		}
 	} 
 	// skip to end of file depending file size and logfile maxdata
@@ -391,16 +403,35 @@ bool		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
 		if (fseek(f, (long)(seekdata.size - logfile.maxdata), SEEK_SET)) {
 			// failed to change position
 			SecureZeroMemory(seekdata.point, sizeof(seekdata.point));
-		} else {
-			skipping = true;
+		} else { // we skip data
+			reportData << SKIP_STRING << endl;
 		}
 	}
 	while ((fgets(buf, LOGFILE_BUFFER, f) != NULL)) {
 		stringstream			tmp;
 
 		tmp << buf;
-		//while (tmp.getline()
-		reportData << tmp.str();
+		// parse the lines to ignore lines or trigger lines
+		DWORD	SkipInTheMiddle = 0;
+		while (!tmp.eof()) {
+			string			line;
+			
+			std::getline(tmp, line);
+			// Ignore or trigger line
+			if (line.size() > 0) {
+
+				DWORD res = ApplyRulesOnLine(logfile, line);
+				if (res == MATCH_NONE && reportData.str().size() > logfile.maxdata) {
+					if (SkipInTheMiddle++ == 0)
+						reportData << SKIP_STRING << endl;
+				}
+				if (res == MATCH_NONE || res == MATCH_TRIGGER) {
+					if (SkipInTheMiddle > 0) 
+						SkipInTheMiddle = 0;
+					reportData << line << endl;
+				}
+			}
+		}
 	}
 	if (fgetpos(f, &pos) == 0) {
 		// failed
@@ -414,12 +445,7 @@ bool		AgentFileSystem::ExecuteLogFileRule(const fs_logfile_t & logfile) {
 	// prepare the title of the section
 	string title = "msgs:" + logfile.path;
 	reportData << endl;
-
 	string report = reportData.str();
-	// clean the data sent
-	if (report.size() > logfile.maxdata || skipping == true) {
-		report.insert(0, "<...SKIPPED...>\n");
-	}
 	report.erase(std::remove(report.begin(), report.end(), '\r'), report.end());
 	m_mgr.ClientData(title.c_str(), report.c_str());
 	return true;
@@ -452,7 +478,7 @@ void					AgentFileSystem::LoadSeekData() {
 				fpos_t pos = 0;
 				iss >> pos;
 				data.point[count] = pos;
-
+				data.used = false;
 			} else if (count == 0) {
 				m_mgr.Log(LOGLEVEL_DEBUG, "loading seekdata for file %s", buf.c_str());
 				m_seekdata.insert(std::pair<std::string, fs_logfile_seekdata_t> (buf, data));
@@ -469,7 +495,7 @@ void					AgentFileSystem::LoadSeekData() {
 void					AgentFileSystem::SaveSeekData() {
 	string seekdataCfgPath = m_mgr.GetSetting("tmppath") + (string)"\\logfetch.status";
 	std::map<std::string, fs_logfile_seekdata_t>::iterator	itr;
-	
+
 	ofstream			ofstr(seekdataCfgPath.c_str());
 
 	if (!ofstr)  {
@@ -480,14 +506,12 @@ void					AgentFileSystem::SaveSeekData() {
 		return ;
 	}
 	for (itr = m_seekdata.begin(); itr != m_seekdata.end(); ++itr) {
-		if ((*itr).second.used == true)	{
-			fs_logfile_seekdata_t & seekdata = (*itr).second;
-			ofstr << (*itr).first.c_str();
-			for (int count = 0; count < 7; ++count) {
-				ofstr << ":" << seekdata.point[count];
-			}
-			ofstr << endl;
+		fs_logfile_seekdata_t & seekdata = (*itr).second;
+		ofstr << (*itr).first.c_str();
+		for (int count = 0; count < 7; ++count) {
+			ofstr << ":" << seekdata.point[count];
 		}
+		ofstr << endl;
 	}
 	ofstr.close();
 }
@@ -551,16 +575,19 @@ void		AgentFileSystem::ExecuteRules() {
 	for (std::list<string>::iterator dir_itr = m_dirs.begin(); dir_itr != m_dirs.end(); ++ dir_itr) {
 		ExecuteDirRule(*dir_itr);
 	}
+	for (std::list<fs_logfile_t>::iterator logfile_itr = m_logfiles.begin(); logfile_itr != m_logfiles.end(); ++logfile_itr) {
+		ExecuteLogFileRule(*logfile_itr);
+	}
 	// clean unused seekdata 
 	// may be files are not monitored anymore
 	std::map<std::string, fs_logfile_seekdata_t>::iterator	itr;
-	for (itr = m_seekdata.begin(); itr != m_seekdata.end(); ++itr) {
+	for (itr = m_seekdata.begin(); itr != m_seekdata.end(); ) {
 		if ((*itr).second.used == false) {
-			//m_seekdata.erase(itr);
+			m_seekdata.erase(itr++);
+		} else {
+			(*itr).second.used = false;
+			++itr;
 		}
-	}
-	for (std::list<fs_logfile_t>::iterator logfile_itr = m_logfiles.begin(); logfile_itr != m_logfiles.end(); ++logfile_itr) {
-		ExecuteLogFileRule(*logfile_itr);
 	}
 }
 
