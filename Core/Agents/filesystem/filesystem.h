@@ -28,7 +28,7 @@
 #define SEEKDATA_START_POINT			6
 #define SEEKDATA_END_POINT				0
 
-#define LOGFILE_BUFFER					4096
+#define LOGFILE_BUFFER					2048
 
 #define MATCH_NONE						0
 #define MATCH_TRIGGER					1

@@ -115,7 +115,7 @@ bool		AgentFileSystem::InitCentralMode() {
 		if (skipNextLineFlag == true) {
 			skipNextLineFlag = false;
 		} else {
-			std::getline(conf, buf);
+			utils::GetConfigLine(conf, buf);
 		}
 		if (utils::parseStrGetNext(buf, "file:", value)) {
 			fs_file_t		file;
@@ -180,7 +180,8 @@ bool		AgentFileSystem::InitCentralMode() {
 			// read next arguments : ignore and trigger options
 			while (!conf.eof()) {
 				string			arg;
-				std::getline(conf, buf);
+
+				utils::GetConfigLine(conf, buf);
 				if (utils::parseStrGetNext(buf, "ignore ", arg)) {
 					m_mgr.Log(LOGLEVEL_DEBUG, "will ignore : %s", arg.c_str());
 					logfile.ignores.push_back(arg);
@@ -407,34 +408,46 @@ bool		AgentFileSystem::ExecuteLogFileRule(fs_logfile_t & logfile) {
 			reportData << SKIP_STRING << endl;
 		}
 	}
+	DWORD				SkipInTheMiddle = 0;
+	bool				joinLines = false;
+	string				line;
 	while ((fgets(buf, LOGFILE_BUFFER, f) != NULL)) {
 		stringstream			tmp;
 
-		tmp << buf;
-		// parse the lines to ignore lines or trigger lines
-		DWORD	SkipInTheMiddle = 0;
-		while (!tmp.eof()) {
-			string			line;
-			
-			std::getline(tmp, line);
-			// Ignore or trigger line
-			if (line.size() > 0) {
-
-				DWORD res = ApplyRulesOnLine(logfile, line);
-				if (res == MATCH_NONE && reportData.str().size() > logfile.maxdata) {
-					if (SkipInTheMiddle++ == 0)
-						reportData << SKIP_STRING << endl;
-				}
-				if (res == MATCH_NONE || res == MATCH_TRIGGER) {
-					if (SkipInTheMiddle > 0) 
-						SkipInTheMiddle = 0;
-					reportData << line << endl;
-				}
+		size_t res = strlen(buf);
+		// join lines too large for the fixed size buffer
+		if (res > 1 && buf[res - 1] != '\n') {
+			if (joinLines == true)
+				line += buf;
+			else
+				line = buf;
+			joinLines = true;
+		} else {
+			if (joinLines == true)
+				line += buf;
+			else
+				line = buf;
+			joinLines = false;
+		}
+		// Ignore or trigger line
+		if (line.size() > 0 && joinLines == false) {
+			DWORD res = ApplyRulesOnLine(logfile, line);
+			if (res == MATCH_NONE && reportData.str().size() > logfile.maxdata) {
+				if (SkipInTheMiddle++ == 0)
+					reportData << SKIP_STRING << endl;
+			}
+			if (res == MATCH_NONE || res == MATCH_TRIGGER) {
+				if (SkipInTheMiddle > 0) 
+					SkipInTheMiddle = 0;
+				reportData << line;
 			}
 		}
 	}
-	if (fgetpos(f, &pos) == 0) {
-		// failed
+	if (fgetpos(f, &pos) != 0) {
+		string	err;
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_WARN, "error on fgetpos for logfile %s : %s", logfile.path.c_str(), err.c_str());
 	}
 	// skip oldest value to save current position
 	for (DWORD count = SEEKDATA_START_POINT; count > 0; --count) {

@@ -42,6 +42,8 @@ void			ReplaceEnvironmentVariableStr(std::string & str);
 bool			parseStrGetNext(const std::string & str, const std::string & match, std::string & next);
 bool			parseStrGetLast(const std::string & str, const std::string & match, std::string & last);
 void			SystemTimeToTime_t(SYSTEMTIME *systemTime, time_t *dosTime);
+void			RemoveComments(const std::string &src, std::string &dest, const std::string & separator);
+void			GetConfigLine(std::ifstream & conf, std::string & str);
 
 }
 
