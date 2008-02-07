@@ -19,6 +19,7 @@
 
 #include <windows.h>
 #include <string>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include "Utils.h"
@@ -256,6 +257,24 @@ void SystemTimeToTime_t(SYSTEMTIME *systemTime, time_t *dosTime) {
     *dosTime = (time_t)utcDosTime;
 }
 
+void RemoveComments(const std::string &src, std::string &dest, const std::string & separator) {
+	size_t		res = src.find_first_of(separator);
+	
+	if (res >= 0 && res < src.size()) {
+		dest = src.substr(0, res);
+	} else {
+		dest = src;
+	}
+}
+
+void			GetConfigLine(std::ifstream & conf, std::string & str) {
+	std::string		cleanstr;
+	std::string		buf;
+
+	std::getline(conf, buf);
+	RemoveComments(buf, cleanstr, "#");
+	str = cleanstr;
+}
 
 } // namespace utils
 
