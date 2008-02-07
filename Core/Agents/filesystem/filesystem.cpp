@@ -96,6 +96,7 @@ bool		AgentFileSystem::InitCentralMode() {
 	m_files.clear();
 	m_dirs.clear();
 	m_logfiles.clear();
+	m_linecounts.clear();
 	m_mgr.Log(LOGLEVEL_DEBUG, "checking file %s", clientLocalCfgPath.c_str());
 	ifstream		conf(clientLocalCfgPath.c_str());
 
@@ -107,7 +108,7 @@ bool		AgentFileSystem::InitCentralMode() {
 		return false;
 	}
 	m_mgr.Log(LOGLEVEL_DEBUG, "reading file %s", clientLocalCfgPath.c_str());
-	string		buf, eventlog, ignore, trigger;
+	string			buf, eventlog, ignore, trigger;
 	bool			skipNextLineFlag = false;
 	while (!conf.eof()) {
 		string			value;
@@ -206,7 +207,46 @@ bool		AgentFileSystem::InitCentralMode() {
 				logfile.path = value;
 				m_logfiles.push_back(logfile);
 			}
+		}  else if (utils::parseStrGetNext(buf, "linecount:", value)) {
+			fs_linecount_t	linecount;
+			
+			// read next arguments : 
+			while (!conf.eof()) {
+				fs_count_t		count;
+
+				utils::GetConfigLine(conf, buf);
+				if (strncmp(buf.c_str(), "file:", 5) != 0 && 
+					strncmp(buf.c_str(), "log:", 4) != 0 && 
+					strncmp(buf.c_str(), "linecount:", 10) != 0 && 
+					strncmp(buf.c_str(), "dir:", 4) != 0 && strchr(buf.c_str(), ' ') != NULL) {
+						size_t	res = buf.find(" ");
+
+						count.count = 0;
+						count.keyword = buf.substr(0, res);
+						count.pattern = buf.substr(res + 1);
+						m_mgr.Log(LOGLEVEL_DEBUG, "will linecount for keyword %s with pattern %s", 
+							count.keyword.c_str(), count.pattern.c_str());
+						linecount.counts.push_back(count);
+				} else {
+					skipNextLineFlag = true;
+					break ;
+				}
+			}
+			if (IsBackQuotedString(value)) {
+				std::list<string>			list;
+				std::list<string>::iterator	itr;
+
+				GetLinesFromCommand(value, list);
+				for (itr = list.begin(); itr != list.end(); ++itr) {
+					linecount.path = (*itr);
+					m_linecounts.push_back(linecount);
+				}
+			} else {
+				linecount.path = value;
+				m_linecounts.push_back(linecount);
+			}
 		} 
+
 	}
 	return false;
 }
@@ -288,7 +328,7 @@ bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & rep
 	else
 		reportData << "(file)" << endl;
 	reportData << "mode:777 (not implemented)" << endl;
-	reportData << format("linecount:%u") % handle_file_info.nNumberOfLinks << endl;
+	reportData << format("linkcount:%u") % handle_file_info.nNumberOfLinks << endl;
 	reportData << "owner:0 (not implemented)" << endl;
 	reportData << "group:0 (not implemented)" << endl;
 	reportData << format("size:%lu") % fsize << endl;
@@ -416,17 +456,13 @@ bool		AgentFileSystem::ExecuteLogFileRule(fs_logfile_t & logfile) {
 
 		size_t res = strlen(buf);
 		// join lines too large for the fixed size buffer
+		if (joinLines == true)
+			line += buf;
+		else
+			line = buf;
 		if (res > 1 && buf[res - 1] != '\n') {
-			if (joinLines == true)
-				line += buf;
-			else
-				line = buf;
 			joinLines = true;
 		} else {
-			if (joinLines == true)
-				line += buf;
-			else
-				line = buf;
 			joinLines = false;
 		}
 		// Ignore or trigger line
@@ -529,6 +565,54 @@ void					AgentFileSystem::SaveSeekData() {
 	ofstr.close();
 }
 
+void		AgentFileSystem::ExecuteLineCountRule(fs_linecount_t & linecount) {
+	stringstream	reportData;
+
+	FILE *f = _fsopen(linecount.path.c_str(), "rt", _SH_DENYNO);
+	if (f == NULL) {
+		string		err;
+
+		utils::GetLastErrorString(err);
+		reportData << "ERROR: " << err << endl;
+	} else {
+		TCHAR				buf[LOGFILE_BUFFER];
+		fpos_t				pos = 0;
+		bool				joinLines = false;
+		string				line;
+		while ((fgets(buf, LOGFILE_BUFFER, f) != NULL)) {
+			stringstream			tmp;
+
+			size_t res = strlen(buf);
+			// join lines too large for the fixed size buffer
+			if (joinLines == true)
+				line += buf;
+			else
+				line = buf;
+			if (res > 1 && buf[res - 1] != '\n')
+				joinLines = true;
+			else
+				joinLines = false;
+			if (line.size() > 0 && joinLines == false) {
+				for (std::list<fs_count_t>::iterator itr = linecount.counts.begin(); 
+					itr != linecount.counts.end(); ++itr) {
+						boost::regex e((*itr).pattern, boost::regbase::perl);
+						boost::match_results<std::string::const_iterator>	what;
+						if(boost::regex_search(line, what, e) != 0)	{
+							(*itr).count++;
+						}
+				}
+			}
+		}
+		fclose(f);
+	}
+	linecount.path.erase(std::remove(linecount.path.begin(), linecount.path.end(), ':'), linecount.path.end());
+	string title = "linecount:" + linecount.path;
+	for (std::list<fs_count_t>::iterator itr = linecount.counts.begin(); 
+		itr != linecount.counts.end(); ++itr) {
+			reportData << (*itr).keyword << ": " << (*itr).count << endl;
+	}
+	m_mgr.ClientData(title.c_str(), reportData.str().c_str());
+}
 
 bool		AgentFileSystem::ExecuteFileRule(const fs_file_t & file) {
 	stringstream 		reportData;	
@@ -590,6 +674,9 @@ void		AgentFileSystem::ExecuteRules() {
 	}
 	for (std::list<fs_logfile_t>::iterator logfile_itr = m_logfiles.begin(); logfile_itr != m_logfiles.end(); ++logfile_itr) {
 		ExecuteLogFileRule(*logfile_itr);
+	}
+	for (std::list<fs_linecount_t>::iterator linecount_itr = m_linecounts.begin(); linecount_itr != m_linecounts.end(); ++linecount_itr) {
+		ExecuteLineCountRule(*linecount_itr);
 	}
 	// clean unused seekdata 
 	// may be files are not monitored anymore
