@@ -518,7 +518,7 @@ void					AgentFileSystem::LoadSeekData() {
 		SecureZeroMemory(&data, sizeof(data));
 		string			buf;
 		std::getline(ifstr, buf);
-		for (DWORD count = 7; count >= 0; --count) {
+		for (DWORD count = SEEKDATA_MAX_POINT; count >= 0; --count) {
 			size_t	res = buf.find_last_of(":");
 			if (count != 0 && res > 0 && res < buf.size()) {
 
@@ -526,7 +526,7 @@ void					AgentFileSystem::LoadSeekData() {
 				std::istringstream iss(value);
 				fpos_t pos = 0;
 				iss >> pos;
-				data.point[count] = pos;
+				data.point[count - 1] = pos;
 				data.used = false;
 			} else if (count == 0) {
 				m_mgr.Log(LOGLEVEL_DEBUG, "loading seekdata for file %s", buf.c_str());
