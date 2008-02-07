@@ -28,7 +28,7 @@
 #define SEEKDATA_START_POINT			6
 #define SEEKDATA_END_POINT				0
 
-#define LOGFILE_BUFFER					2048
+#define LOGFILE_BUFFER					64
 
 #define MATCH_NONE						0
 #define MATCH_TRIGGER					1
@@ -56,9 +56,16 @@ typedef struct				fs_logfile_s {
 }							fs_logfile_t;
 
 // Struct used for linecount monitoring
+typedef struct				fs_count_s {
+	std::string				keyword;
+	std::string				pattern;
+	DWORD					count;
+}							fs_count_t;
+
+// Struct used for linecount monitoring
 typedef struct				fs_linecount_s {
 	std::string				path;
-	std::list<std::string>	keywords;
+	std::list<fs_count_t>	counts;
 }							fs_linecount_t;
 
 // Struct used for file monitoring
@@ -75,6 +82,7 @@ class AgentFileSystem : public IBBWinAgent
 		std::list<std::string>							m_dirs;
 		std::list<fs_logfile_t>							m_logfiles;
 		std::map<std::string, fs_logfile_seekdata_t>	m_seekdata;
+		std::list<fs_linecount_t>						m_linecounts;
 
 	private :
 		IBBWinAgentManager 		& m_mgr;
@@ -90,6 +98,7 @@ class AgentFileSystem : public IBBWinAgent
 		void					GetLinesFromCommand(const std::string & command, std::list<std::string> & list);
 		bool					ExecuteLogFileRule(fs_logfile_t & logfile);
 		DWORD					ApplyRulesOnLine(fs_logfile_t & logfile, std::string line);
+		void					ExecuteLineCountRule(fs_linecount_t & linecount);
 		
 		void					LoadSeekData();
 		void					SaveSeekData();
