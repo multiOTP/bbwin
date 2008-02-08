@@ -22,13 +22,13 @@
 #define		__VERSION_H__
 
 #define BBWINNAME_STR "BBWin\0"
-#define BBWINVERSION 0,10,0,$WCREV$
-#define BBWINFILEVERSION_STR "0.10.0.$WCREV$\0"
-#define BBWINVERSION_STR "0.10\0"
+#define BBWINVERSION 0,11,0,$WCREV$
+#define BBWINFILEVERSION_STR "0.11.0.$WCREV$\0"
+#define BBWINVERSION_STR "0.11\0"
 #define BBWINBUILD_STR "$WCREV$\0"
 #define BBWINURL_STR "$WCURL$\0"
 #define BBWINDATE_STR "$WCDATE$\0"
-#define BBWIN_COPYRIGHT "Copyright 2005-2007 Etienne Grignon\0"
+#define BBWIN_COPYRIGHT "Copyright 2005-2008 Etienne Grignon\0"
 #define COMPANY_NAME "GNU\0"
 
 #endif // !__VERSION_H__
