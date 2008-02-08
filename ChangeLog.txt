@@ -2,15 +2,24 @@ ChangeLog file for BBWin
 ==============================================================
 
 
-BBWin 0.11 Preview version -  January XXth 2008
+BBWin 0.11 Preview version -  February 11th 2008
 -------------------
 
 * svcs centralized mode with autorestart option
-* file client-local.cfg implemented : support md5 and sha1 checksum algorythms
-* dir client-local.cfg implemented
-* back quoted for FILENAME and DIRECTORY implemented.
+* new agent to be used with centralized mode : filesystem.dll
+  - file client-local.cfg implemented : support md5 and sha1 checksum algorythms
+  - dir client-local.cfg implemented
+  - logfile client-local.cfg implemented
+  - linecount client-local.cfg implemented
+  - back quoted for FILENAME and DIRECTORY implemented.
+* eventlog client-local.cfg implemented : msgs.dll
 * fix initialisation error on bbwinupdate agent
-* prevent loading bbwin.cfg namespace when centralized mode enabled
+* prevent loading bbwin.cfg agent configurations when centralized mode enabled
+* fix memory leak on bbwinupdate agent
+* fix memory leak on service BBWin.exe when centralized mode enabled
+* Use ip address instead of mac address for the graph title for network interfaces (ifstat)
+* multiple bbdisplay supported when centralized mode enabled
+* Centralized Mode implemented directly in future hobbit 4.3 and with a patch for hobbit 4.2
 
 
 BBWin 0.10 Preview version -  December 30th 2007

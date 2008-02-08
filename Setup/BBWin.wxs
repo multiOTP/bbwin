@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
-	<Product Name='BBWin 0.10' Id='D7B9B0D6-B5D3-415b-B634-D77148CF0174'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
-		Language='1033' Codepage='1252' Version='0.10' Manufacturer='GNU'>
+	<Product Name='BBWin 0.11' Id='B9373D66-A0AA-4c7f-9B3A-4B18A23600FE'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
+		Language='1033' Codepage='1252' Version='0.11' Manufacturer='GNU'>
 
-    <Package Id='1752A21F-49FF-4518-AD83-A051E1FF0532' Keywords='Installer'
-      Description="BBWin 0.10 Installer"
+    <Package Id='DD6D4524-075B-4c0b-86A8-7D2A31E48EE3' Keywords='Installer'
+      Description="BBWin 0.11 Installer"
       Comments='BBWin : Big Brother Hobbit Windows Client' Manufacturer='GNU'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
@@ -73,6 +73,10 @@
 					
 					<Component Id='ExternalsC' Guid='83BA5796-DC8B-42a1-A6E5-797E75AC936A'>
 						<File Id='externals.dll' Name="ext.dll" LongName='externals.dll' DiskId='1' src='../Release/Externals.dll' />
+					</Component>
+					
+					<Component Id='FileSystemC' Guid='70BF1C78-E5E9-47c4-A8FE-A33161AE4A1C'>
+						<File Id='filesystem.dll' Name="fs.dll" LongName='filesystem.dll' DiskId='1' src='../Release/Filesystem.dll' />
 					</Component>
 					
 					<Component Id='MemoryC' Guid='68FA599B-2FC7-42b2-A30E-242EE9FC71C9'>
@@ -227,6 +231,10 @@
 			<Feature Id='ExternalsAgent' Title='Externals' Description='Used to launch externals Big Brother scripts or executables.'
 			TypicalDefault='install' Level='1'>
 				<ComponentRef Id='ExternalsC' />
+			</Feature>
+			<Feature Id='FileSystem' Title='FileSystem' Description='Monitor files, directories, logfiles.'
+			TypicalDefault='install' Level='1'>
+				<ComponentRef Id='FileSystemC' />
 			</Feature>
 			<Feature Id='Msgs' Title='Msgs' Description='Monitor the Windows Event Log.'
 			TypicalDefault='install' Level='1'>

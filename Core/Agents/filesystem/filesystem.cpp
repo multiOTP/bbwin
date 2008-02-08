@@ -544,10 +544,9 @@ void					AgentFileSystem::SaveSeekData() {
 	string seekdataCfgPath = m_mgr.GetSetting("tmppath") + (string)"\\logfetch.status";
 	std::map<std::string, fs_logfile_seekdata_t>::iterator	itr;
 
-	ofstream			ofstr(seekdataCfgPath.c_str());
-
 	if (m_seekdata.size() == 0)
 		return ;
+	ofstream			ofstr(seekdataCfgPath.c_str());
 	if (!ofstr)  {
 		string		err;
 
@@ -702,7 +701,7 @@ void 		AgentFileSystem::Run() {
 
 bool AgentFileSystem::Init() {
 	if (m_mgr.IsCentralModeEnabled() == false) {
-		m_mgr.Log(LOGLEVEL_ERROR, "filesystem agent only work with the BBWin centralized mode");
+		m_mgr.Log(LOGLEVEL_INFO, "filesystem agent only work with the BBWin centralized mode");
 		return false;
 	}
 	LoadSeekData();
