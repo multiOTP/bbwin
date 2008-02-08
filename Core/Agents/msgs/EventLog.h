@@ -107,7 +107,8 @@ class Session {
 		DWORD								m_maxDelay;
 		DWORD								m_now;
 		std::string							m_logfile;
-		bool								m_centralized; 
+		bool								m_centralized;
+		DWORD								m_maxData;
 
 		// counters 
 		DWORD								m_total;
@@ -133,6 +134,7 @@ class Session {
 		DWORD		GetTotalCount() { return m_total; }
 		bool		GetCentralized() const { return m_centralized; }
 		void		SetCentralized(bool centralized) { m_centralized = centralized; }
+		void		SetMaxData(DWORD maxData) { m_maxData = maxData; }
 		DWORD			Execute(std::stringstream & reportData);
 		static LONG		Now();
 		void			AddRule(const Rule & rule);
@@ -155,17 +157,19 @@ class Manager {
 	private:
 		DWORD				AnalyzeLogFilesSize(std::stringstream & reportData, bool checking);
 		void				GetLogFileList();
-		void				FreeSessions() {};
+		void				FreeSessions();
 
 	public :
 		void		AddRule(const std::string & logfile, const Rule & rule);
 		void		AddLogFile(const std::string & logfile);
+		void		SetMaxData(const std::string & logfile, DWORD maxData);
 		DWORD		Execute(std::stringstream & reportData);
 		DWORD		GetMatchCount();
 		DWORD		GetIgnoreCount();
 		DWORD		GetTotalCount();
 		bool		GetCentralized() const { return m_centralized; }
-		void		SetCentralized(bool centralized) { m_centralized = centralized; }
+		void		SetCentralized(bool centralized) { InitCentralizedMode(); m_centralized = centralized; }
+		void		InitCentralizedMode();
 		bool		GetCheckFullLogFile() const { return m_checkFullLogFile; }
 		void		SetCheckFullLogFile(bool checkFullLogFile) { m_checkFullLogFile = checkFullLogFile; }
 		Manager();
