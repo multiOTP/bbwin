@@ -193,9 +193,8 @@ void		BBWinHandler::checkAgentCompatibility() {
 	if (info->bbwinVersion != BBWIN_AGENT_VERSION) {
 		// for future use
 	}
-    oss << endl;
-	oss << "Agent name : " << info->agentName << endl;
-	oss << "Agent description : " << info->agentDescription << endl;
+	oss << ". Agent name : " << info->agentName;
+	oss << ". Agent description : " << info->agentDescription;
 	string result = oss.str();
 	LPCTSTR		arg[] = {m_agentFileName.c_str(), result.c_str(), NULL};
 	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_LOAD_AGENT_SUCCESS, 2, arg);

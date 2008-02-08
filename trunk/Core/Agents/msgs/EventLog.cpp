@@ -189,7 +189,6 @@ Rule::~Rule() {
 		
 }
 
-
 Rule::Rule(const Rule & rule) {
 	m_useId = false;
 	m_id = rule.GetEventId();
@@ -246,6 +245,7 @@ bool		Rule::SetType(const std::string &type) {
 Session::Session(const std::string logfile) :
 		m_logfile(logfile),
 		m_maxDelay(0),
+		m_maxData(10240),
 		m_centralized(false)
 {
 	InitCounters();
@@ -538,38 +538,36 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	DWORD		color = BB_GREEN;	
 	
 	assert(ev != NULL);
-	if (m_centralized == false) {
-		result = false;
-		// check if one of the rules match the event
-		for (itr = m_matchRules.begin(); itr != m_matchRules.end(); ++itr) {
-			if (ApplyRule((*itr), ev)) {
-				result = true;
-				color = (*itr).GetAlarmColor();
-				priority = (*itr).GetPriority();
-				(*itr).IncrementCurrentCount();
-				if ((*itr).GetCount() != 0 && (*itr).GetCount() > (*itr).GetCurrentCount())
-					result = false;
-				break ;
-			}
-		}
-		if (result == false) // not matched
-			return BB_GREEN;
-		m_match++;
-		// if one of the ignore rules matches, then the event is ignored
-		for (itr = m_ignoreRules.begin(); itr != m_ignoreRules.end(); ++itr) {
-			if (ApplyRule((*itr), ev)) {
-				if ((*itr).GetPriority() != 0 && priority != 0 && (*itr).GetPriority() < priority) {
-					break ;
-				}
-				m_ignore++;
-				m_match--;
+	result = false;
+	// check if one of the rules match the event
+	for (itr = m_matchRules.begin(); itr != m_matchRules.end(); ++itr) {
+		if (ApplyRule((*itr), ev)) {
+			result = true;
+			color = (*itr).GetAlarmColor();
+			priority = (*itr).GetPriority();
+			(*itr).IncrementCurrentCount();
+			if ((*itr).GetCount() != 0 && (*itr).GetCount() > (*itr).GetCurrentCount())
 				result = false;
+			break ;
+		}
+	}
+	if (result == false && m_centralized == false) // not matched
+		return BB_GREEN;
+	m_match++;
+	// if one of the ignore rules matches, then the event is ignored
+	for (itr = m_ignoreRules.begin(); itr != m_ignoreRules.end(); ++itr) {
+		if (ApplyRule((*itr), ev)) {
+			if ((*itr).GetPriority() != 0 && priority != 0 && (*itr).GetPriority() < priority) {
 				break ;
 			}
+			m_ignore++;
+			m_match--;
+			result = false;
+			break ;
 		}
-		if (result == false)
-			return BB_GREEN;
 	}
+	if (result == false && m_centralized == false)
+		return BB_GREEN;
 	string desc, user;
 	GetEventDescription(ev, desc);
 	GetEventUser(ev, user);
@@ -591,18 +589,20 @@ DWORD			Session::AnalyzeEvent(const EVENTLOGRECORD * ev, stringstream & reportDa
 	} else {
 		date = "unkwown";
 	}
-	if (m_centralized == false)
-		reportData << "&" << bbcolors[color] << " " << m_logfile << ": ";
-	reportData << type << " - ";
-	reportData << date << " " << time << " - ";
-	reportData << (LPSTR) ((LPBYTE) ev + sizeof(EVENTLOGRECORD)) << " (" << (ev->EventID & MSG_ID_MASK) << ") - ";
-	if (m_centralized == false) {
-		reportData << user << " \n";
-		FormatEventDescription(desc);
-		reportData << " \"" << desc << "\"";
-		reportData << "\n" << endl;
-	} else {
-		reportData << desc << endl;
+	if (result == true) {
+		if (m_centralized == false)
+			reportData << "&" << bbcolors[color] << " " << m_logfile << ": ";
+		reportData << type << " - ";
+		reportData << date << " " << time << " - ";
+		reportData << (LPSTR) ((LPBYTE) ev + sizeof(EVENTLOGRECORD)) << " (" << (ev->EventID & MSG_ID_MASK) << ") - ";
+		if (m_centralized == false) {
+			reportData << user << " \n";
+			FormatEventDescription(desc);
+			reportData << " \"" << desc << "\"";
+			reportData << "\n" << endl;
+		} else {
+			reportData << desc << endl;
+		}
 	}
 	return color;
 }
@@ -671,11 +671,16 @@ Manager::Manager() :
 }
 
 Manager::~Manager() {
+	FreeSessions();
+}
+
+void				Manager::FreeSessions() {
 	std::map<std::string, Session *>::iterator	itr;
 	
 	for (itr = m_sessions.begin(); itr != m_sessions.end(); ++itr) {
 		delete (*itr).second;
 	}
+	m_sessions.clear();
 }
 
 void		Manager::AddRule(const std::string & logfile, const Rule & rule) {
@@ -704,10 +709,31 @@ void		Manager::AddRule(const std::string & logfile, const Rule & rule) {
 		}
 		assert(ses != NULL);
 		ses->AddRule(rule);
-//		cout << "debug2 " << originalname << endl;
 		m_sessions.insert(std::pair<std::string, Session*>(originalname, ses));
 	} else {
 		(*itr).second->AddRule(rule);
+	}
+}
+
+void		Manager::SetMaxData(const std::string & logfile, DWORD maxData) {
+	std::string	logfilename = logfile;
+	std::map<std::string, Session *>::iterator	itr;
+	std::list< std::string >::iterator			logitr;
+	std::string				originalname;
+	size_t					res;
+	
+	std::transform(logfilename.begin(), logfilename.end(), logfilename.begin(), tolower);
+	for (logitr = m_logFileList.begin(); logitr != m_logFileList.end(); ++logitr) {
+		res = (*logitr).find(logfilename);
+		if (res >= 0 && res < (*logitr).size()) 
+			originalname = (*logitr);
+	}
+	if (originalname.size() == 0)  {
+		return ;
+	}
+	itr = m_sessions.find(originalname);
+	if (itr != m_sessions.end()) {
+		(*itr).second->SetMaxData(maxData);
 	}
 }
 
@@ -736,7 +762,6 @@ void		Manager::AddLogFile(const std::string & logfile) {
 			return ;
 		}
 		assert(ses != NULL);
-//		cout << "debug " << originalname << endl;
 		m_sessions.insert(std::pair<std::string, Session*>(originalname, ses));
 	}
 }
@@ -791,6 +816,18 @@ DWORD		Manager::GetTotalCount() {
 		inc += (*itr).second->GetTotalCount();
 	}
 	return inc;
+}
+
+void		Manager::InitCentralizedMode() {
+	std::list< std::string >::iterator	 itr;
+
+	FreeSessions();
+	for (itr = m_logFileList.begin(); itr != m_logFileList.end(); ++itr) {
+		Rule		rule;
+
+		// default matching rule for centralized mode
+		AddRule((*itr), rule);
+	}
 }
 
 static DWORD		myGetFileSize(LPCSTR path) {

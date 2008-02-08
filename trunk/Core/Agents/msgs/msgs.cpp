@@ -69,19 +69,48 @@ bool	AgentMsgs::InitCentralMode() {
 	}
 	m_mgr.Log(LOGLEVEL_DEBUG, "reading file %s", clientLocalCfgPath.c_str());
 	string		buf, eventlog, ignore, trigger;
+	bool			skipNextLineFlag = false;
 	while (!conf.eof()) {
-		string		value;
+		string			value;
 
-		std::getline(conf, buf);
-		if (parseStrGetNext(buf, "eventlog:", value)) {
-			m_mgr.Log(LOGLEVEL_DEBUG, "create eventlog rule %s", value.c_str());
-		} else if (parseStrGetNext(buf, "ignore ", value)) {
-			m_mgr.Log(LOGLEVEL_DEBUG, "create ignore rule %s", value.c_str());
-		} else if (parseStrGetNext(buf, "trigger ", value)) {
-			m_mgr.Log(LOGLEVEL_DEBUG, "create trigger rule %s", value.c_str());
-		} else if (parseStrGetNext(buf, "log:", value)) {
-			m_mgr.Log(LOGLEVEL_DEBUG, "create log rule %s", value.c_str());
-		} 
+		if (skipNextLineFlag == true) {
+			skipNextLineFlag = false;
+		} else {
+			utils::GetConfigLine(conf, buf);
+		}
+		if (utils::parseStrGetNext(buf, "eventlog:", value)) {
+			string			sizeStr;
+
+			if (utils::parseStrGetLast(value, ":", sizeStr)) {
+				DWORD		maxData = 10240;
+				value.erase(value.end() - (sizeStr.size() + 1), value.end());
+				std::istringstream iss(sizeStr);
+				iss >> maxData;
+				if (maxData > 0)
+					m_eventlog.SetMaxData(value, maxData);
+				m_mgr.Log(LOGLEVEL_DEBUG, "will use maxdata size : %u", maxData);
+			}
+			// read next arguments : ignore and trigger options
+			while (!conf.eof()) {
+				string			arg;
+				EventLog::Rule	rule;
+
+				utils::GetConfigLine(conf, buf);
+				if (utils::parseStrGetNext(buf, "ignore ", arg)) {
+					rule.SetIgnore(true);
+					rule.SetValue(arg);
+					m_mgr.Log(LOGLEVEL_DEBUG, "will ignore : %s", arg.c_str());
+					m_eventlog.AddRule(value, rule);
+				} else if (utils::parseStrGetNext(buf, "trigger ", arg)) {
+					rule.SetValue(arg);
+					m_mgr.Log(LOGLEVEL_DEBUG, "will trigger : %s", arg.c_str());
+					m_eventlog.AddRule(value, rule);
+				} else {
+					skipNextLineFlag = true;
+					break ;
+				}
+			}
+		}  
 	}
 	return false;
 }
@@ -170,55 +199,11 @@ void	AgentMsgs::AddEventLogRule(PBBWINCONFIGRANGE range, bool ignore, const stri
 }
 
 //
-// determine if the rule is for eventlogs or logs, then call the good Add*Rule method
-//
-void	AgentMsgs::AddRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile) {
-	AddEventLogRule(range, ignore, defLogFile);
-}
-
-
-bool	AgentMsgs::LoadConfig(const string config) {
-	string			confNamespace = m_mgr.GetAgentName() + string(".") + config;
-	string			logfile;
-
-	PBBWINCONFIG		conf = m_mgr.LoadConfiguration(confNamespace.c_str());
-	if (conf == NULL)
-		return false;
-	PBBWINCONFIGRANGE range = m_mgr.GetConfigurationRange(conf, "setting");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
-		string  value = m_mgr.GetConfigurationRangeValue(range, "value");
-		if (name == "logfile" && value.length() > 0)
-			logfile = value;
-	}
-	m_mgr.FreeConfigurationRange(range);
-	range = m_mgr.GetConfigurationRange(conf, "match");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		AddRule(range, false, logfile);
-	}
-	m_mgr.FreeConfigurationRange(range);
-	range = m_mgr.GetConfigurationRange(conf, "ignore");
-	if (range == NULL)
-		return false;
-	for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-		AddRule(range, true, logfile);
-	}
-	m_mgr.FreeConfigurationRange(range);
-	m_mgr.FreeConfiguration(conf);
-	return true;
-}
-
-
-//
 // init function
 //
 bool AgentMsgs::Init() {
 	m_mgr.Log(LOGLEVEL_DEBUG, "Begin Msgs Initialization %s", __FUNCTION__);
-	//if (m_mgr.IsCentralModeEnabled() == false) {
+	if (m_mgr.IsCentralModeEnabled() == false) {
 		PBBWINCONFIG		conf = m_mgr.LoadConfiguration(m_mgr.GetAgentName());
 
 		if (conf == NULL)
@@ -256,18 +241,8 @@ bool AgentMsgs::Init() {
 			AddEventLogRule(range, true);
 		}
 		m_mgr.FreeConfigurationRange(range);
-		range = m_mgr.GetConfigurationRange(conf, "config");
-		if (range == NULL)
-			return false;
-		for ( ; m_mgr.AtEndConfigurationRange(range); m_mgr.IterateConfigurationRange(range)) {
-			string	name =  m_mgr.GetConfigurationRangeValue(range, "name");
-			if (name.length() > 0) {
-				LoadConfig(name);
-			}
-		}
-		m_mgr.FreeConfigurationRange(range);
 		m_mgr.FreeConfiguration(conf);
-	//}
+	}
 	m_mgr.Log(LOGLEVEL_DEBUG,"Ending Msgs Initialization");
 	return true;
 }

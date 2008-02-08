@@ -42,8 +42,6 @@ class AgentMsgs : public IBBWinAgent
 
 	private :
 		void	AddEventLogRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile);
-		void	AddRule(PBBWINCONFIGRANGE range, bool ignore, const std::string defLogFile);
-		bool	LoadConfig(const std::string name);
 		bool	InitCentralMode();
 
 	public :
