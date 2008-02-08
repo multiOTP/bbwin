@@ -108,7 +108,7 @@ bool		AgentFileSystem::InitCentralMode() {
 		return false;
 	}
 	m_mgr.Log(LOGLEVEL_DEBUG, "reading file %s", clientLocalCfgPath.c_str());
-	string			buf, eventlog, ignore, trigger;
+	string			buf;
 	bool			skipNextLineFlag = false;
 	while (!conf.eof()) {
 		string			value;
@@ -471,8 +471,7 @@ bool		AgentFileSystem::ExecuteLogFileRule(fs_logfile_t & logfile) {
 			if (res == MATCH_NONE && reportData.str().size() > logfile.maxdata) {
 				if (SkipInTheMiddle++ == 0)
 					reportData << SKIP_STRING << endl;
-			}
-			if (res == MATCH_NONE || res == MATCH_TRIGGER) {
+			} else if (res == MATCH_NONE || res == MATCH_TRIGGER) {
 				if (SkipInTheMiddle > 0) 
 					SkipInTheMiddle = 0;
 				reportData << line;
@@ -547,6 +546,8 @@ void					AgentFileSystem::SaveSeekData() {
 
 	ofstream			ofstr(seekdataCfgPath.c_str());
 
+	if (m_seekdata.size() == 0)
+		return ;
 	if (!ofstr)  {
 		string		err;
 
