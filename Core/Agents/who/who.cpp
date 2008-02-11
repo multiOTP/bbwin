@@ -48,350 +48,42 @@ static const BBWinAgentInfo_t 		whoAgentInfo =
 	BBWIN_AGENT_CENTRALIZED_COMPATIBLE			// flags
 };                
 
-void AgentWho::PrintWin32Error(LPSTR ErrorMessage, DWORD ErrorCode) {
-	LPVOID		lpMsgBuf;
-
-	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-					NULL, ErrorCode, 
-					MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-					(LPSTR) &lpMsgBuf, 0, NULL );
-	m_mgr.Log(LOGLEVEL_ERROR, "%s: %s", ErrorMessage, lpMsgBuf);
-	LocalFree( lpMsgBuf );
-}
-
-void DisplayLogonTime(PSYSTEMTIME LogonTime, stringstream & reportData) {
-	TCHAR	logonDateString[MAX_PATH];
-	TCHAR	logonTimeString[MAX_PATH];
-
-	GetDateFormat( LOCALE_USER_DEFAULT, 0,
-				   LogonTime, NULL, 
-				   logonDateString, sizeof(logonDateString)/sizeof(TCHAR));
-	GetTimeFormat( LOCALE_USER_DEFAULT, 0,
-				   LogonTime, NULL, 
-				   logonTimeString, sizeof(logonTimeString)/sizeof(TCHAR));
-	reportData << format("     %s %s    ") % logonDateString % logonTimeString;
-}
-
-void GetSessionLogonTime( DWORD Seconds, PSYSTEMTIME LogonTime)
-{
-	ULARGE_INTEGER fileTimeInteger;
-	FILETIME     fileTime;
-
-	GetLocalTime( LogonTime );
-	SystemTimeToFileTime( LogonTime, &fileTime );
-	fileTimeInteger = *(PULARGE_INTEGER) &fileTime;
-	fileTimeInteger.QuadPart -= Seconds * 10000000;
-	fileTime = *(PFILETIME) &fileTimeInteger;
-	FileTimeToSystemTime( &fileTime, LogonTime );
-}
-
-
-bool GetLocalLogonTime(HKEY hCurrentUsers, LPSTR UserSid, PSYSTEMTIME LogonTime) {
-    HKEY	hKey;
-	TCHAR	keyName[MAX_PATH];
-    TCHAR	classBuf[1024];
-    DWORD	classSize;
-    DWORD	subKeys;
-    DWORD	maxSubKeyLen;
-    DWORD	maxClassLen;
-    DWORD	values;
-    DWORD	maxValueNameLen;
-    DWORD	maxValueLen;
-    DWORD	secDescLen;
-    FILETIME lastWriteTime;
-    
-	_stprintf( keyName, _T("%s\\Volatile Environment"), UserSid );
-    if( RegOpenKey( hCurrentUsers, keyName, &hKey ))
-        return false;
-    classSize = sizeof(classBuf);
-    if( RegQueryInfoKey( hKey,
-                         classBuf, &classSize, NULL,
-                         &subKeys, &maxSubKeyLen,
-                         &maxClassLen, 
-                         &values, &maxValueNameLen, &maxValueLen,
-                         &secDescLen,
-                         &lastWriteTime )) {
-        
-		RegCloseKey( hKey );
-        return false;
-    }
-    FileTimeToLocalFileTime( &lastWriteTime, &lastWriteTime );
-    FileTimeToSystemTime( &lastWriteTime, LogonTime );
-	RegCloseKey( hKey );
-	return true;
-}
-
-
-bool DisplayLocalLogons(LPSTR UserName , stringstream & reportData)
-{
-	bool		first = true;
-    TCHAR		userName[MAX_NAME_STRING], domainName[MAX_NAME_STRING];
-    TCHAR		subKeyName[MAX_PATH];
-    DWORD		subKeyNameSize, index;
-    DWORD		userNameSize, domainNameSize;
-    FILETIME	lastWriteTime;
-    HKEY		usersKey;
-    PSID		sid;
-    SID_NAME_USE sidType;
-    SID_IDENTIFIER_AUTHORITY authority;
-	BYTE		subAuthorityCount;
-    DWORD		authorityVal, revision;
-	SYSTEMTIME	logonTime;
-    DWORD		subAuthorityVal[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-    
-    //
-    // Use RegConnectRegistry so that we work with remote computers
-    //
-	if( RegOpenKey( HKEY_USERS, NULL, &usersKey ) != ERROR_SUCCESS ) {
-			return false;
-	}
-    //
-    // Enumerate keys under HKEY_USERS
-    //
-    index = 0;
-    subKeyNameSize = sizeof( subKeyName );
-    while( RegEnumKeyEx( usersKey, index, subKeyName, &subKeyNameSize,
-                         NULL, NULL, NULL, &lastWriteTime ) == ERROR_SUCCESS ) {
-
-        //
-        // Ignore the default subkey and win2K user class subkeys
-        //
-        if( _stricmp( subKeyName, ".default" ) &&
-			!strstr( subKeyName, "Classes")) {
-
-			//
-			// Convert the textual SID into a binary SID
-			//
-            subAuthorityCount= sscanf( subKeyName, "S-%d-%x-%lu-%lu-%lu-%lu-%lu-%lu-%lu-%lu",
-                                        &revision, &authorityVal,
-                                        &subAuthorityVal[0],
-                                        &subAuthorityVal[1],
-                                        &subAuthorityVal[2],
-                                        &subAuthorityVal[3],
-                                        &subAuthorityVal[4],
-                                        &subAuthorityVal[5],
-                                        &subAuthorityVal[6],
-                                        &subAuthorityVal[7] );
-
-            if( subAuthorityCount >= 3 ) {
-
-                subAuthorityCount -= 2;
-                
-                //
-                // Note: we can only deal with authority values
-                // of 4 bytes in length
-                //
-                authority.Value[5] = *(PBYTE) &authorityVal;
-                authority.Value[4] = *((PBYTE) &authorityVal+1);
-                authority.Value[3] = *((PBYTE) &authorityVal+2);
-                authority.Value[2] = *((PBYTE) &authorityVal+3);
-                authority.Value[1] = 0;
-                authority.Value[0] = 0;
-
-				//
-                // Initialize variables for subsequent operations
-                //
-                sid = NULL;
-                userNameSize   = MAX_NAME_STRING;
-                domainNameSize = MAX_NAME_STRING;
-
-                if( AllocateAndInitializeSid( &authority,
-                                               subAuthorityCount,
-                                               subAuthorityVal[0],
-                                               subAuthorityVal[1],
-                                               subAuthorityVal[2],
-                                               subAuthorityVal[3],
-                                               subAuthorityVal[4],
-                                               subAuthorityVal[5],
-                                               subAuthorityVal[6],
-                                               subAuthorityVal[7],
-                                               &sid )) {
-
-					//
-					// We can finally lookup the account name
-					//
-					if( LookupAccountSid( NULL,
-										  sid, 
-										  userName,
-										  &userNameSize,
-										  domainName,
-										  &domainNameSize,
-										  &sidType )) {
-
-						//
-						// We've successfully looked up the user name
-						//
-					   if( first && !UserName ) {
-						   
-							reportData << "Users logged on locally:\n";
-							first = false;
-					   }
-					   if( !UserName || !_stricmp( UserName, userName )) {
-						   first = false;
-						   if( UserName ) 
-							  reportData << format("%s\\%s logged onto locally.") % domainName % UserName;
-						   else			  
-							   reportData << format("%s\\%s") % domainName % userName;
-						   if( GetLocalLogonTime( usersKey, subKeyName, &logonTime )) {
-								DisplayLogonTime( &logonTime , reportData);
-						   } 
-						   reportData << "\n";
-					   } 						
-					}
-                }               
-                if( sid ) FreeSid( sid );
-            }
-        }
-        subKeyNameSize = sizeof( subKeyName );
-        index++;
-    }
-	RegCloseKey( usersKey );
-
-	if( first && !UserName ) 
-		reportData << "No one is logged on locally.\n";
-	return !first;
-}
-
-bool		DisplaySessionLogons(LPSTR UserName , stringstream & reportData)
-{
-   LPSESSION_INFO_10 pBuf = NULL;
-   LPSESSION_INFO_10 pTmpBuf;
-   DWORD		dwLevel = 10;
-   DWORD		dwPrefMaxLen = 0xFFFFFFFF;
-   DWORD		dwEntriesRead = 0;
-   DWORD		dwTotalEntries = 0;
-   DWORD		dwResumeHandle = 0;
-   DWORD		i;
-   DWORD		dwTotalCount = 0;
-   LPSTR		pszClientName = NULL;
-   LPSTR		pszUserName = NULL;
-   NET_API_STATUS nStatus;
-   PSID			sid;
-   DWORD		sidSize, domainNameSize;
-   BYTE			sidBuffer[MAX_SID_SIZE];
-   TCHAR		domainName[MAX_NAME_STRING];   
-   SID_NAME_USE sidType;
-   bool		first = true;
-   SYSTEMTIME	logonTime;
-
-   //
-   // Now display session logons
-   // 
-   do {
-
-      nStatus = NetSessionEnum( NULL,
-                               pszClientName,
-                               pszUserName,
-                               dwLevel,
-                               (LPBYTE*)&pBuf,
-                               dwPrefMaxLen,
-                               &dwEntriesRead,
-                               &dwTotalEntries,
-                               &dwResumeHandle);
-
-      if ((nStatus == NERR_Success) || (nStatus == ERROR_MORE_DATA)) {
-
-         if ((pTmpBuf = pBuf) != NULL) {
-
-            for (i = 0; (i < dwEntriesRead); i++) {
-
-               assert(pTmpBuf != NULL);
-
-               if (pTmpBuf == NULL) {
-
-                  reportData << "An access violation has occurred\n";
-                  break;
-               }
-
-			   //
-			   // Take the name and look up a SID so that we can get full domain/user
-			   // information
-			   //
-			   sid = (PSID) sidBuffer;
-			   sidSize = sizeof( sidBuffer );
-			   domainNameSize = sizeof( domainName );
-
-			   if( pTmpBuf->sesi10_username[0] ) {
-
-				   if( first && !UserName ) {
-					   
-						reportData << "\nUsers logged on via resource shares:\n";
-						first = false;
-				   }
-				   if( LookupAccountName( pTmpBuf->sesi10_cname ,
-										pTmpBuf->sesi10_username,
-										sid,
-										&sidSize,
-										domainName,
-										&domainNameSize,
-										&sidType )) {
-
-					   if( !UserName || !_stricmp( UserName, pTmpBuf->sesi10_username )) {
-
-							first = false;
-							if( UserName ) 
-								reportData << format("%s\\%s logged onto remotely.") % domainName % UserName;
-							else {
-								printf("%p %p %s %s\n", domainName, pTmpBuf->sesi10_username, domainName, pTmpBuf->sesi10_username);
-								reportData << format("%s\\%s") % domainName % pTmpBuf->sesi10_username ;
-							}
-							GetSessionLogonTime( pTmpBuf->sesi10_time, &logonTime );
-							DisplayLogonTime( &logonTime , reportData);
-							reportData << "\n";
-					   }
-
-				   } else {
-						
-					   if( !UserName || !_stricmp( UserName, pTmpBuf->sesi10_username )) {
-							first = false;
-							if( UserName ) 
-								reportData << format("\r\\%s logged onto remotely.") % UserName ;
-							else {
-								printf("%p %s\n", pTmpBuf->sesi10_username, pTmpBuf->sesi10_username);
-								reportData << format("\\%s") % pTmpBuf->sesi10_username ;
-							}
-							GetSessionLogonTime( pTmpBuf->sesi10_time, &logonTime );
-							DisplayLogonTime( &logonTime , reportData);
-							reportData << "\n";
-					   }
-				   }
-			   }
-
-               pTmpBuf++;
-               dwTotalCount++;
-            }
-         }
-      } else {
-
-		  reportData << "Unable to query resource logons\n";
-		  first = false;
-	  }
-
-      if (pBuf != NULL) {
-
-         NetApiBufferFree(pBuf);
-         pBuf = NULL;
-      }
-   } while (nStatus == ERROR_MORE_DATA);
-
-   if (pBuf != NULL)
-      NetApiBufferFree(pBuf);
-	if( first && !UserName ) reportData << "\nNo one is logged on via resource shares.\n";
-	return !first;
-}
-
-
 void 		AgentWho::Run() {
 	stringstream 	reportData;	
-    
 	
 	if (m_mgr.IsCentralModeEnabled() == false) {
 		ptime now = second_clock::local_time();
 		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "]" << endl;
 	}
-	DisplayLocalLogons(NULL, reportData);
-	//DisplaySessionLogons(NULL, reportData);
+	TCHAR		buf[TEMP_PATH_LEN + 1];
+	string			execCmd, path;
 
+	m_mgr.GetEnvironmentVariable("TEMP", buf, TEMP_PATH_LEN);
+	path = buf;
+	path += "\\qwinsta.tmp";
+
+	execCmd = "qwinsta > " + path;
+	system(execCmd.c_str());
+	ifstream fileOut(path.c_str());
+	if (fileOut) {
+		string 		line;
+		string 		prefix;
+
+		while (getline(fileOut, line)) {
+			size_t i;
+
+			// trunk space
+			for (i = 0; i < line.size() && (line[i] == ' ' || line[i] == '\t'); ++i)
+				;
+			if (i == (line.size() - 1))
+				continue ;
+			reportData << line.substr(i) << endl;
+		}
+	} else {
+		string err = (string)"failed to open report file " + path;
+		m_mgr.Log(LOGLEVEL_ERROR,err.c_str());
+		m_mgr.ReportEventError(err.c_str());
+	}
 	if (m_mgr.IsCentralModeEnabled())
 		m_mgr.ClientData(m_testName.c_str(), reportData.str().c_str());
 	else

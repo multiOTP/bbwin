@@ -19,6 +19,7 @@ BBWin 0.11 Preview version -  February 11th 2008
 * fix memory leak on service BBWin.exe when centralized mode enabled
 * Use ip address instead of mac address for the graph title for network interfaces (ifstat)
 * multiple bbdisplay supported when centralized mode enabled
+* Who agent now use qwinsta executable output instead of native functions
 * Centralized Mode implemented directly in future hobbit 4.3 and with a patch for hobbit 4.2
 
 
