@@ -363,7 +363,7 @@ void		AgentDisk::SendStatusReport() {
 	// check unused custum rules to generate an alert. Not used in centralized mode
 	for (itrRule = m_rules.begin(); itrRule != m_rules.end(); ++itrRule) {
 		float	size = 0.000;
-		if (itrRule->second->used == false && itrRule->first != DEFAULT_RULE_NAME) {
+		if (itrRule->second->used == false && itrRule->first != DEFAULT_RULE_NAME && itrRule->second->ignore == false) {
 			reportData << format("%s             %10.0f %10.0f %10.0f   %3d%%       /%s/%s      %s") %
 			itrRule->first % size % size % size % 0 % GetDiskTypeStr(DRIVE_UNKNOWN) % itrRule->first % "drive not found";
 			reportData << " &" << bbcolors[RED];
