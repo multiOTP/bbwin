@@ -180,11 +180,10 @@ void BBWinCentralHandler::run() {
 					LPCTSTR		args[] = {mess.c_str(), err.c_str(), NULL};
 					m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_HOBBIT_FAILED_CLIENTDATA, 2, args);
 				}
-
-				DeleteFile(reportSavePath.c_str());
-				MoveFile(reportPath.c_str(), reportSavePath.c_str());
-				DeleteFile(reportPath.c_str());
 			}
+			DeleteFile(reportSavePath.c_str());
+			MoveFile(reportPath.c_str(), reportSavePath.c_str());
+			DeleteFile(reportPath.c_str());
 		}
 		dwWait = WaitForMultipleObjects(m_hCount, m_hEvents , FALSE, m_timer * 1000 );
 		if ( dwWait >= WAIT_OBJECT_0 && dwWait <= (WAIT_OBJECT_0 + m_hCount - 1) ) {    
