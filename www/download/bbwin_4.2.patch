@@ -989,6 +989,26 @@ diff -Naur hobbitd/rrd/do_vmstat.c hobbitd/rrd/do_vmstat.c
  		errprintf("Cannot handle Win32 vmstat from host '%s' \n", hostname);
  		return -1;
  	  case OS_FREEBSD:
+diff -Naur lib/misc.c lib/misc.c
+--- misc.c	2007-10-30 14:21:02.000000000 +0100
++++ lib/misc.c	2007-12-18 10:09:00.000000000 +0100
+@@ -69,6 +69,7 @@
+ 	else if (strcasecmp(osname, "macosx") == 0)      result = OS_DARWIN;
+ 	else if (strcasecmp(osname, "darwin") == 0)      result = OS_DARWIN;
+ 	else if (strcasecmp(osname, "sco_sv") == 0)      result = OS_SCO_SV;
++	else if (strcasecmp(osname, "bbwin") == 0)      result = OS_WIN32_BBWIN;
+ 
+ 	if (result == OS_UNKNOWN) dbgprintf("Unknown OS: '%s'\n", osname);
+ 
+@@ -94,6 +95,7 @@
+ 		case OS_IRIX: return "irix";
+ 		case OS_DARWIN: return "darwin";
+ 	        case OS_SCO_SV: return "sco_sv";
++		case OS_WIN32_BBWIN: return "bbwin";
+ 		case OS_UNKNOWN: return "unknown";
+ 	}
+ 
+diff -Naur lib/misc.h lib/misc.h
 --- lib/misc.h	2006-08-09 22:10:16.000000000 +0200
 +++ lib/misc.h	2007-12-12 11:42:53.000000000 +0100
 @@ -13,7 +13,7 @@
