@@ -113,11 +113,11 @@ bool		AgentSvcs::InitCentralMode() {
 		return false;
 	}
 	m_mgr.Log(LOGLEVEL_DEBUG, "reading file %s", clientLocalCfgPath.c_str());
-	string		buf, eventlog, ignore, trigger;
+	string		buf;
 	while (!conf.eof()) {
 		string		value;
 
-		std::getline(conf, buf);
+		utils::GetConfigLine(conf, buf);
 		if (utils::parseStrGetNext(buf, "svcautorestart:", value)) {
 			m_mgr.Log(LOGLEVEL_DEBUG, "svcautorestart is %s", value.c_str());
 			if (value == "on") m_autoReset = true;
