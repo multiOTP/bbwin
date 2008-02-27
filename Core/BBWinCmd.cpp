@@ -1,5 +1,5 @@
 //this file is part of BBWin
-//Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+//Copyright (C)2006-2008 Etienne GRIGNON  ( etienne.grignon@gmail.com )
 //
 //This program is free software; you can redistribute it and/or
 //modify it under the terms of the GNU General Public License
@@ -14,12 +14,18 @@
 //You should have received a copy of the GNU General Public License
 //along with this program; if not, write to the Free Software
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+// Other Credits :
+// UploadMessage function written by Stef Coene <stef.coene@docum.org>
+//
+// $Id$
 
 #include <windows.h>
 
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 using namespace std;
 
 #include "BBWinNet.h"
@@ -47,6 +53,7 @@ void 	Message(int argc, char *argv[], BBWinNet & bbobj);
 void 	Drop(int argc, char *argv[], BBWinNet & bbobj);
 void 	Rename(int argc, char *argv[], BBWinNet & bbobj);
 void	Download(int argc, char *argv[], BBWinNet & bbobj);
+void	UploadMessage(int argc, char *argv[], BBWinNet &bbobj);
 
 static messageTable_t messTable[] = 
 {
@@ -57,6 +64,7 @@ static messageTable_t messTable[] =
 	{"disable", 7, Disable},
 	{"query", 5, Query},
 	{"config", 4, Config},
+	{"uploadmessage", 4, UploadMessage},
 	{"message", 4, Message}, 
 	{"drop", 4, Drop},
 	{"rename", 4, Rename},
@@ -188,6 +196,36 @@ void 	Message(int argc, char *argv[], BBWinNet & bbobj)
 	}
 }
 
+void 	UploadMessage(int argc, char *argv[], BBWinNet & bbobj)
+{
+	cout << "Uploading message ...\n";
+	try {
+		string res;
+		ostringstream 	tosend;
+        string line;
+
+		ifstream myfile ( argv[3] );
+
+		if (myfile.is_open())
+		{
+			while (! myfile.eof() )
+			{
+				getline (myfile,line);
+				tosend << line << endl;
+			}
+			myfile.close();
+		}
+		else cout << "Unable to open file"; 
+
+		bbobj.Message(tosend.str(), res);
+		cout << "Uploading message done !" ;
+		cout << "\n" << res << "\n\n";
+		
+	} catch (BBWinNetException ex) {
+		cout << "Error : " << ex.getMessage() << "\n";
+	}
+}
+
 void 	Drop(int argc, char *argv[], BBWinNet & bbobj)
 {
 	bbobj.SetHostName(argv[3]);
@@ -253,6 +291,9 @@ void	help()
 	cout << "\n\n";
 	cout << "Sending a hobbit message manually written\n\n";
 	cout << "bbwincmd.exe <bbdisplay>[:<port>] message <message>";
+	cout << "\n\n";
+	cout << "Sending a hobbit message manually written and stored in a file\n\n";
+	cout << "bbwincmd.exe <bbdisplay>[:<port>] uploadmessage <filename>";
 	cout << "\n\n";
 	cout << "Sending a drop\n\n";
 	cout << "bbwincmd.exe <bbdisplay>[:<port>] drop <hostname> [<testname>]";
