@@ -1,5 +1,5 @@
 //this file is part of BBWin
-//Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+//Copyright (C)2006-2008 Etienne GRIGNON  ( etienne.grignon@gmail.com )
 //
 //This program is free software; you can redistribute it and/or
 //modify it under the terms of the GNU General Public License
@@ -28,12 +28,12 @@ class AgentBBWinUpdate : public IBBWinAgent
 	private :
 		IBBWinAgentManager 		& m_mgr;
 		std::list<std::string>	m_configFiles;
-		//std::string				m_server;
 		std::string				m_bbwinCfgPath; // bbwin.cfg original place
 		std::string				m_bbwinCfgTmpPath; // bbwin.cfg copy place for working process
 		std::string				m_bbwinupdateTmpFilePath; // file path used to save the config file from the hobbit server 
 
 	private :
+		void					RunAgentUpdate();
 		void					RunUpdate(std::string & configFile);	
 		bool					ValidateUpdate();
 				
