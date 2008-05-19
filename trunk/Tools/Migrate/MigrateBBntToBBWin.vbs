@@ -1,6 +1,7 @@
 '***********************************************************************************
 '* this file is part of BBWin
 '*Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+'* 2008 Update done by  Richard Finegold <goldfndr@gmail.com>
 '*
 '*This program is free software; you can redistribute it and/or
 '*modify it under the terms of the GNU General Public License
@@ -19,9 +20,7 @@
 '*
 '* File:		MigrateBBntToBBWin.VBS
 '* Created:		March 17, 2006
-'* Last Modified:	May 10, 2006
-'* Version:		0.5
-'*
+'* Last Modified:	May 10, 2008
 '* Main Function:  	Migrate BBnt registry to create the BBWin configuration file
 '* 
 '* Minimum System Requirement : Windows NT4, Scripting Installed
@@ -34,7 +33,7 @@
 '* 2006/04/18      0.3          Svcs migration part added, Memory Virtual changed by Memory Page
 '* 2006/04/26     0.4           add bbpager support
 '* 2006/05/10      0.5           add msgs support and create a registry file for the hostname setting
-'*
+'* 2008/05/19 	0.6	       update the tool with all BBWin features 
 '***********************************************************************************
 
 ' use explicit declaration
@@ -90,13 +89,13 @@ Sub			buildBBWinConfiguration(byref confFile)
 	'*val = shello.RegRead(C_BBntRegistry & "AliasName\")
 	'*confFile.WriteLine("<setting name=""hostname"" value=""" & val & """ />")
 	val = shello.RegRead(C_BBntRegistry & "Timer\")
-	confFile.WriteLine("<setting name=""timer"" value=""" & val & """ />")
+	confFile.WriteLine(vbTab & "<setting name=""timer"" value=""" & val & """ />")
 	disp = shello.RegRead(C_BBntRegistry & "BBDISPLAY\")
 	port = shello.RegRead(C_BBntRegistry & "IPport\")
 	Dim BBDispArray
 	BBDispArray = Split(disp, ";")
 	For Each disp in BBDispArray
-		confFile.WriteLine("<setting name=""bbdisplay"" value=""" & disp & ":" & port & """ />")
+		confFile.WriteLine(vbTab & "<setting name=""bbdisplay"" value=""" & disp & ":" & port & """ />")
 	Next
 	val = shello.RegRead(C_BBntRegistry & "SendPageAlerts\")
 	If val = "Y" Then
@@ -104,31 +103,49 @@ Sub			buildBBWinConfiguration(byref confFile)
 	Else
 		val = "false"
 	End If
-	confFile.WriteLine("<setting name=""usepager"" value=""" & val & """ />")
+	confFile.WriteLine(vbTab & "<!-- BB Pager Part -->")
+	confFile.WriteLine(vbTab & "<setting name=""usepager"" value=""" & val & """ />")
 	disp = shello.RegRead(C_BBntRegistry & "BBPAGE\")
 	Dim BBPageArray
 	BBPageArray = Split(disp, ";")
 	For Each disp in BBPageArray
-		confFile.WriteLine("<setting name=""bbpager"" value=""" & disp & ":" & port & """ />")
+		confFile.WriteLine(vbTab & "<setting name=""bbpager"" value=""" & disp & ":" & port & """ />")
 	Next
 	val = shello.RegRead(C_BBntRegistry & "PageLevels\")
-	confFile.WriteLine("<setting name=""pagerlevels"" value=""" & val & """ />")
-	confFile.WriteLine("<load name=""cpu"" value=""cpu.dll"" />")
-	confFile.WriteLine("<load name=""disk"" value=""disk.dll"" />")
-	confFile.WriteLine("<load name=""externals"" value=""externals.dll"" />")
-	confFile.WriteLine("<load name=""procs"" value=""procs.dll"" />")
-	confFile.WriteLine("<load name=""memory"" value=""memory.dll"" />")
-	confFile.WriteLine("<load name=""msgs"" value=""msgs.dll"" />")
-	confFile.WriteLine("<load name=""stats"" value=""stats.dll"" />")
-	confFile.WriteLine("<load name=""svcs"" value=""svcs.dll"" />")
-	confFile.WriteLine("<load name=""uptime"" value=""uptime.dll"" />")
+	confFile.WriteLine(vbTab & "<setting name=""pagerlevels"" value=""" & val & """ />")
+	confFile.WriteLine("")
+	confFile.WriteLine(vbTab & "<!-- proxy connection settings -->")
+	confFile.WriteLine(vbTab & "<!--")
+	confFile.WriteLine(vbTab & "<setting name=""useproxy"" value=""false"" />")
+	confFile.WriteLine(vbTab & "<setting name=""proxy"" value=""[user:password@]host[:port]"" />")
+	confFile.WriteLine(vbTab & "-->")
+	confFile.WriteLine("")
+	confFile.WriteLine(vbTab & "<!-- bbwin mode local or central -->")
+	confFile.WriteLine(vbTab & "<setting name=""mode"" value=""local"" />")
+	confFile.WriteLine(vbTab & "<setting name=""configclass"" value=""win32"" />")
+	confFile.WriteLine("")
+	confFile.WriteLine(vbTab & "<setting name=""autoreload"" value=""true"" />")
+	confFile.WriteLine(vbTab & "<setting name=""timer"" value=""5m"" />")
+	confFile.WriteLine(vbTab & "<load name=""cpu"" value=""cpu.dll"" />")
+	confFile.WriteLine(vbTab & "<load name=""disk"" value=""disk.dll"" />")
+	confFile.WriteLine(vbTab & "<load name=""externals"" value=""externals.dll"" />")
+	confFile.WriteLine(vbTab & "<load name=""memory"" value=""memory.dll"" />")
+	confFile.WriteLine(vbTab & "<load name=""msgs"" value=""msgs.dll"" />")
+	confFile.WriteLine(vbTab & "<load name=""procs"" value=""procs.dll"" />")
+	confFile.WriteLine(vbTab & "<load name=""stats"" value=""stats.dll"" />")
+	confFile.WriteLine(vbTab & "<load name=""svcs"" value=""svcs.dll"" />")
+	confFile.WriteLine(vbTab & "<load name=""uptime"" value=""uptime.dll"" />")
+	confFile.WriteLine(vbTab & "<load name=""who"" value=""who.dll"" />")
 	val = shello.RegRead(C_BBntRegistry & "Activatelog\")
 	val = "0"
 	If val = "Y" Then
 		val = "3"
 	End If
-	confFile.WriteLine("<setting name=""loglevel"" value=""" & val & """ />")
-	confFile.WriteLine("<setting name=""logpath"" value=""C:\BBWin.log"" />")
+	confFile.WriteLine(vbTab & "<setting name=""loglevel"" value=""" & val & """ />")
+	confFile.WriteLine(vbTab & "<setting name=""logpath"" value=""C:\BBWin.log"" />")
+	confFile.WriteLine(vbTab & "<!--  If true, the agent will report reporting failures as warning events -->")
+	confFile.WriteLine(vbTab & "<setting name=""logreportfailure"" value=""false"" />")
+
 	confFile.WriteLine("</bbwin>")
 End Sub
 
@@ -137,21 +154,22 @@ End Sub
 '* Sub buildExternalsConfiguration()
 '* Purpose: buildExternalsConfiguration entry point
 '* Input: confFile 		configuration file object
-'* Output:  
+'* Output:
 '********************************************************************
 Sub			buildExternalsConfiguration(byref confFile)
 	Dim 	val
-	Dim 	regEx ' regexp object 
+	Dim 	regEx ' regexp object
 	Dim 	match ' match results
 	Dim		timer
-	
+
 	Set regEx = New RegExp
    	regEx.Pattern = "^\s*(.*)\s+/INT=(\S+)\s*$"
 	regEx.IgnoreCase = True
 	regEx.Global = True
 	confFile.WriteLine("<externals>")
 	val = shello.RegRead(C_BBntRegistry & "PluginTimer\")
-	confFile.WriteLine("<setting name=""logstimer"" value=""" & val & """ />")
+	confFile.WriteLine(vbTab & "<setting name=""timer"" value=""3m"" />")
+	confFile.WriteLine(vbTab & "<setting name=""logstimer"" value=""" & val & """ />")
 	val = shello.RegRead(C_BBntRegistry & "Externals\")
 	Dim ExtArray
 	ExtArray = split(val, ";")
@@ -167,11 +185,17 @@ Sub			buildExternalsConfiguration(byref confFile)
 			val = "cscript " & val
 		End If
 		If timer = "0" Then
-			confFile.WriteLine("<load value=""" & val & """ />")
+			confFile.WriteLine(vbTab & "<load value=""" & val & """ />")
 		Else
-			confFile.WriteLine("<load value=""" & val & """ timer=""" & timer & """ />")
+			confFile.WriteLine(vbTab & "<load value=""" & val & """ timer=""" & timer & """ />")
 		End If
-	Next 
+	Next
+	confFile.WriteLine(vbTab & "<!-- externals launch examples")
+	confFile.WriteLine(vbTab & "<load value=""cscript mybbscript.vbs"" />")
+	confFile.WriteLine(vbTab & "<load value=""myexternal.exe"" />")
+	confFile.WriteLine(vbTab & "<load value=""cscript wlbs.vbs"" timer=""15m"" />")
+	confFile.WriteLine(vbTab & "<load value=""cluster.exe"" timer=""90s"" /> -->")
+
 	confFile.WriteLine("</externals>")
 End Sub
 
@@ -181,16 +205,16 @@ End Sub
 '* Sub buildUpTimeConfiguration()
 '* Purpose: buildUpTimeConfiguration entry point
 '* Input: confFile 		configuration file object
-'* Output:  
+'* Output:
 '********************************************************************
 Sub			buildUpTimeConfiguration(byref confFile)
 	Dim		val
-	
+
 	confFile.WriteLine("<uptime>")
 	val = shello.RegRead(C_BBntRegistry & "PluginTimer\")
-	confFile.WriteLine("<setting name=""delay"" value=""" & val & "m"" />")
+	confFile.WriteLine(vbTab & "<setting name=""delay"" value=""" & val & "m"" />")
 	val = shello.RegRead(C_BBntRegistry & "CPUrebootcolor\")
-	confFile.WriteLine("<setting name=""alarmcolor"" value=""" & LCase(val) & """ />")
+	confFile.WriteLine(vbTab & "<setting name=""alarmcolor"" value=""" & LCase(val) & """ />")
 	confFile.WriteLine("</uptime>")
 End Sub
 
@@ -210,7 +234,7 @@ Sub			buildProcsConfiguration(byref confFile)
 	
 	confFile.WriteLine("<procs>")
 	val = shello.RegRead(C_BBntRegistry & "Procs\")
-	Dim ProcsArray 
+	Dim ProcsArray
 	ProcsArray = split(val, " ")
 	Set regEx = New RegExp
    	regEx.Pattern = "^\s*(.*):(.*):(.*)\s*$"
@@ -223,10 +247,14 @@ Sub			buildProcsConfiguration(byref confFile)
 			If match(0).SubMatches(1) = "Y" Then
 				color = "red"
 			End If
-			confFile.WriteLine("<setting name=""" & match(0).SubMatches(0) & """ rule=""=" & _
+			confFile.WriteLine(vbTab & "<setting name=""" & match(0).SubMatches(0) & """ rule=""=" & _
 							match(0).SubMatches(2) & """ alarmcolor=""" & color & """ />")
 		End If
 	Next
+	confFile.WriteLine(vbTab & "<!-- some procs rules example")
+	confFile.WriteLine(vbTab & "<setting name=""drwtsn"" rule=""-1"" alarmcolor=""red"" />")
+	confFile.WriteLine(vbTab & "<setting name=""pageant.exe"" rule=""=1"" comment=""Putty agent deamon"" /> -->")
+
 	confFile.WriteLine("</procs>")
 End Sub
 
@@ -236,25 +264,25 @@ End Sub
 '* Sub buildSvcsConfiguration()
 '* Purpose: buildSvcsConfiguration entry point
 '* Input: confFile 		configuration file object
-'* Output:  
+'* Output:
 '********************************************************************
 Sub			buildSvcsConfiguration(byref confFile)
 	Dim		val
-	Dim 	regEx ' regexp object 
+	Dim 	regEx ' regexp object
 	Dim 	match ' match results
 	Dim		color, state, reset
-	
+
 	confFile.WriteLine("<svcs>")
 	val = shello.RegRead(C_BBntRegistry & "Services\")
-	Dim SvcsArray 
+	Dim SvcsArray
 	SvcsArray = split(val, ";")
 	Set regEx = New RegExp
    	regEx.Pattern = "^\s*(.*):(.*):(.*):(.*)\s*$"
 	regEx.IgnoreCase = True
 	regEx.Global = True
-	confFile.WriteLine("<setting name=""alwaysgreen"" value=""false"" />")
-	confFile.WriteLine("<setting name=""alarmcolor"" value=""yellow"" />")
-	confFile.WriteLine("<setting name=""autoreset"" value=""false"" />")
+	confFile.WriteLine(vbTab & "<setting name=""alwaysgreen"" value=""false"" />")
+	confFile.WriteLine(vbTab & "<setting name=""alarmcolor"" value=""yellow"" />")
+	confFile.WriteLine(vbTab & "<setting name=""autoreset"" value=""false"" />")
 	For each val In SvcsArray
 		If regEx.test(val) = True Then
 			color = "yellow"
@@ -270,7 +298,7 @@ Sub			buildSvcsConfiguration(byref confFile)
 			If match(0).SubMatches(3) = "Y" Then
 				reset = "true"
 			End If
-			confFile.WriteLine("<setting name=""" & match(0).SubMatches(0) & """ value=""=" & _
+			confFile.WriteLine(vbTab & "<setting name=""" & match(0).SubMatches(0) & """ value=""=" & _
 							state & """ autoreset=""" & reset & """ alarmcolor=""" & color & """ />")
 		End If
 	Next
@@ -282,26 +310,29 @@ End Sub
 '* Sub buildCpuConfiguration()
 '* Purpose: buildCpuConfiguration entry point
 '* Input: confFile 		configuration file object
-'* Output:  
+'* Output:
 '********************************************************************
 Sub			buildCpuConfiguration(byref confFile)
 	Dim		val
-	Dim 	regEx ' regexp object 
+	Dim 	regEx ' regexp object
 	Dim 	match ' match results
-	
+
 	confFile.WriteLine("<cpu>")
+	confFile.WriteLine(vbTab & "<!-- If true, the agent will always report with green status -->")
 	val = shello.RegRead(C_BBntRegistry & "CPUalwaysGreen\")
 	Set regEx = New RegExp
    	regEx.Pattern = "^.*CPU:([0-9]*):([0-9]*).*$"
 	regEx.IgnoreCase = True
 	regEx.Global = True
 	If val = "Y" Then
-		confFile.WriteLine("<setting name=""alwaysgreen"" value=""true"" />")
+		confFile.WriteLine(vbTab & "<setting name=""alwaysgreen"" value=""true"" />")
+	Else
+		confFile.WriteLine(vbTab & "<setting name=""alwaysgreen"" value=""false"" />")
 	End If
 	val = shello.RegRead(C_BBntRegistry & "Defaults\")
 	If regEx.Test(val) = true Then
 		Set match = regEx.Execute(val)
-		confFile.WriteLine("<setting name=""default"" warnlevel=""" & match(0).SubMatches(0) & "%"" " & _ 
+		confFile.WriteLine(vbTab & "<setting name=""default"" warnlevel=""" & match(0).SubMatches(0) & "%"" " & _
 							"paniclevel=""" & match(0).SubMatches(1) & "%"" />")
 	End If
 	confFile.WriteLine("</cpu>")
@@ -313,25 +344,29 @@ End Sub
 '* Sub buildDiskConfiguration()
 '* Purpose: buildDiskConfiguration entry point
 '* Input: confFile 		configuration file object
-'* Output:  
+'* Output:
 '********************************************************************
 Sub			buildDiskConfiguration(byref confFile)
 	Dim		val
-	Dim 	regEx ' regexp object 
+	Dim 	regEx ' regexp object
 	Dim 	match ' match results
-	
+
 	confFile.WriteLine("<disk>")
+	confFile.WriteLine(vbTab & "<!-- If true, the agent will always report with green status -->")
 	val = shello.RegRead(C_BBntRegistry & "DISKalwaysGreen\")
 	Set regEx = New RegExp
    	regEx.Pattern = "^.*DISK:([0-9]*):([0-9]*).*$"
 	regEx.IgnoreCase = True
 	regEx.Global = True
 	If val = "Y" Then
-		confFile.WriteLine("<setting name=""alwaysgreen"" value=""true"" />")
+		confFile.WriteLine(vbTab & "<setting name=""alwaysgreen"" value=""true"" />")
+	Else
+		confFile.WriteLine(vbTab & "<setting name=""alwaysgreen"" value=""false"" />")
 	End If
 	val = shello.RegRead(C_BBntRegistry & "Defaults\")
 	Set match = regEx.Execute(val)
-	confFile.WriteLine("<setting name=""default"" warnlevel=""" & match(0).SubMatches(0) & "%"" " & _ 
+	confFile.WriteLine(vbTab & "<!-- Level can be given by % or size unit mb, gb, tb -->")
+	confFile.WriteLine(vbTab & "<setting name=""default"" warnlevel=""" & match(0).SubMatches(0) & "%"" " & _
 						"paniclevel=""" & match(0).SubMatches(1) & "%"" />")
 	val = shello.RegRead(C_BBntRegistry & "DiskList\")
 	Dim DiskArray
@@ -340,10 +375,18 @@ Sub			buildDiskConfiguration(byref confFile)
 	For Each val In DiskArray
 		If regEx.Test(val) = true Then
 			Set match = regEx.Execute(val)
-			confFile.WriteLine("<setting name=""" & match(0).SubMatches(0) & """ warnlevel=""" & match(0).SubMatches(1) & "%"" " & _
+			confFile.WriteLine(vbTab & "<setting name=""" & match(0).SubMatches(0) & """ warnlevel=""" & match(0).SubMatches(1) & "%"" " & _
 								" paniclevel=""" & match(0).SubMatches(2) & "%"" />")
 		End If
 	Next
+	confFile.WriteLine(vbTab & "<!-- custom rules examples")
+	confFile.WriteLine(vbTab & "<setting name=""C"" warnlevel=""70%"" paniclevel=""400mb"" />")
+	confFile.WriteLine(vbTab & "<setting name=""E"" ignore=""true"" /> -->")
+	confFile.WriteLine(vbTab & "<!-- If true, the agent will check remote drives -->")
+	confFile.WriteLine(vbTab & "<setting name=""remote"" value=""false"" />")
+	confFile.WriteLine(vbTab & "<!-- If true, the agent will check that cd/dvdrom drives are empty -->")
+	confFile.WriteLine(vbTab & "<setting name=""cdrom"" value=""false"" />")
+
 	confFile.WriteLine("</disk>")
 End Sub
 
@@ -353,17 +396,19 @@ End Sub
 '* Sub buildMemoryConfiguration()
 '* Purpose: buildMemoryConfiguration entry point
 '* Input: confFile 		configuration file object
-'* Output:  
+'* Output:
 '********************************************************************
 Sub			buildMemoryConfiguration(byref confFile)
 	Dim		val
-	Dim 	regEx ' regexp object 
+	Dim 	regEx ' regexp object
 	Dim 	match ' match results
 	Dim 	title
-	
+
 	confFile.WriteLine("<memory>")
+	confFile.WriteLine(vbTab & "<!-- If true, the agent will always report with green status -->")
+	confFile.WriteLine(vbTab & "<setting name=""alwaysgreen"" value=""false"" />")
 	val = shello.RegRead(C_BBntRegistry & "MemLevels\")
-	Dim MemArray 
+	Dim MemArray
 	MemArray = split(val, " ")
 	Set regEx = New RegExp
    	regEx.Pattern = "^(.*):([0-9]*):([0-9]*)$"
@@ -377,10 +422,10 @@ Sub			buildMemoryConfiguration(byref confFile)
 			Else
 				title = "physical"
 			End If
-			confFile.WriteLine("<setting name=""" & title & """ warnlevel=""" & match(0).SubMatches(1) & "%"" " & _ 
+			confFile.WriteLine(vbTab & "<setting name=""" & title & """ warnlevel=""" & match(0).SubMatches(1) & "%"" " & _
 							"paniclevel=""" & match(0).SubMatches(2) & "%"" />")
 		End If
-	Next 
+	Next
 	confFile.WriteLine("</memory>")
 End Sub
 
@@ -390,26 +435,27 @@ End Sub
 '* Sub buildMsgsConfiguration()
 '* Purpose: buildMsgsConfiguration entry point
 '* Input: confFile 		configuration file object
-'* Output:  
+'* Output:
 '********************************************************************
 Sub			buildMsgsConfiguration(byref confFile)
 	Dim		val
-	Dim 	regEx ' regexp object 
+	Dim 	regEx ' regexp object
 	Dim 	match ' match results
-	
+
 	confFile.WriteLine("<msgs>")
 	val = shello.RegRead(C_BBntRegistry & "MsgLevels\")
-	Dim MsgsArray 
+	Dim MsgsArray
 	MsgsArray = split(val, " ")
 	Set regEx = New RegExp
    	regEx.Pattern = "^(.*):(.*):(.):([0-9]+)$"
 	regEx.IgnoreCase = True
 	regEx.Global = True
-	confFile.WriteLine("<setting name=""summary"" value=""true"" />")
+	'confFile.WriteLine(vbTab & "<setting name=""summary"" value=""true"" />")
+	confFile.WriteLine(vbTab & "<setting name=""delay"" value=""30m"" />")
 	For Each val In MsgsArray
 		If regEx.Test(val) = true Then
 			Dim 	color, evtype, delay
-			
+
 			Set match = regEx.Execute(val)
 			If match(0).SubMatches(2) = "Y" Then
 				color = "red"
@@ -423,19 +469,19 @@ Sub			buildMsgsConfiguration(byref confFile)
 			If evtype = "success_audit" Then
 				evtype = "success"
 			End If
-			confFile.WriteLine("<match logfile=""" & LCase(match(0).SubMatches(0)) & _
+			confFile.WriteLine(vbTab & "<match logfile=""" & LCase(match(0).SubMatches(0)) & _
 							""" " & "type=""" & evtype & """ alarmcolor=""" & color & """ " & " />")
 		End If
-	Next 
+	Next
 	confFile.WriteLine("")
-	confFile.WriteLine("<!-- Ignore rules -->")
+	confFile.WriteLine(vbTab & "<!-- Ignore rules -->")
 	val = shello.RegRead(C_BBntRegistry & "IgnoreMsgs\")
 	MsgsArray = split(val, ";")
 	For Each val In MsgsArray
-		confFile.WriteLine("<ignore logfile=""Application"" value=""" & val & """/>")
-		confFile.WriteLine("<ignore logfile=""Security"" value=""" & val & """/>")
-		confFile.WriteLine("<ignore logfile=""System"" value=""" & val & """/>")
-	Next 
+		confFile.WriteLine(vbTab & "<ignore logfile=""Application"" value=""" & val & """/>")
+		confFile.WriteLine(vbTab & "<ignore logfile=""Security"" value=""" & val & """/>")
+		confFile.WriteLine(vbTab & "<ignore logfile=""System"" value=""" & val & """/>")
+	Next
 	confFile.WriteLine("</msgs>")
 End Sub
 
@@ -444,11 +490,11 @@ End Sub
 '* Sub BuildRegistryFile()
 '* Purpose: BuildRegistryFile entry point
 '* Input: args 		arguments
-'* Output:  
+'* Output:
 '********************************************************************
 Sub 	BuildRegistryFile(filename)
 	Dim		regFile, val
-	
+
 	On Error Resume Next
 	Err.Number = 0
 	Set regFile = fso.OpenTextFile(filename & ".reg", 2, true)
@@ -470,11 +516,11 @@ End Sub
 '* Sub MigrateBBntToBBWin()
 '* Purpose: MigrateBBntToBBWin entry point
 '* Input: args 		arguments
-'* Output:  
+'* Output:
 '********************************************************************
 Sub 	MigrateBBntToBBWin(byref args)
 	Dim		confFile
-	
+
 	On Error Resume Next
 	Err.Number = 0
 	Set confFile = fso.OpenTextFile(args(0), 2, true)
@@ -503,7 +549,7 @@ End Sub
 '* Sub Main()
 '* Purpose: Entry point for the main function
 '* Input:   args      The Arguments object
-'* Output:  
+'* Output:
 '*
 '********************************************************************
 Sub			Main(byref args)
@@ -514,7 +560,7 @@ Sub			Main(byref args)
 	If args.Count < 1 Then
 		Usage()
 		WScript.Quit(1)
-	End If 
+	End If
 	call MigrateBBntToBBWin(args)
 End Sub
 
