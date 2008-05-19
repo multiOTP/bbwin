@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2003/01/wi'>
-	<Product Name='BBWin 0.11' Id='B9373D66-A0AA-4c7f-9B3A-4B18A23600FE'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
-		Language='1033' Codepage='1252' Version='0.11' Manufacturer='GNU'>
+	<Product Name='BBWin 0.12' Id='B0E67C4E-D046-44c7-9571-85AB9D46F180'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
+		Language='1033' Codepage='1252' Version='0.12' Manufacturer='GNU'>
 
     <Package Id='DD6D4524-075B-4c0b-86A8-7D2A31E48EE3' Keywords='Installer'
-      Description="BBWin 0.11 Installer"
+      Description="BBWin 0.12 Installer"
       Comments='BBWin : Big Brother Hobbit Windows Client' Manufacturer='GNU'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
