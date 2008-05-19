@@ -1,5 +1,5 @@
 //this file is part of BBWin
-//Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+//Copyright (C)2006-2008 Etienne GRIGNON  ( etienne.grignon@gmail.com )
 //
 //This program is free software; you can redistribute it and/or
 //modify it under the terms of the GNU General Public License
@@ -29,6 +29,7 @@
 #include <list>
 #include "tinyxml.h"
 #include "digest.h"
+#include "utils.h"
 #include "BBWinUpdate.h"
 
 using namespace std;
@@ -168,6 +169,68 @@ void		AgentBBWinUpdate::RunUpdate(std::string & configFile) {
 	delete toUpdate;
 }
 
+void		AgentBBWinUpdate::RunAgentUpdate() {
+	string clientVersionPath = m_mgr.GetSetting("etcpath") + "\\clientversion.cfg";
+	string tmpPath = m_mgr.GetSetting("tmppath");
+	string binpath = m_mgr.GetSetting("binpath");
+
+	//get current version
+	ifstream	versionFile(clientVersionPath.c_str());
+	if (!versionFile) {
+		string	err;
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_DEBUG, "can't open %s : %s", clientVersionPath.c_str(), err.c_str());
+		return ;
+	}
+	string	localVersion;
+	std::getline(versionFile, localVersion);
+	versionFile.close();
+	m_mgr.ClientData("clientversion", localVersion.c_str());
+
+	// get the version from clientlocal.cfg
+	string clientLocalCfgPath = tmpPath + (string)"\\clientlocal.cfg";
+	ifstream		conf(clientLocalCfgPath.c_str());
+	if (!conf) {
+		string	err;
+
+		utils::GetLastErrorString(err);
+		m_mgr.Log(LOGLEVEL_INFO, "can't open %s : %s", clientLocalCfgPath.c_str(), err.c_str());
+		return ;
+	}
+	string		buf;
+	string		serverVersion;
+	while (!conf.eof()) {
+		string		value;
+
+		utils::GetConfigLine(conf, buf);
+		if (utils::parseStrGetNext(buf, "clientversion:", value)) {
+			serverVersion = value;
+		}
+	}
+	if (serverVersion == "") {
+		m_mgr.Log(LOGLEVEL_DEBUG, "no clientversion specified client-local.cfg");
+		return ;
+	}
+	if (serverVersion == localVersion) {
+		m_mgr.Log(LOGLEVEL_DEBUG, "we have the latest version : %s", localVersion.c_str());
+		return ;
+	}
+	string	sysTempPath;
+	
+	utils::GetEnvironmentVariableA("TEMP", sysTempPath);
+	serverVersion += ".zip";
+	string downloadPath  = sysTempPath + "\\" + serverVersion;
+	m_mgr.Log(LOGLEVEL_DEBUG, "download %s to %s", serverVersion.c_str(), tmpPath.c_str());
+	m_mgr.Download(serverVersion.c_str(), tmpPath.c_str());
+
+	cout << "Debug " << serverVersion << " " << sysTempPath << endl;
+
+	// deplacer le zip dans le repertoire temporaire de windows
+	// depl
+
+}
+
 void 		AgentBBWinUpdate::Run() {
 	std::list<string>::iterator		itr;
 	
@@ -187,6 +250,9 @@ void 		AgentBBWinUpdate::Run() {
 			m_mgr.ReportEventInfo(err.c_str());
 		}
 	}
+	// centralized mode
+	if (m_mgr.IsCentralModeEnabled())
+		RunAgentUpdate();
 }
 
 AgentBBWinUpdate::AgentBBWinUpdate(IBBWinAgentManager & mgr) : 
@@ -210,9 +276,6 @@ bool		AgentBBWinUpdate::Init() {
 		
 		name = m_mgr.GetConfigurationRangeValue(range, "name");
 		value = m_mgr.GetConfigurationRangeValue(range, "value");
-		/*if (name == "server" && value.length() > 0) {
-			m_server = value;
-		}*/
 		if (name == "filename" && value.length() > 0) {
 			TCHAR		buf[FILENAME_MAX];
 			string		filename;
