@@ -1,10 +1,12 @@
 
-
 Designer and Developer
 Etienne Grignon (etienne.grignon@gmail.com)
 
 BBWin Centralized Mode (Unix part)
 François Lacroix
+
+Richard Finegold (For the update of the MigrateBBntToBBWin.txt tool)
+
 
 ---------
 
