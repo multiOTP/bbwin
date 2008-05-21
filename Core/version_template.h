@@ -1,5 +1,5 @@
 //this file is part of BBWin
-//Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+//Copyright (C)2006-2008 Etienne GRIGNON  ( etienne.grignon@gmail.com )
 //
 //This program is free software; you can redistribute it and/or
 //modify it under the terms of the GNU General Public License
@@ -22,9 +22,9 @@
 #define		__VERSION_H__
 
 #define BBWINNAME_STR "BBWin\0"
-#define BBWINVERSION 0,11,0,$WCREV$
-#define BBWINFILEVERSION_STR "0.11.0.$WCREV$\0"
-#define BBWINVERSION_STR "0.11\0"
+#define BBWINVERSION 0,12,0,$WCREV$
+#define BBWINFILEVERSION_STR "0.12.0.$WCREV$\0"
+#define BBWINVERSION_STR "0.12\0"
 #define BBWINBUILD_STR "$WCREV$\0"
 #define BBWINURL_STR "$WCURL$\0"
 #define BBWINDATE_STR "$WCDATE$\0"

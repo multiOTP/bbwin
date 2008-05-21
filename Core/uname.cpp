@@ -1,5 +1,5 @@
 //this file is part of BBWin
-//Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+//Copyright (C)2006-2008 Etienne GRIGNON  ( etienne.grignon@gmail.com )
 //
 //This program is free software; you can redistribute it and/or
 //modify it under the terms of the GNU General Public License
@@ -16,6 +16,8 @@
 //Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 // Source code from http://msdn2.microsoft.com/en-us/library/ms724429.aspx
+
+// $Id$
 
 #include <windows.h>
 #include <tchar.h>
