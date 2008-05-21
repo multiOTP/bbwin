@@ -216,19 +216,12 @@ void		AgentBBWinUpdate::RunAgentUpdate() {
 		m_mgr.Log(LOGLEVEL_DEBUG, "we have the latest version : %s", localVersion.c_str());
 		return ;
 	}
-	string	sysTempPath;
-	
-	utils::GetEnvironmentVariableA("TEMP", sysTempPath);
-	serverVersion += ".zip";
-	string downloadPath  = sysTempPath + "\\" + serverVersion;
-	m_mgr.Log(LOGLEVEL_DEBUG, "download %s to %s", serverVersion.c_str(), tmpPath.c_str());
-	m_mgr.Download(serverVersion.c_str(), tmpPath.c_str());
-
-	cout << "Debug " << serverVersion << " " << sysTempPath << endl;
-
-	// deplacer le zip dans le repertoire temporaire de windows
-	// depl
-
+	//string	sysTempPath;
+	//utils::GetEnvironmentVariableA("TEMP", sysTempPath);
+	//serverVersion += ".zip";
+	//string downloadPath  = sysTempPath + "\\" + serverVersion;
+	//m_mgr.Log(LOGLEVEL_DEBUG, "download %s to %s", serverVersion.c_str(), tmpPath.c_str());
+	//m_mgr.Download(serverVersion.c_str(), tmpPath.c_str());
 }
 
 void 		AgentBBWinUpdate::Run() {
