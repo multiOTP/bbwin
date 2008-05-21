@@ -1,5 +1,5 @@
 //this file is part of BBWin
-//Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+//Copyright (C)2006-2008 Etienne GRIGNON  ( etienne.grignon@gmail.com )
 //
 //This program is free software; you can redistribute it and/or
 //modify it under the terms of the GNU General Public License
@@ -216,8 +216,11 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 								default:
 									startType = "driver";
 							}
+							// replace spaces from servicename by underscore
+							string			cleanName = tempName;
+							std::replace(cleanName.begin(), cleanName.end(), ' ', '_');
 							reportData << format("%-35s %-12s %-14s %s") 
-								% tempName
+								% cleanName
 								% startType
 								% findSvcStatus(servStatus.dwCurrentState)
 								% name << endl;

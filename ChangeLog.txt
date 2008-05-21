@@ -1,11 +1,12 @@
 ChangeLog file for BBWin
 ==============================================================
 
-BBWin 0.12 Preview version -  May 19th 2008
+BBWin 0.12 Beta version -  May 21th 2008
 -------------------
 
 * Fix multiple bbdisplay with centralized mode
-* Send BBWin version
+* Send BBWin version (clientversion.cfg from etc folder)
+* Fix service names with spaces with centralized mode (replace spaces by underscore)
 
 
 BBWin 0.11 Preview version -  February 11th 2008
