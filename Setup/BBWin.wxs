@@ -137,7 +137,8 @@
 				<Directory Id='docD' Name="doc" >
 					<Component Id="CommonReadMeTextFilesC" Guid='B7889E96-1BB2-46f2-83FE-52EC721915CA'>
 						<File Id='ReadMe.txt' Name="ReadMe.txt" LongName='ReadMe.txt' DiskId='1' src='../ReadMe.txt' Vital='yes'/>
-						<File Id='BBWin.cfg.example' Name="BBWin.cfg" LongName='BBWin.cfg.example' DiskId='1' src='../Core/BBWin.cfg' Vital='yes'/>
+						<File Id='BBWin_local.cfg.example' Name="BBWin.cfg" LongName='BBWin_local.cfg.example' DiskId='1' src='../Core/BBWin.cfg' Vital='yes'/>
+						<File Id='BBWin_central.cfg.example' Name="BBWinCent.cfg" LongName='BBWin_central.cfg.example' DiskId='1' src='../Core/bbwin_central.cfg' Vital='yes'/>
 					</Component>
 					<Component Id="BBWinChmC" Guid='7D383A7B-8891-4077-A95A-D45C725E98D7'>
 						<File Id="BBWin.chm" Name="BBWinE.chm" LongName='BBWin_en.chm' DiskId='1' src='../Doc/en/BBWin.chm' Vital='yes'/>
