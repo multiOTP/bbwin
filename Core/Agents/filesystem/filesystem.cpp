@@ -701,8 +701,7 @@ void 		AgentFileSystem::Run() {
 
 bool AgentFileSystem::Init() {
 	if (m_mgr.IsCentralModeEnabled() == false) {
-		m_mgr.Log(LOGLEVEL_INFO, "filesystem agent only work with the BBWin centralized mode");
-		return false;
+		return true;
 	}
 	LoadSeekData();
 	return true;
