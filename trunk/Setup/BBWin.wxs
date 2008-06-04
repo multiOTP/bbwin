@@ -3,7 +3,7 @@
 	<Product Name='BBWin 0.12' Id='B0E67C4E-D046-44c7-9571-85AB9D46F180'  UpgradeCode='E6444500-EAAA-43e5-A7CA-B24B0E4749BE'
 		Language='1033' Codepage='1252' Version='0.12' Manufacturer='GNU'>
 
-    <Package Id='DD6D4524-075B-4c0b-86A8-7D2A31E48EE3' Keywords='Installer'
+    <Package Id='0D034B61-94EB-4f60-946C-09ED822AA61E' Keywords='Installer'
       Description="BBWin 0.12 Installer"
       Comments='BBWin : Big Brother Hobbit Windows Client' Manufacturer='GNU'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
@@ -138,7 +138,7 @@
 					<Component Id="CommonReadMeTextFilesC" Guid='B7889E96-1BB2-46f2-83FE-52EC721915CA'>
 						<File Id='ReadMe.txt' Name="ReadMe.txt" LongName='ReadMe.txt' DiskId='1' src='../ReadMe.txt' Vital='yes'/>
 						<File Id='BBWin_local.cfg.example' Name="BBWin.cfg" LongName='BBWin_local.cfg.example' DiskId='1' src='../Core/BBWin.cfg' Vital='yes'/>
-						<File Id='BBWin_central.cfg.example' Name="BBWinCent.cfg" LongName='BBWin_central.cfg.example' DiskId='1' src='../Core/bbwin_central.cfg' Vital='yes'/>
+						<File Id='BBWin_central.cfg.example' Name="BBWinCen.cfg" LongName='BBWin_central.cfg.example' DiskId='1' src='../Core/bbwin_central.cfg' Vital='yes'/>
 					</Component>
 					<Component Id="BBWinChmC" Guid='7D383A7B-8891-4077-A95A-D45C725E98D7'>
 						<File Id="BBWin.chm" Name="BBWinE.chm" LongName='BBWin_en.chm' DiskId='1' src='../Doc/en/BBWin.chm' Vital='yes'/>
@@ -198,7 +198,7 @@
         </Directory>
 	</Directory>
 						
-    <Feature Id='Complete' Title='BBWin 0.9' Description='The complete BBWin package.'
+    <Feature Id='Complete' Title='BBWin' Description='The complete BBWin package.'
       TypicalDefault='install' Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
 		<Feature Id='BBWin' Title='BBWin' Description='The BBWin core service.'
 		TypicalDefault='install' Level='1' Absent='disallow' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR'>
