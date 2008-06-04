@@ -1,7 +1,7 @@
 ChangeLog file for BBWin
 ==============================================================
 
-BBWin 0.12 Beta version -  May 21th 2008
+BBWin 0.12 Beta version -  June 6th 2008
 -------------------
 
 * Fix multiple bbdisplay with centralized mode

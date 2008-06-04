@@ -4,7 +4,7 @@ README file for BBWin
 Summary
 =======
 
-BBWin is an open source implementation of a big brother hobbit windows client.
+BBWin is an open source big brother/hobbit windows client.
 
 
 Documentation
