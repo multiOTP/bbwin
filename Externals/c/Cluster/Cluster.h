@@ -89,8 +89,6 @@ void				debug(LPCWSTR format, ...);
 void 				fatalError(LPCWSTR format, ...);
 void 				warnError(LPCWSTR format, ...);
 
-int 				checkVersion();
-
 int					getTempPath(LPTSTR lpPath);
 
 #endif // !__CLUSTER_H__
