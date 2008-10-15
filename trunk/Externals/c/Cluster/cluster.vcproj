@@ -163,10 +163,6 @@
 				RelativePath=".\Utils.c"
 				>
 			</File>
-			<File
-				RelativePath=".\Version.c"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

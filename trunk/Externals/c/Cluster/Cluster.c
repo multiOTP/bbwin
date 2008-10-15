@@ -380,8 +380,8 @@ void						clusterMain()
 	cluster_t				pcluster;
 	
 	initCluster(&pcluster);
-	if (checkVersion() == I_FALSE)
-		fatalError(L"This version of Windows is not supported for Windows Clustering.");
+	//if (checkVersion() == I_FALSE)
+	//	fatalError(L"This version of Windows is not supported for Windows Clustering.");
 	if (checkClusterState() == I_FALSE)
 		exit(1);
 	getClusterGroups(&pcluster);
