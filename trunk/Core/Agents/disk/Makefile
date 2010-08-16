@@ -19,22 +19,22 @@
 
 all: disk.dll
 
-BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
+BOOST_INC_PATH = /I C:\boost
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
-BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
+BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc90-mt-s-1_35.lib
 
 cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
-	
+
 ## disk dependencies
 
 disk_objs = 	disk.obj
 
 disk.res: disk.rc
 	$(rc) $(rcflags) $(rcvars) /fo disk.res disk.rc
-	
+
 disk.dll: $(disk_objs) disk.res
     $(link) /DLL $(dllldebug) $(disk_objs) disk.res -out:disk.dll $(BOOST_LIB)
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
