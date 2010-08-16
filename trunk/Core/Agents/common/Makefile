@@ -18,9 +18,9 @@
 !include <Win32.Mak>
 
 
-BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
+BOOST_INC_PATH = /I C:\boost
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
-BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
+BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc90-mt-s-1_35.lib
 
 cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
 
@@ -35,4 +35,4 @@ obj = SystemCounters.obj
 all: $(obj)
 
 clean:
-		erase /Q /S $(obj)
+	erase /Q /S $(obj)
