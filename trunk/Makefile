@@ -15,15 +15,15 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
+#comment out externals since it only has cluster NT module
+#     Externals\~ \
 
 DIRS = \
-    Core\~   		\
-    Externals\~   		\
-    Setup\~   		\
+    Core\~   	\
+    Setup\~   	\
 
-	
 !include <sdkpropbld.mak>
-	
+
 all: $(DIRS)	
 
 $(DIRS):
@@ -32,8 +32,8 @@ $(DIRS):
 clean:
 	cd Core
 	nmake fclean
-	cd ../Externals
-	nmake clean
+#	cd ../Externals
+#	nmake clean
 	cd ../Setup
 	nmake clean
 	cd ..

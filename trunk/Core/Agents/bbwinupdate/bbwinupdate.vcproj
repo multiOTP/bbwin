@@ -39,7 +39,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../..;../../digest"
+				AdditionalIncludeDirectories="c:\boost;../..;../../digest"
 				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -106,7 +106,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../..;../../digest"
+				AdditionalIncludeDirectories="c:\boost;../..;../../digest"
 				WarningLevel="3"
 			/>
 			<Tool
@@ -120,7 +120,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(TargetDir)tinyxml.lib&quot; &quot;$(TargetDir)digest.lib&quot;"
+				AdditionalDependencies="&quot;$(TargetDir)tinyxml.lib&quot; &quot;$(TargetDir)digest.lib&quot; c:\boost\lib\libboost_date_time-vc90-mt-1_35.lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>

@@ -19,26 +19,25 @@
 
 all: uptime.dll
 
-BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
+BOOST_INC_PATH = /I C:\boost
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
-BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
+BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc90-mt-s-1_35.lib
 
 cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
-	
+
 ## uptime dependencies
 
 uptime_objs = 	uptime.obj 
 
 uptime.res: uptime.rc
 	$(rc) $(rcflags) $(rcvars) /fo uptime.res uptime.rc
-	
+
 uptime.dll: $(uptime_objs) uptime.res ../common/SystemCounters.obj
     $(link) /DLL $(dllldebug) $(uptime_objs) ../common/SystemCounters.obj uptime.res -out:uptime.dll $(BOOST_LIB) 
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
 	copy /Y uptime.dll ..\..\..\Release
-	
 clean:
 		erase /Q /S $(uptime_objs)

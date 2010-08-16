@@ -19,27 +19,27 @@
 
 all: msgs.dll
 
-BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
+BOOST_INC_PATH = /I C:\boost
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
-BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
+BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc90-mt-s-1_35.lib
 
 cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
-	
+
 ## msgs dependencies
 
 msgs_objs = 	msgs.obj eventlog.obj logs.obj
 
 msgs.res: msgs.rc
 	$(rc) $(rcflags) $(rcvars) /fo msgs.res msgs.rc
-	
+
 msgs.dll: $(msgs_objs) msgs.res
     $(link) /DLL $(dllldebug) $(msgs_objs) msgs.res -out:msgs.dll $(BOOST_LIB) Advapi32.lib
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
 	copy /Y msgs.dll ..\..\..\Release
-	
+
 clean:
 		erase /Q /S $(msgs_objs)
 

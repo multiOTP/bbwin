@@ -50,10 +50,11 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				ExecutionBucket="6"
+				AdditionalIncludeDirectories="c:\boost"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -72,7 +73,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				ExecutionBucket="10"
-				AdditionalDependencies="advapi32.lib Ws2_32.lib User32.lib"
+				AdditionalDependencies="advapi32.lib Ws2_32.lib User32.lib c:\boost\lib\libboost_date_time-vc90-mt-1_35.lib"
 				OutputFile="$(OutDir)\BBWin.exe"
 				AddModuleNamesToAssembly=""
 				GenerateDebugInformation="true"
@@ -134,6 +135,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="c:\boost"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				WarningLevel="3"
 			/>
@@ -149,7 +151,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="advapi32.lib Ws2_32.lib User32.lib"
+				AdditionalDependencies="advapi32.lib Ws2_32.lib User32.lib c:\boost\lib\libboost_date_time-vc90-mt-s-1_35.lib"
 				OutputFile="$(OutDir)\BBWin.exe"
 				AddModuleNamesToAssembly=""
 				RandomizedBaseAddress="1"

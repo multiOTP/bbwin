@@ -19,27 +19,26 @@
 
 all: memory.dll
 
-BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
+BOOST_INC_PATH = /I C:\boost
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
-BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
+BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc90-mt-s-1_35.lib
 
 cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
-	
+
 ## memory dependencies
 
 memory_objs = 	memory.obj
 
 memory.res: memory.rc
 	$(rc) $(rcflags) $(rcvars) /fo memory.res memory.rc
-	
+
 memory.dll: $(memory_objs) memory.res
     $(link) /DLL $(dllldebug) $(memory_objs) memory.res -out:memory.dll $(BOOST_LIB)
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
 	copy /Y memory.dll ..\..\..\Release
-	
 clean:
 		erase /Q /S $(memory_objs)
 

@@ -106,6 +106,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="c:\boost"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				WarningLevel="3"
 			/>
@@ -120,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="clusapi.lib Advapi32.lib"
+				AdditionalDependencies="clusapi.lib Advapi32.lib c:\boost\lib\libboost_date_time-vc90-mt-1_35.lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>

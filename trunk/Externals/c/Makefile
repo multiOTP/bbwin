@@ -17,11 +17,10 @@
 
 
 DIRS = \
-    Cluster\~   		\
+    Cluster\~   		
 
-	
 !include <sdkpropbld.mak>
-	
+
 all: $(DIRS)	
 
 $(DIRS):
