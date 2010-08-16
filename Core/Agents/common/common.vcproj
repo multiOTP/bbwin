@@ -38,6 +38,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="c:\boost"
 				RuntimeLibrary="2"
 				DebugInformationFormat="3"
 			/>
@@ -92,6 +93,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="c:\boost"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

@@ -94,6 +94,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="c:\boost"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				WarningLevel="3"
 			/>

@@ -22,17 +22,17 @@
 all: $(OUTDIR) $(OUTDIR)\Cluster.exe
 
 SRC = 			Cluster.c \
-				Version.c \
-				Utils.c
+			Version.c \
+			Utils.c
 
 OBJ	= 			$(OUTDIR)\Cluster.obj \
 				$(OUTDIR)\Version.obj \
 				$(OUTDIR)\Utils.obj
 
 HEADERS = 		Cluster.h
-				
+
 cflags = $(cflags) -DUNICODE
-			
+
 $(OUTDIR) :
     if not exist "$(OUTDIR)/$(NULL)" mkdir $(OUTDIR)
 
@@ -46,7 +46,7 @@ $(OUTDIR)\Cluster.exe: $(OUTDIR)\Cluster.obj $(OUTDIR)\Cluster.res
     $(link) $(ldebug) $(conlflags) -out:$(OUTDIR)\Cluster.exe $(OBJ) $(OUTDIR)\Cluster.res $(conlibs) clusapi.lib
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
 	copy /Y $(OUTDIR)\Cluster.exe ..\..\..\Release
-	
+
 clean:
         $(CLEANUP)
 

@@ -19,9 +19,9 @@
 
 all: procs.dll
 
-BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
+BOOST_INC_PATH = /I C:\boost
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
-BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
+BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc90-mt-s-1_35.lib
 
 cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
 

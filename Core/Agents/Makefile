@@ -18,22 +18,23 @@
 
 DIRS = \
     common\~   		\
-    externals\~   		\
+    externals\~   	\
     uptime\~   		\
     cpu\~   		\
     disk\~   		\
-	filesystem\~   	\
+    filesystem\~   	\
     memory\~   		\
     msgs\~   		\
     stats\~   		\
     svcs\~   		\
     procs\~   		\
-    sample\~   		\
-	bbwinupdate\~   \
-	who\~   \
+    bbwinupdate\~   \
+    who\~   \
+
+#    sample\~   		
 
 !include <sdkpropbld.mak>
-	
+
 all: $(DIRS)	
 
 $(DIRS):
@@ -61,12 +62,11 @@ clean:
 	nmake clean
 	cd ..\procs
 	nmake clean
-	cd ..\sample
-	nmake clean
+#	cd ..\sample
+#	nmake clean
 	cd ..\bbwinupdate
 	nmake clean
 	cd ..\who
 	nmake clean
 	cd ..
 
-	

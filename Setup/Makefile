@@ -18,7 +18,9 @@
 
 !include <Win32.Mak>
 
-PROJ = BBWin
+
+
+PROJ = BBWin 
 
 all: $(PROJ).msi
 
@@ -36,14 +38,18 @@ WIXCC = candle
 WCFLAG = /nologo
 WIXLINKER = light
 WLFLAG = /nologo
+HHC = "C:\Program Files\HTML Help Workshop\hhc.exe"
+HHCFLAG = 
 
 ###########################
-# makefile inference rules
+# makefile inference rules 
 ###########################
- 
+
+# WIXCC compiler generate wixobj from wxs 
 .wxs.wixobj:
 	$(WIXCC) $(WCFLAG) $(PROJ).wxs
  
+# WIXCC linker generate msi from wixobj
 .wixobj.msi:
 	$(WIXLINKER) $(WLFLAG) $(PROJ).wixobj
 
@@ -65,7 +71,14 @@ $(PROJ).dll: $(BASE_OBJS) $(PROJ_OBJS) $(PROJ).res
 $(PROJ).msi: $(PROJ).wixobj
 
 
+# This BBWin.chm need to be made from hhc.exe for BBWin.wxs
+# BBWin.chm generated from bbwin.hhp in ..\docs\en
+$(PROJ).chm:
+	$(HHC) ..\doc\en\$(PROJ).hhp
+
 # Rules for cleaning out those old files
 clean:
-		erase /q /s $(PROJ).dll $(PROJ).exp $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj $(PROJ).msi $(PROJ).lib
-
+	erase /q /s $(PROJ).dll $(PROJ).exp \
+        $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj  \
+        $(PROJ).msi $(PROJ).lib \
+        ..\doc\en\$(PROJ).chm

@@ -19,28 +19,28 @@
 
 all: who.dll
 
-BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
+BOOST_INC_PATH = /I C:\boost
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
-BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
+BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc90-mt-s-1_35.lib
 
 cflags = $(cflags) /EHsc /I ../.. $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
-	
+
 ## who dependencies
 
 who_objs = 	who.obj
 
 who.res: who.rc
 	$(rc) $(rcflags) $(rcvars) /fo who.res who.rc
-	
+
 who.dll: $(who_objs) who.res
     $(link) /DLL $(dllldebug) $(who_objs) who.res -out:who.dll  $(BOOST_LIB) Advapi32.lib Netapi32.lib
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
 	copy /Y who.dll ..\..\..\Release
-	
+
 clean:
-		erase /Q /S $(who_objs)
+	erase /Q /S $(who_objs)
 
 

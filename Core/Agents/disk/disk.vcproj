@@ -39,7 +39,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../.."
+				AdditionalIncludeDirectories="c:\boost;../.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				WarningLevel="3"
@@ -57,6 +57,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="c:\boost\lib\libboost_date_time-vc90-mt-1_35.lib"
 				GenerateDebugInformation="true"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -107,7 +108,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../.."
+				AdditionalIncludeDirectories="c:\boost;../.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
 			/>
 			<Tool
@@ -121,6 +122,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="c:\boost\lib\libboost_date_time-vc90-mt-s-1_35.lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 			/>
