@@ -19,22 +19,22 @@
 
 all: cpu.dll
 
-BOOST_INC_PATH = /I C:\boost\include\boost-1_33_1
+BOOST_INC_PATH = /I C:\boost
 BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
-BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc71-mt-s.lib
-
+BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc90-mt-s-1_35.lib
 cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
-	
+#    $(cc) $(cdebug) $(cflags) $(conlibsdll) $**		
+
 ## cpu dependencies
 
 cpu_objs = 	cpu.obj CpuUsage.obj 
 common_objs = ../common/SystemCounters.obj
 cpu.res: cpu.rc
 	$(rc) $(rcflags) $(rcvars) /fo cpu.res cpu.rc
-	
+
 cpu.dll: $(cpu_objs) cpu.res $(common_objs)
     $(link) /DLL $(dllldebug) $(cpu_objs) $(common_objs) cpu.res -out:cpu.dll $(BOOST_LIB)
 	if not exist ..\..\..\Release mkdir ..\..\..\Release
