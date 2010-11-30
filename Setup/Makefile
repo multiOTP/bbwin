@@ -1,5 +1,54 @@
+#============================================================================#
+#        M S  N M A K E     S O U R C E   S P E C I F I C A T I O N          #
+#============================================================================#
+#                                                                            #
+# NAME                                                                       #
+# Makefile   To automate mongodb server/client msi creation                  #
+#                                                                            #
+# REVISION HISTORY                                                           #
+#     11/26/2010    T.J. Yang tjyang2001@gmail.com  Version 0.9 Original.    #
+#     MM/DD/YEAR    Your Name Here.                                          #
+#                                                                            #
+#                                                                            #
+# USAGE                                                                      #
+#  1. nmake -f Makefile                                                      #
+#    candle.exe  mongodb.wxs                                                 #
+#    light.exe   mongodb.wixobj                                              #
+#  2.Use  nmake to call up WiX 3.6                                           #
+#    nmake  Makefile                                                         #
+#                                                                            #
+# DESCRIPTION                                                                #
+# 1. This is WiX 3.x package source used to create MSI package for mongodb.  #
+# 2. GUIDs are generated using VS2010 Create GUID tool.                      #
+# 2. It will create following directory structures                           #
+#     MongoDB/bin                                                            #
+#     MongoDB/docs                                                           #
+#     MongoDB/data/db                                                        #
+#     MongoDB/logs                                                           #
+#                                                                            #
+# TODOs                                                                      #
+#  1. Integration with WiX Votive for VS 2010 non-express version.           #
+#                                                                            #
+# LICENSE                                                                    #
+# GNU                                                                        #
+# This program is released under the GNU General Public License (GPL),       #
+# version 2. See the file "COPYING" for details.                             #
+#                                                                            #
+# WARRANTY                                                                   #
+# This program is distributed in the hope that it will be useful,            #
+# but without any warranty; without even the implied warranty of             #
+# merchantability or fitness for a particular purpose.                       #
+#                                                                            #
+# COPYRIGHT                                                                  #
+#  Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )          #
+#                                                                            #
+# REFERENCES                                                                 # 
+#  1. http://www.tramontana.co.hu/wix/, where I learn WiX from.              #
+#                                                                            #
+#                                                                            #
+#============================================================================#
 #this file is part of BBWin
-#Copyright (C)2006 Etienne GRIGNON  ( etienne.grignon@gmail.com )
+
 #
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
@@ -15,13 +64,9 @@
 #along with this program; if not, write to the Free Software
 #Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-
 !include <Win32.Mak>
 
-
-
 PROJ = BBWin 
-
 all: $(PROJ).msi
 
 # Define project specific macros
@@ -35,9 +80,12 @@ CL_PRE 	   =
 .SUFFIXES: .wxs .wixobj
 
 WIXCC = candle
-WCFLAG = /nologo
 WIXLINKER = light
-WLFLAG = /nologo
+#WCFLAG = /nologo -ext WixUtilExtension 
+#WLFLAG = /nologo  -ext WixUIExtension 
+WCFLAG = -ext WixUtilExtension 
+WLFLAG = -ext WixUIExtension  -ext WixUtilExtension 
+
 HHC = "C:\Program Files\HTML Help Workshop\hhc.exe"
 HHCFLAG = 
 
@@ -68,6 +116,7 @@ $(PROJ).dll: $(BASE_OBJS) $(PROJ_OBJS) $(PROJ).res
     $(BASE_OBJS) $(PROJ_OBJS) $(EXTRA_LIBS) $(PROJ).res \
     -out:$(PROJ).dll $(MAPFILE)
 
+# msi to depend on wixobj to trigger the compile/build.
 $(PROJ).msi: $(PROJ).wixobj
 
 
@@ -79,6 +128,22 @@ $(PROJ).chm:
 # Rules for cleaning out those old files
 clean:
 	erase /q /s $(PROJ).dll $(PROJ).exp \
+        $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj *~ *.bak *.wixpdb 
+ 
+
+cleanall:
+	erase /q /s $(PROJ).dll $(PROJ).exp \
         $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj  \
-        $(PROJ).msi $(PROJ).lib \
-        ..\doc\en\$(PROJ).chm
+        $(PROJ).msi 
+
+#
+#        $(PROJ).msi $(PROJ).lib \
+##        ..\doc\en\$(PROJ).chm
+
+install:
+	msiexec /i $(PROJ).msi /qb ADDDEFAULT=ALL
+uninstall:
+	msiexec /x $(PROJ).msi /qb
+
+check:
+	wixcop $(PROJ).wxs
