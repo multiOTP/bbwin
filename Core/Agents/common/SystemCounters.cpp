@@ -17,7 +17,7 @@
 
 // this code has been done with the help of Dudi Avramov ( Author of the PerfCounter.h)
 
-#include <atlbase.h>	// for CRegKey use
+//#include <atlbase.h>	// for CRegKey use
 #include "SystemCounters.h"
 
 #pragma pack(push,8)
