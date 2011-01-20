@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="Events_Messages_Headers">
+      <Targets>_Events_Messages_Headers</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="Events_Messages_Headers"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_Events_Messages_Headers"
+    BeforeTargets="$(Events_Messages_HeadersBeforeTargets)"
+    AfterTargets="$(Events_Messages_HeadersAfterTargets)"
+    Condition="'@(Events_Messages_Headers)' != ''"
+    DependsOnTargets="$(Events_Messages_HeadersDependsOn);ComputeEvents_Messages_HeadersOutput"
+    Outputs="%(Events_Messages_Headers.Outputs)"
+    Inputs="%(Events_Messages_Headers.Identity);%(Events_Messages_Headers.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <Events_Messages_Headers
+        Remove="@(Events_Messages_Headers)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <Events_Messages_Headers_tlog
+        Include="%(Events_Messages_Headers.Outputs)"
+        Condition="'%(Events_Messages_Headers.Outputs)' != '' and '%(Events_Messages_Headers.ExcludedFromBuild)' != 'true'">
+        <Source>@(Events_Messages_Headers, '|')</Source>
+      </Events_Messages_Headers_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(Events_Messages_Headers.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(Events_Messages_Headers_tlog)' != '' and '%(Events_Messages_Headers_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(Events_Messages_Headers_tlog.Source);@(Events_Messages_Headers_tlog-&gt;'%(Fullpath)')" />
+    <Events_Messages_Headers
+      Condition="'@(Events_Messages_Headers)' != '' and '%(Events_Messages_Headers.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(Events_Messages_Headers.CommandLineTemplate)"
+      AdditionalOptions="%(Events_Messages_Headers.AdditionalOptions)"
+      Inputs="%(Events_Messages_Headers.Identity)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeEvents_Messages_HeadersOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeEvents_Messages_HeadersOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeEvents_Messages_HeadersOutput"
+    Condition="'@(Events_Messages_Headers)' != ''">
+    <ItemGroup>
+      <Events_Messages_HeadersDirsToMake
+        Condition="'@(Events_Messages_Headers)' != '' and '%(Events_Messages_Headers.ExcludedFromBuild)' != 'true'"
+        Include="%(Events_Messages_Headers.Outputs)" />
+      <Link
+        Include="%(Events_Messages_HeadersDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(Events_Messages_HeadersDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(Events_Messages_HeadersDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(Events_Messages_HeadersDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>
