@@ -4,7 +4,7 @@
 // use wstring instead of bstr_t by etienne grignon
 // autorization of use confirmed by email 
 
-#include <atlbase.h>	// for CRegKey use
+//#include <atlbase.h>	// for CRegKey use
 #include "CpuUsage.h"
 
 #include <iostream>
@@ -87,26 +87,26 @@ CCpuUsage::~CCpuUsage()
 {
 }
 
-BOOL CCpuUsage::EnablePerformaceCounters(BOOL bEnable)
-{
-	if (GetPlatform() != WIN2K_XP)
-		return TRUE;
-
-	CRegKey regKey;
-	if (regKey.Open(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\PerfOS\\Performance") != ERROR_SUCCESS)
-		return FALSE;
-
-	regKey.SetValue(!bEnable, "Disable Performance Counters");
-	regKey.Close();
-
-	if (regKey.Open(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\PerfProc\\Performance") != ERROR_SUCCESS)
-		return FALSE;
-
-	regKey.SetValue(!bEnable, "Disable Performance Counters");
-	regKey.Close();
-
-	return TRUE;
-}
+//BOOL CCpuUsage::EnablePerformaceCounters(BOOL bEnable)
+//{
+//	if (GetPlatform() != WIN2K_XP)
+//		return TRUE;
+//
+//	CRegKey regKey;
+//	if (regKey.Open(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\PerfOS\\Performance") != ERROR_SUCCESS)
+//		return FALSE;
+//
+//	regKey.SetValue(!bEnable, "Disable Performance Counters");
+//	regKey.Close();
+//
+//	if (regKey.Open(HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\PerfProc\\Performance") != ERROR_SUCCESS)
+//		return FALSE;
+//
+//	regKey.SetValue(!bEnable, "Disable Performance Counters");
+//	regKey.Close();
+//
+//	return TRUE;
+//}
 
 //
 //	GetCpuUsage returns the system-wide cpu usage.
@@ -119,8 +119,8 @@ double CCpuUsage::GetCpuUsage()
 {
 	static PLATFORM Platform = GetPlatform();
 
-	if (m_bFirstTime)
-		EnablePerformaceCounters();
+	//if (m_bFirstTime)
+	//	EnablePerformaceCounters();
 	
 	// Cpu usage counter is 8 byte length.
 	CPerfCounters<LONGLONG> PerfCounters;
@@ -197,8 +197,8 @@ double CCpuUsage::GetCpuUsage(DWORD dwProcessID)
 {
 	static PLATFORM Platform = GetPlatform();
 	
-	if (m_bFirstTime)
-		EnablePerformaceCounters();
+	//if (m_bFirstTime)
+	//	EnablePerformaceCounters();
 
 	// Cpu usage counter is 8 byte length.
 	CPerfCounters<LONGLONG> PerfCounters;

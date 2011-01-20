@@ -9,6 +9,7 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <tchar.h>
 #include <vector>
 #include <string>
 #include <assert.h>
