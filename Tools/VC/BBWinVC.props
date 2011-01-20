@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(Events_Messages_HeadersBeforeTargets)' == '' and '$(Events_Messages_HeadersAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <Events_Messages_HeadersBeforeTargets>Midl</Events_Messages_HeadersBeforeTargets>
+    <Events_Messages_HeadersAfterTargets>CustomBuild</Events_Messages_HeadersAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Events_Messages_HeadersDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(Events_Messages_HeadersDependsOn)</Events_Messages_HeadersDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Events_Messages_Headers>
+      <CommandLineTemplate>mc -A [inputs]</CommandLineTemplate>
+      <Outputs>%(Filename).h</Outputs>
+    </Events_Messages_Headers>
+  </ItemDefinitionGroup>
+</Project>
