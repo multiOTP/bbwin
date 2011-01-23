@@ -3,23 +3,23 @@
 #============================================================================#
 #                                                                            #
 # NAME                                                                       #
-# Makefile.debug   Generate BBWin-Debug.msi creation using WiX 3.5           #
+# Makefile.debug   Generate BBWin-Debug.msi using WiX 3+ toolset             #
 #                                                                            #
 # REVISION HISTORY                                                           #
 #     11/26/2010    T.J. Yang tjyang2001@gmail.com  Version 0.9 Original.    #
 #     01/22/2011    T.J. Yang Create this makefile for generating            #
-#                   BBWin-Debug.msi for testing purpose.                     #
+#                   BBWin-Debug.msi.                                         #
 #     MM/DD/YEAR    Your Name Here.                                          #
 #                                                                            #
 #                                                                            #
 # USAGE                                                                      #
-#  0. Use VS 2010 Express to build the code to generate exe, dll library     #
+#  0. Use VS 2010 Express to build the code without error messages.          #
 #  1. To call up candle and light to create the msi.                         #
 #    nmake -f Makefile.debug                                                 # 
 #  2.To automate the msi install by command line                             #
 #    nmake -f Makefile.debug install                                         #
 #  3.To automate the msi removal by command line                             #
-#    nmake -f Makefile.debug remove to reinstall                             #
+#    nmake -f Makefile.debug unistall                                        #
 #                                                                            #
 #                                                                            #
 # DESCRIPTION                                                                #
@@ -29,6 +29,8 @@
 # TODOs                                                                      #
 #  1. make sure top directory makefile can compile the source code           #
 #     without using VS2010 Express.                                          #
+#  2. Need to generate another set of GUIDs for "Release" distrobution.      #
+#                                                                            #
 # LICENSE                                                                    #
 # GNU                                                                        #
 # This program is released under the GNU General Public License (GPL),       #
