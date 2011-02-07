@@ -65,18 +65,26 @@ BOOL GetOSDisplayString( LPTSTR pszOS)
 
       // Test for the specific product.
 
+	  if ( osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 1 ) {
+		  if( osvi.wProductType == VER_NT_WORKSTATION )
+			  StringCchCat(pszOS, BUFSIZE, TEXT("Windows 7 "));
+		  else 
+			  StringCchCat(pszOS, BUFSIZE, TEXT("Windows Server 2008 R2 " ));
+	  }
+
       if ( osvi.dwMajorVersion == 6 && osvi.dwMinorVersion == 0 )
       {
          if( osvi.wProductType == VER_NT_WORKSTATION )
              StringCchCat(pszOS, BUFSIZE, TEXT("Windows Vista "));
-         else StringCchCat(pszOS, BUFSIZE, TEXT("Windows Server 2008 " ));
+         else 
+			 StringCchCat(pszOS, BUFSIZE, TEXT("Windows Server 2008 " ));
 
-         pGPI = (PGPI) GetProcAddress(
+         /*pGPI = (PGPI) GetProcAddress(
             GetModuleHandle(TEXT("kernel32.dll")), 
             "GetProductInfo");
 
          pGPI( 6, 0, 0, 0, &dwType);
-
+*/
          /*switch( dwType )
          {
             case PRODUCT_ULTIMATE:
