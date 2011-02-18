@@ -309,7 +309,7 @@ void		AgentCpu::SendStatusReport() {
 	DWORD				totalUsage = 0;
 
 	m_pageColor = GREEN;
-	totalUsage = ceil(m_usage.usageVal);
+	totalUsage = (DWORD)ceil(m_usage.usageVal);
 	if (totalUsage > 100) 
 		totalUsage = 100;
 	if (m_mgr.IsCentralModeEnabled() == false) {

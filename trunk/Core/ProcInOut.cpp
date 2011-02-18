@@ -38,7 +38,7 @@ bool		ProcInOut::Exec(const std::string & cmd, std::string & out, DWORD timeout)
 	fSuccess = DuplicateHandle(GetCurrentProcess(), hChildStdoutRd,
 		GetCurrentProcess(), &hChildStdoutRdDup , 0,
 		(FALSE ? false : true),
-		DUPLICATE_SAME_ACCESS);
+		(BOOL)DUPLICATE_SAME_ACCESS);
 	if( !fSuccess )
 		return false;
 	CloseHandle(hChildStdoutRd);
