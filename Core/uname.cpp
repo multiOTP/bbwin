@@ -19,6 +19,9 @@
 
 // $Id$
 
+#pragma warning(disable: 4996)
+#pragma warning(disable: 4995)
+
 #include <windows.h>
 #include <tchar.h>
 #include <stdio.h>
@@ -37,9 +40,7 @@ BOOL GetOSDisplayString( LPTSTR pszOS)
    OSVERSIONINFOEX osvi;
    SYSTEM_INFO si;
    PGNSI pGNSI;
-   PGPI pGPI;
    BOOL bOsVersionInfoEx;
-   DWORD dwType;
 
    ZeroMemory(&si, sizeof(SYSTEM_INFO));
    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
