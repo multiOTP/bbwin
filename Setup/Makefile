@@ -66,6 +66,8 @@
 
 !include <Win32.Mak>
 
+
+
 PROJ = BBWin 
 all: check $(PROJ).msi
 
@@ -140,3 +142,7 @@ uninstall:
 
 check:
 	wixcop $(PROJ).wxs
+start:	
+	net start bbwin
+
+redo: uninstall all install start
