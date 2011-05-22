@@ -139,7 +139,7 @@
                         </Component>
                         <!--		Agents Sections					-->
                         <Component Id="BBWinUpdateDllC" Guid="0BC7C94B-63AB-47c6-8F16-D3180984BACD">
-                            <File Name="bbwupd.dll" Source="./dll/bbwinupdate.dll" />
+                            <File Source="./dll/bbwinupdate.dll" />
                         </Component>
 
                         <Component Id="CpuC" Guid="1E68A93A-7A2D-407e-AAFD-CB7486DF40C3">
@@ -151,15 +151,15 @@
                         </Component>
 
                         <Component Id="ExternalsC" Guid="83BA5796-DC8B-42a1-A6E5-797E75AC936A">
-                            <File Name="ext.dll" Source="./dll/externals.dll" />
+                            <File Source="./dll/externals.dll" />
                         </Component>
 
                         <Component Id="FileSystemC" Guid="70BF1C78-E5E9-47c4-A8FE-A33161AE4A1C">
-                            <File Name="fs.dll" Source="./dll/filesystem.dll" />
+                            <File Source="./dll/filesystem.dll" />
                         </Component>
 
                         <Component Id="MemoryC" Guid="68FA599B-2FC7-42b2-A30E-242EE9FC71C9">
-                            <File Name="mem.dll" Source="./dll/memory.dll" />
+                            <File Source="./dll/memory.dll" />
                         </Component>
 
                         <Component Id="MsgsC" Guid="F2632EF3-18F9-405c-B76D-543EFA180A30">
@@ -185,7 +185,7 @@
                     <Directory Id="extD" Name="ext">
 	<!-- Externals scripts and executables 
 		<Component Id='ClusterC' Guid='1FE84C9C-B682-457a-83AD-CF28B4C51D00'>
-			<File Id='cluster.exe' Name="clustr.exe"  />
+			<File Id='cluster.exe' Name="cluster.exe"  />
 		</Component>
 		<Component Id='FsmonC' Guid='F6088C2A-0E71-4a67-A30D-12C39D9F3432'>
 			<File Id='fsmon.vbs' Name="fsmon.vbs"  />
