@@ -67,7 +67,7 @@
 !include <Win32.Mak>
 
 PROJ = BBWin 
-all: $(PROJ).msi
+all: check $(PROJ).msi
 
 # Define project specific macros
 PROJ_OBJS  = UpgradeConfiguration.obj
@@ -128,15 +128,8 @@ $(PROJ).chm:
 # Rules for cleaning out those old files
 clean:
 	erase /q /s $(PROJ).dll $(PROJ).exp \
-        $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj *~ *.bak *.wixpdb 
+        $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj *~ *.bak *.wixpdb         $(PROJ).msi 
  
-
-cleanall:
-	erase /q /s $(PROJ).dll $(PROJ).exp \
-        $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj  \
-        $(PROJ).msi 
-
-#
 #        $(PROJ).msi $(PROJ).lib \
 ##        ..\doc\en\$(PROJ).chm
 
