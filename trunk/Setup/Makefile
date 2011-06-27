@@ -87,8 +87,10 @@ WIXLINKER = light
 #WLFLAG = /nologo  -ext WixUIExtension 
 WCFLAG = -ext WixUtilExtension 
 WLFLAG = -ext WixUIExtension  -ext WixUtilExtension 
-
-HHC = "C:\Program Files\HTML Help Workshop\hhc.exe"
+# for 32-bit Windows development machine
+#HHC = "C:\\Program Files\\HTML Help Workshop\\hhc.exe"
+# for 64-bit Windows development machine
+HHC = "C:\\Program Files (x86)\\HTML Help Workshop\\hhc.exe"
 HHCFLAG = 
 
 ###########################
