@@ -23,20 +23,18 @@ cflags = $(cflags) /EHsc /I ../..
 
 .cpp.obj:
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
-	
 ## sample dependencies
 
 sample_objs = 	sample.obj
 
 sample.res: sample.rc
 	$(rc) $(rcflags) $(rcvars) /fo sample.res sample.rc
-	
+
 sample.dll: $(sample_objs) sample.res
     $(link) /DLL $(dllldebug) $(sample_objs) sample.res -out:sample.dll
-	if not exist ..\..\..\Release mkdir ..\..\..\Release
-	copy /Y sample.dll ..\..\..\Release
-	
+	if not exist Release mkdir Release
+	copy /Y sample.dll Release
 clean:
-		erase /Q /S $(sample_objs)
+	erase /Q /S $(sample_objs)
 
 
