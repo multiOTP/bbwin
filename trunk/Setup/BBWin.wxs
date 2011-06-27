@@ -92,7 +92,7 @@
                          -->
                         <!-- BBWinCmd.exe -->
                         <Component Id="BBWinCmdC" Guid="EAD17309-E32B-4e40-BFD9-E57AB379B3A7">
-                            <File Id="bbwincmdF" Name="BBCmd.exe" Source="../Release/BBWinCmd.exe" />
+                            <File Id="bbwincmdF" Source="../Release/BBWinCmd.exe" />
                         </Component>
                         <!-- Registry settings -->
                         <Component Id="BBWinRegistryC" Guid="DB4FACF9-43E5-4272-B90A-A1B9DD16B05D" Permanent="yes" NeverOverwrite="yes">
@@ -127,7 +127,7 @@
                         </Component>
                         <!--		Agents Sections					-->
                         <Component Id="BBWinUpdateDllC" Guid="0BC7C94B-63AB-47c6-8F16-D3180984BACD">
-                            <File Name="bbwupd.dll" Source="../Release/bbwinupdate.dll" />
+                            <File Source="../Release/bbwinupdate.dll" />
                         </Component>
 
                         <Component Id="CpuC" Guid="1E68A93A-7A2D-407e-AAFD-CB7486DF40C3">
@@ -216,7 +216,7 @@
 		<Component Id="WlbsConfigC" 
                          Guid='5EA1128F-3EBB-4faa-9E66-0DCD988968B2' 
                          Permanent="yes" NeverOverwrite="yes">
-	 	  <File Id='wlbs.cfg' Name="wlbs.cfg" Source='./docs/License.txt' />
+	 	  <File Id='wlbs.cfg' Source='./docs/License.txt' />
 		</Component>
 		<Component Id="FsmonConfigC" 
                          Guid='39CFAA7D-15E7-4679-8DA5-71E55723FD9C' 
@@ -228,31 +228,32 @@
                     <!-- SDK Part like Big Software :) -->
                     <Directory Id="SdkD" Name="sdk">
                         <Component Id="SampleC" Guid="AF366A7D-BFC1-490D-98EE-10FC8EE92DFC">
-                            <File Source="./sdk/Makefile" />
-                            <File Source="./sdk/sample.Rc" />
-                            <File Source="./sdk/sample.h" />
-                            <File Source="./sdk/sample.cpp" />
+                            <File Source=".\sdk\Makefile" />
+                            <File Source=".\sdk\sample.Rc" />
+                            <File Source=".\sdk\sample.h" />
+                            <File Source=".\sdk\sample.cpp" />
+                            <File Source="..\core\version.h" />
                         </Component>
                         <Component Id="IncludeSdkC" Guid="ABB6619E-4297-4724-AC06-C35F44963FD4">
-                            <File Name="IAgenMgr.h" Source="./sdk/IBBWinAgentManager.h" />
-                            <File Name="IAgent.h" Source="./sdk/IBBWinAgent.h" />
-                            <File Name="IExcep.h" Source="./sdk/IBBWinException.h" />
+                            <File Source=".\sdk\IBBWinAgentManager.h" />
+                            <File Source=".\sdk\IBBWinAgent.h" />
+                            <File Source=".\sdk\IBBWinException.h" />
                         </Component>
                         <Directory Id="SdkCompiledD" Name="Compiled">
                             <Component Id="SampleCompiledC" Guid="65116387-4564-400b-810F-61C5A62CAB08">
-                                <File Source="./sdk/compiled/sample.dll" />
+                                <File Source=".\sdk\compiled\sample.dll" />
                             </Component>
                         </Directory>
                     </Directory>
                     <Directory Id="toolsD" Name="tools">
                         <Component Id="MigrateBBntC" Guid="085CF654-C714-425e-BFEC-FF4463EDA3AB">
-                            <File Name="Migrate.vbs" Source="./Tools/MigrateBBntToBBWin.vbs" />
+                            <File Name="Migrate.vbs" Source=".\Tools\MigrateBBntToBBWin.vbs" />
                         </Component>
                     </Directory>
                     <Component Id="CommonTextFilesC" Guid="361CEF4A-BC5C-40df-82DD-5C17434C927C">
-                        <File Source="./docs/Licence.txt" />
-                        <File Source="./docs/Credits.txt" />
-                        <File Name="Change.txt" Source="./docs/ChangeLog.txt" />
+                        <File Source=".\docs\Licence.txt" />
+                        <File Source=".\docs\Credits.txt" />
+                        <File Name="Change.txt" Source=".\docs\ChangeLog.txt" />
                     </Component>
                 </Directory>
             </Directory>
