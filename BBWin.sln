@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BBWin", "Core\Core.vcxproj", "{98DF289A-CD24-47CD-B811-603C09881B88}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BBWinCmd", "Core\BBWinCmd.vcxproj", "{7FB946D3-0EF9-4C59-ACD5-4159BAA02008}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98DF289A-CD24-47CD-B811-603C09881B88} = {98DF289A-CD24-47CD-B811-603C09881B88}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "uptime", "Core\Agents\uptime\uptime.vcxproj", "{9E7D70DD-A941-4B8C-8084-9011FF96E173}"
 EndProject
