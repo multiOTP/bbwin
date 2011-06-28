@@ -166,6 +166,8 @@ bool		AgentFileSystem::InitCentralMode() {
 				m_mgr.Log(LOGLEVEL_DEBUG, "will check directory %s", value.c_str());
 				m_dirs.push_back(value);
 			}
+		} else if (utils::parseStrGetNext(buf, "eventlog:", value)) {
+			// Ignore eventlog: entries
 		} else if (utils::parseStrGetNext(buf, "log:", value)) {
 			fs_logfile_t	logfile;
 			string			sizeStr;
