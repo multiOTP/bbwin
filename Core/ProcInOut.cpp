@@ -35,10 +35,10 @@ bool		ProcInOut::Exec(const std::string & cmd, std::string & out, DWORD timeout)
 		return false; 
 	if (! SetStdHandle(STD_OUTPUT_HANDLE, hChildStdoutWr)) 
 		return false; 
-	fSuccess = DuplicateHandle(GetCurrentProcess(), hChildStdoutRd,
+	fSuccess = (DuplicateHandle(GetCurrentProcess(), hChildStdoutRd,
 		GetCurrentProcess(), &hChildStdoutRdDup , 0,
 		(FALSE ? false : true),
-		(BOOL)DUPLICATE_SAME_ACCESS);
+		(BOOL)DUPLICATE_SAME_ACCESS) != 0);
 	if( !fSuccess )
 		return false;
 	CloseHandle(hChildStdoutRd);
@@ -88,16 +88,16 @@ bool		ProcInOut::CreateChildProcess(const std::string & cmd) {
    ZeroMemory( &siStartInfo, sizeof(STARTUPINFO) );
    SecureZeroMemory( &piProcInfo, sizeof(piProcInfo));
    siStartInfo.cb = sizeof(STARTUPINFO); 
-   return CreateProcess(NULL, 
+   return (CreateProcess(NULL, 
       (LPSTR)cmd.c_str(),       // command line 
-      NULL,          // process security attributes 
-      NULL,          // primary thread security attributes 
-      TRUE,          // handles are inherited 
-      0,             // creation flags 
-      NULL,          // use parent's environment 
-      NULL,          // use parent's current directory 
-      &siStartInfo,  // STARTUPINFO pointer 
-      &piProcInfo);  // receives PROCESS_INFORMATION 
+      NULL,               // process security attributes 
+      NULL,               // primary thread security attributes 
+      TRUE,               // handles are inherited 
+      0,                  // creation flags 
+      NULL,               // use parent's environment 
+      NULL,               // use parent's current directory 
+      &siStartInfo,       // STARTUPINFO pointer 
+      &piProcInfo) != 0);  // receives PROCESS_INFORMATION 
 }
 
 void			ProcInOut::ReadFromPipe(std::string & out) {
