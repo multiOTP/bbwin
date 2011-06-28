@@ -1,54 +1,59 @@
 Build file for BBWin
 ==============================================================
 
-This file explains you how to build BBWin from the sources.
+This file explains how to build BBWin from the source code.
 
 
-Getting the last sources 
-========================
+Getting the latest source code
+==============================
 
-BBWin is developped in C++ (the Standard Template Library and the Standard C++ Library
+BBWin is developed in C++ (the Standard Template Library and the Standard C++ Library
 are used)
-The source of BBWin are available from the sourceforge subversion
+The source code of BBWin is available from the sourceforge subversion
 repository for the BBWin projects :
-http://svn.sourceforge.net/viewcvs.cgi/bbwin/
+http://bbwin.svn.sourceforge.net/viewvc/bbwin/
 
 
 Install the tools
 =================
 
-BBWin has been developped thanks to many tools. You should install them to 
-build BBWin easily without troubles.
+BBWin has been developed with the help of some tools. You should install them to 
+build BBWin easily without any problems.
 
-Visual C++ Express 2010
-http://www.microsoft.com/express/Downloads/
+o Visual C++ Express 2010
+  http://www.microsoft.com/express/Downloads/
 
-Windows Platform SDK 2003
-You can download it for free from microsoft website :
-http://www.microsoft.com/downloads/details.aspx?FamilyId=A55B6B43-E24F-4EA3-A93E-40C0EC4F68E5&displaylang=en
+o Windows Platform SDK 2003
+  You can download it for free from Microsoft's website :
+  http://www.microsoft.com/download/en/details.aspx?id=6510
 
-Wix Toolkit : this package is used to build the BBWin MSI installer
-You should install it and have the bin directory in your current path
-http://sourceforge.net/projects/wix/
+o Windows Installer XML (WiX) Toolkit : this package is used to build the BBWin MSI installer
+  You should install it and include the WiX bin directory in your current path
+  http://wix.codeplex.com/
 
-TinyXML : BBWin used the excellent TinyXML library for the configuration loading XML.
-You do not need to install it. TinyXML sources are included in BBWin sources.
+o TinyXML : BBWin uses the excellent TinyXML library for the XML configuration loading.
+  You do not need to install it - TinyXML source code is included in BBWin's.
 
-Boost Lib : These C++ libraries are used for some agents and will be
-certainly used in the BBWin core service in the future.
-You can download binaries from:
-http://www.boostpro.com/download/
-Once installed, add a environment variable BoostInstallDir pointing to the boost install directory.
-Example:
-BoostInstallDir=C:\Program Files (x86)\boost\boost_1_44
+o Boost Lib : These C++ libraries are used for some agents and will certainly be
+  used in the BBWin core service in the future.
+  You can download the binary installers from:
+  http://www.boostpro.com/download/
+  Once installed, add an environment variable BoostInstallDir pointing to the boost install directory.
+  Example:
+  BoostInstallDir=C:\BOOST
+
+o Microsoft HTML Help Workshop : This is used in the setup Makefile to compile the BBWin.chm help file.
+  You can download the installation package from:
+  http://www.microsoft.com/download/en/details.aspx?id=21138
+  Once installed, add the program folder to your PATH.
 
 
-Building the BBWin with Visual C++ Express 2010
-===============================================
+Building BBWin with Visual C++ Express 2010
+===========================================
 
 Open the BBWin.sln file at the top directory of the project
 First, you should prepare your Visual C++ configuration by adding
-in the default bin, include and lib directories the different directories from :
+in the default bin, include and lib directories from :
 
 - the platform SDK
 - the boost libraries
