@@ -285,51 +285,34 @@ void		AgentDisk::FreeDisksData() {
 	m_disks.clear();
 }
 
-static void		FormatDiskData(__int64 & size, __int64 & avail, string & unit) {
-	__int64		sizeSave;
+static FLOAT	FormatDiskData(__int64 & size, string & unit) {
+	FLOAT		sizeSave;
+	UINT		power;
+	LPCSTR		units[] = {"bytes", "KB", "MB", "GB", "TB", "PB"};
+	CONST UINT	lastunit = 5;	// last element in units array
 
-	sizeSave = size;
-	unit = "b";
-	avail = 0;
-	if ((sizeSave / 1024) > 0) {
-		size = sizeSave / 1024;
-		avail = (sizeSave - (1024 * size));
-		unit = "kb";
+	power = 0;
+	sizeSave = (FLOAT)size;
+	while (sizeSave / 1024 >= 1 && power < lastunit) {
+		sizeSave /= 1024;
+		power++;
 	}
-	if ((sizeSave / 1048576) > 0) {
-		size = sizeSave / 1048576;
-		avail = (sizeSave - (1048576 * size)) / 1024;
-		unit = "mb";
-	}
-	if ((sizeSave / 1073741824) > 0) {
-		size = sizeSave / 1073741824;
-		avail = (sizeSave - (1073741824 * size)) / 1048576;
-		unit = "gb";
-	}
-	if ((sizeSave / 1099511627776) > 0) {
-		size = sizeSave / 1099511627776;
-		avail = (sizeSave - (1099511627776 * size)) / 1073741824;
-		unit = "tb";
-	}	
-	// used to get only 2 digits
-	// not very efficient for the moment
-	while (avail > 100) {
-		avail /= 10;
-	}
+	unit = units[power];
+	return sizeSave;
 }
 
 void		AgentDisk::GenerateSummary(const disk_t & disk, stringstream & summary) {
 	__int64		size;
-	__int64		avag;
 	string		unit;
+	FLOAT		Size;
 	
 	size = disk.i64TotalBytes;
-	FormatDiskData(size, avag, unit);
-	summary << format("%f.%02u%s") % size % avag % unit;
-	summary << "\\";
+	Size = FormatDiskData(size, unit);
+	summary << format("%7.2f %s") % Size % unit;
+	summary << " | ";
 	size = disk.i64FreeBytes;
-	FormatDiskData(size, avag, unit);
-	summary << format("%f.%02u%s") % size % avag % unit;
+	Size = FormatDiskData(size, unit);
+	summary << format("%7.2f %s") % Size % unit;
 }
 
 void		AgentDisk::SendStatusReport() {
@@ -343,7 +326,7 @@ void		AgentDisk::SendStatusReport() {
 		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] " << endl;
 		reportData << "\n" << endl;
 	}
-	reportData << format("Filesystem     1K-blocks     Used       Avail    Capacity    Mounted      Summary(Total\\Avail)") << endl;
+	reportData << format("Filesystem     1K-blocks     Used       Avail    Capacity    Mounted        Total Size | Free Space") << endl;
 	for (itr = m_disks.begin(); itr != m_disks.end(); ++itr) {
 		stringstream					summary;
 
