@@ -15,12 +15,11 @@ Svcs agent is used to monitor Windows services.
 <H3>Configuration</H3>
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
 <LI class="OptionDirective">generic settings
-<p>
+<br /><br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -90,7 +89,6 @@ Svcs agent is used to monitor Windows services.
 	</tr>
 </table>
  <LI class="OptionDirective"><b>rules</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" value="" autoreset="" alarmcolor=""/&gt;
 </pre>
@@ -98,7 +96,6 @@ Svcs agent is used to monitor Windows services.
 If the name value is not one of the generic settings, then, svcs will understand that it is a svcs custom rule.
 To create a custom service rule, you may use the service display name in the setting name attribute.
 </p>
-<p>
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -142,7 +139,6 @@ To create a custom service rule, you may use the service display name in the set
  <LI>svcs is congigured to restart all service with automatic startup that would be stopped. Default alarm 
  color is set to red. To finish, the service "Automatic Updates" will be restart if its state is not 
  started and will warn with yellow color.
-<p>
 <pre class="Config">
 &lt;svcs&gt;
 	&lt;setting name="autoreset" value="true" /&gt;

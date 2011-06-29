@@ -15,12 +15,11 @@ Cpu agent is used to monitor CPU Usage.
 <H3>Configuration</H3>
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
 <LI class="OptionDirective">generic settings
-<p>
+<br /><br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -67,14 +66,13 @@ Cpu agent is used to monitor CPU Usage.
 
 </table>
  <LI class="OptionDirective"><b>rules</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" rule="" alarmcolor="" comment=""/&gt;
 </pre>
 <p>
 If the name value is not one of the generic settings, then, cpu will understand that it is the cpu default rule.
 </p>
-<p>
+<br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -127,16 +125,12 @@ If the name value is not one of the generic settings, then, cpu will understand 
 </table>
 </UL>
 <H3>Examples</H3>
-<UL>
- <LI>
-<p>
 <pre class="Config">
 &lt;cpu&gt;
 	&lt;setting name="alwaysgreen" value="false" /&gt;
 	&lt;setting name="default" warnlevel="90" paniclevel="95" delay="3" /&gt;
 &lt;/cpu&gt;
 </pre>
-</UL>
 <H3>Notes</H3>
 <UL>
  <LI>Owner doesn't appear in the status report on Windows NT4

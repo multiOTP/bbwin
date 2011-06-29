@@ -16,12 +16,11 @@ If no rules is specified, msgs will do nothing.
 <H3>Configuration</H3>
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
 <LI class="OptionDirective">generic settings
-<p>
+<br /><br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -74,7 +73,6 @@ If no rules is specified, msgs will do nothing.
 	</tr>
 </table>
  <LI class="OptionDirective"><b>rules</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;match logfile="" eventid="" source="" type="" value="" delay="" alarmcolor="" /&gt;
 &lt;ignore logfile="" eventid="" source="" type="" value="" /&gt;
@@ -86,7 +84,7 @@ You can combine the different matching attributes to improve your rules.
 <p>
 If the name value is not one of the generic settings, then, disk will understand that it is a disk custom rule.
 </p>
-<p>
+<br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -196,9 +194,6 @@ If the name value is not one of the generic settings, then, disk will understand
 </table>
 </UL>
 <H3>Examples</H3>
-<UL>
- <LI>
-<p>
 <pre class="Config">
 &lt;msgs&gt;
 	&lt;setting name="alwaysgreen" value="false" /&gt;
@@ -212,6 +207,7 @@ If the name value is not one of the generic settings, then, disk will understand
 	&lt;ignore logfile="System" source="W32Time" /&gt;
 &lt;/msgs&gt;
 </pre>
+<UL>
 <LI>Summary will be sent in the footer of the report
 <LI>System logfile will be check during 1 hour for error events, 30 minutes (default) for warning events
 <LI>Application logfile will be check during 1 hour for error events, 30 minutes (default) for warning events
