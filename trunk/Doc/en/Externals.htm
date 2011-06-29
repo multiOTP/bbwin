@@ -16,12 +16,11 @@ your monitoring).
 <H3>Configuration</H3>
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
 <LI class="OptionDirective">generic settings
-<p>
+<br /><br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -53,14 +52,13 @@ your monitoring).
 	</tr>
 </table>
  <LI class="OptionDirective"><b>load</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;load name="" timer="" value=""/&gt;
 </pre>
 <p>
 If the name value is not one of the generic settings, then, cpu will understand that it is the cpu default rule.
 </p>
-<p>
+<br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -94,6 +92,7 @@ If the name value is not one of the generic settings, then, cpu will understand 
 <H3>Migrate Externals from BBNt</H3>
 <p>
 There are 2 ways to migrate your existing BB scripts made for bbnt to BBWin.
+</p>
 <UL>
 <LI>
 Change the BBNt externals registry key value to the BBWin tmp directory path,
@@ -102,10 +101,6 @@ then just run the scripts from BBWin.
 registry key.
 </UL>
 <H3>Examples</H3>
-<p>
-</p>
-<UL>
-<LI>
 <pre class="Config">
 	&lt;externals&gt;
 	&lt;setting name="timer" value="3m" /&gt;
@@ -116,6 +111,7 @@ registry key.
 	&lt;load value="cluster.exe" timer="90s" /&gt;
 	&lt;/externals&gt;
 </pre>
+<UL>
 <LI>Tmp directory will be checked every 60 seconds
 <LI>"cscript mybbscript.vbs" will be executed every 3 minutes
 <LI>"memory.exe will be executed every 3 minutes

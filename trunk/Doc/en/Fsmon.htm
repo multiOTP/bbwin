@@ -11,10 +11,10 @@
  <H3>Description</H3>
 <p>
 Fsmon vbscript is used to monitor folders. It will warn depending :
+</p>
 <UL>
 	<LI> the number of files in a particular folder
 </UL>
-</p>
 <H3>Usage</H3>
 <p>
 Fsmon vbscript uses a configuration file called fsmon.cfg which is located in BBWin etc directory at installation.
@@ -51,20 +51,20 @@ DIR name "path" warnrule panicrule description
  <pre>
  DIR smtpqueue "C:\Inetpub\mailroot\Queue" <10 <50 "Smtp doesn't seem to send mails. Please check the smtp server"
 </pre>
-</UL>
 <H3>Examples</H3>
 <UL>
  <LI>Here an example of report :
- <p>
  <PRE>
 12/04/2006 10:32:28 [MYSERVER]
 
-
-<IMG SRC="../green.png" ALT="green" HEIGHT="16" WIDTH="16" BORDER=0> checking directory smtpqueue 'C:\Inetpub\mailroot\Queue' - Rules are <50 and <100 - Actually 5 file(s)
+</PRE>
+<div style="display: inline; white-space: nowrap">
+<IMG SRC="../green.png" ALT="green" HEIGHT="16" WIDTH="16" BORDER=0>
+<PRE style="display: inline">checking directory smtpqueue 'C:\Inetpub\mailroot\Queue' - Rules are <50 and <100 - Actually 5 file(s)
 
 
 </PRE>
-</p>
+</div>
 </UL>
 <H3>Notes</H3>
 <UL>

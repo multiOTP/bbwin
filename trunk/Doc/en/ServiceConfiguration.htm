@@ -9,7 +9,7 @@
 <BODY>
  <H1>BBWin configuration</H1>
 <H3>Configuration</H3>
-BBWin configuration is stored in 2 places :
+<span>BBWin configuration is stored in 2 places :</span>
 <UL>
 <LI> the registry (for the important runtime settings : paths and hostname)
 <LI> the BBWin.cfg file (for all other settings so it can be saved easily)
@@ -17,6 +17,7 @@ BBWin configuration is stored in 2 places :
 <H3>First configuration</H3>
 <p>
 Before starting BBWin for the first time, you should configure 2 settings:
+</p>
 <UL>
 <LI>
 the hostname setting : insert the hostname HKEY_LOCAL_MACHINE\SOFTWARE\BBWin\hostname. It must conrespond to the name configured in the bb-hosts file
@@ -33,12 +34,11 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 <H3>Configuration</H3>
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
 <LI class="OptionDirective">generic settings
-<p>
+<br /><br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -191,22 +191,23 @@ Global timer setting is used to set the time interval between agents execution.
 timer setting will be inherited to all agents if not overwritten in the load command.
 If not set, timer is 5 minutes.
 </p>
-timer format : if no unit is specified, timer is understood as seconds.
-However, you can specify timer like this : 
-90s => 90 seconds
-5m => 5 minutes
-1h => 1 hour
-2d => 2 days
-4w => 4 weeks
- <LI class="OptionDirective"><b>load rules</b> directive syntax :
 <p>
+timer format : if no unit is specified, timer is understood as seconds.
+However, you can specify timer like this : <br />
+&nbsp;90s => 90 seconds<br />
+&nbsp;5m => 5 minutes<br />
+&nbsp;1h => 1 hour<br />
+&nbsp;2d => 2 days<br />
+&nbsp;4w => 4 weeks
+</p>
+ <LI class="OptionDirective"><b>load rules</b> directive syntax :
 <pre class="Config">
 &lt;load name="" value="" timer="" /&gt;
 </pre>
 <p>
 Load rules are used to inform BBWin to load agents
 </p>
-<p>
+<br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -234,7 +235,6 @@ Load rules are used to inform BBWin to load agents
 		<td class="OptionValue" vAlign="top">
 		name attribute must be the name of configuration namespace for the agent.
 		Example : 
-		<p>
 		<pre class="Config">
 ...
 &lt;load name="mycpu" "cpu.dll" /&gt;
@@ -271,7 +271,6 @@ the service or force the auto reload mechanism.
 <H3>Examples</H3>
 <UL>
 <LI>This is a full example of BBWin.cfg file :
-<p>
 <pre class="Config">
 &lt;?xml version="1.0" encoding="utf-8" ?&gt;
 &lt;configuration&gt;

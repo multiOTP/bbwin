@@ -15,12 +15,11 @@ Memory agent is used to monitor RAM.
 <H3>Configuration</H3>
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
 <LI class="OptionDirective">generic settings
-<p>
+<br /><br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -50,7 +49,6 @@ Memory agent is used to monitor RAM.
 	</tr>
 </table>
  <LI class="OptionDirective"><b>rules</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" warnlevel="" paniclevel=""/&gt;
 </pre>
@@ -58,7 +56,7 @@ Memory agent is used to monitor RAM.
 If the name value is not one of the generic settings, then, memory will understand that it is a memory custom rule.
 To create a custom memory rule, you may use one of the available memory type in the name attribute.
 </p>
-<p>
+<br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -98,9 +96,6 @@ To create a custom memory rule, you may use one of the available memory type in 
 </table>
 </UL>
 <H3>Examples</H3>
-<UL>
- <LI>
-<p>
 <pre class="Config">
 &lt;memory&gt;
 	&lt;setting name="alwaysgreen" value="false" /&gt;
@@ -110,7 +105,6 @@ To create a custom memory rule, you may use one of the available memory type in 
 	&lt;setting name="real" warnlevel="80" paniclevel="95" /&gt;
 &lt;/memory&gt;
 </pre>
-</UL>
 <H3>Notes</H3>
 <UL>
  <LI>You may only configure memory rules to override the default settings.

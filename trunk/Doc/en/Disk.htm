@@ -15,12 +15,11 @@ Disk agent is used to monitor disk usage. It can also monitor mount points. Name
 <H3>Configuration</H3>
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
 <LI class="OptionDirective">generic settings
-<p>
+<br /><br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -70,14 +69,13 @@ Disk agent is used to monitor disk usage. It can also monitor mount points. Name
 	</tr>
 </table>
  <LI class="OptionDirective"><b>rules</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" ignore="" warnlevel="" paniclevel="" /&gt;
 </pre>
 <p>
 If the name value is not one of the generic settings, then, disk will understand that it is a disk custom rule.
 </p>
-<p>
+<br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -126,9 +124,6 @@ If the name value is not one of the generic settings, then, disk will understand
 </table>
 </UL>
 <H3>Examples</H3>
-<UL>
- <LI>
-<p>
 <pre class="Config">
 &lt;disk&gt;
 	&lt;setting name="alwaysgreen" value="false" /&gt;
@@ -139,7 +134,6 @@ If the name value is not one of the generic settings, then, disk will understand
 	&lt;setting name="cdrom" value="false" /&gt;
 &lt;/disk&gt;
 </pre>
-</UL>
 <H3>Notes</H3>
 <UL>
  <LI>If a custum rule doesn't match any drive, it will generate an alert since it can be a known harddrive which desappeared. (For example, an external usb harddrive 

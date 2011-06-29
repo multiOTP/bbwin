@@ -11,6 +11,7 @@
  <H3>Description</H3>
 <p>
 External executable to monitor MSCS clusters. It will report alerts you when :
+</p>
 <UL>
 	<LI> the active node has changed
 	<LI> one or may group ressources are not online on the active node
@@ -30,27 +31,25 @@ others externals scripts. There are no setting available for this external.
 <H3>Examples</H3>
 <UL>
  <LI>Here an example of report when the active node has changed :
- <p>
- <pre>
-
-<b>--- Windows Cluster State ---</b>
+<br /><br /><br />
+  <code style="white-space: nowrap">
+<b>--- Windows Cluster State ---</b><br />
 <table border=1>
 <tr><td>Group Name</td><td>Current Node</td><td>State</td><td>Status</td></tr>
 
 <tr><td>Cluster Group</td><td>MYSERVERBDD02 (recently changed)</td><td>online</td><td><IMG SRC="../yellow.gif" ALT="yellow" HEIGHT="16" WIDTH="16" BORDER=0></td></tr>
 <tr><td>SQL</td><td>MYSERVERBDD02 (recently changed)</td><td>online</td><td><IMG SRC="../yellow.gif" ALT="yellow" HEIGHT="16" WIDTH="16" BORDER=0></td></tr>
 </table>
-
-
+<br /><br /><br />
 <b>Important Notes :</b>
-
-WARNING !!! active node for group "Cluster Group" has changed. It was MYSERVERBDD01 and now it is MYSERVERBDD02.
+<br /><br />
+WARNING !!! active node for group "Cluster Group" has changed. It was MYSERVERBDD01 and now it is MYSERVERBDD02.<br />
 To suppress this warning, please connect to the server and execute the command : <i>erase "C:\WINNT\TEMP\NodeChanged_Cluster Group"</i>
-
-WARNING !!! active node for group "SQL" has changed. It was MYSERVERBDD01 and now it is MYSERVERBDD02.
+<br /><br />
+WARNING !!! active node for group "SQL" has changed. It was MYSERVERBDD01 and now it is MYSERVERBDD02.<br />
 To suppress this warning, please connect to the server and execute the command : <i>erase "C:\WINNT\TEMP\NodeChanged_SQL"</i>
-
-</pre>
+<br /><br />
+</code>
 </UL>
 
 <H3>Notes</H3>

@@ -11,6 +11,7 @@
  <H3>Description</H3>
 <p>
 Wlbs vbscript is used to monitor WLBS (NLB) clusters. It will warn depending :
+</p>
 <UL>
 	<LI> the state
 </UL>
@@ -29,6 +30,7 @@ the current status with the default status.  If not defined, the default status 
 </p>
 <p>
 Possible StatusType are : 
+</p>
 <UL>
 <LI><b>stopped</b>: node stopped
 <LI><b>started</b>: node started
@@ -38,7 +40,6 @@ Possible StatusType are :
 <H3>Examples</H3>
 <UL>
  <LI>Here an example of report :
- <p>
 <PRE>
 
 wlbs status
@@ -50,12 +51,14 @@ Name : 77.78.79.30:5
 Prority : 5
 
 </pre>
-<IMG SRC="../green.png" ALT="green" HEIGHT="16" WIDTH="16" BORDER=0>
-<pre>Default Status : converged
-</pre>
-<IMG SRC="../yellow.gif" ALT="yellow" HEIGHT="16" WIDTH="16" BORDER=0>
-<pre>Current Status : stopped
-</PRE>
+	 <div style="display: inline; white-space: nowrap">
+		 <img src="../green.png" alt="green" height="16" width="16" border="0">
+		 <pre style="display: inline">Default Status : converged</pre>
+		 <br />
+		 <br />
+		 <img src="../yellow.gif" alt="yellow" height="16" width="16" border="0">
+		 <pre style="display: inline">Current Status : stopped</pre>
+	 </div>
 </UL>
 <H3>Notes</H3>
 <UL>

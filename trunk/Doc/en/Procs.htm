@@ -15,12 +15,11 @@ Procs agent is used to monitor processus.
 <H3>Configuration</H3>
 <UL>
  <LI class="OptionDirective"><b>setting</b> directive syntax :
-<p>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
 <LI class="OptionDirective">generic settings
-<p>
+<br /><br />
 <table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
 	<tr>
 		<td class="OptionTitle" vAlign="top" >
@@ -96,7 +95,6 @@ To create a custom procs rule, you may use the process name in the name attribut
  <LI>procs is configured to check that no drwtsn process are running ; it will warn red if one is present in memory.
  Also, it check that one instance of pageant.exe is always running ; it will warn yellow if its count is different
  than 1
-<p>
 <pre class="Config">
 &lt;procs&gt;
 	&lt;setting name="drwtsn" rule="-1" alarmcolor="red" /&gt;
