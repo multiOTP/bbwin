@@ -8,10 +8,11 @@
 # BBWin.wxs   WiX source code for producing BBWin.msi                        #
 #                                                                            #
 # REVISION HISTORY                                                           #
-#     08/2006   Etienne Grignon  (etienne.grignon@gmail.com), original       # 
+#      08/2006   Etienne Grignon  (etienne.grignon@gmail.com), original      # 
 #   11/26/2010  T.J. Yang tjyang2001@gmail.com  Version 0.9 Original.        #
 #               1. Make bbwin.wxs more readable.                             #
 #               2. update to WIX 3.0 syntax and features.                    #
+#                                                                            #
 #     MM/DD/YEAR    Your Name Here.                                          #
 #                                                                            #
 #                                                                            #
@@ -179,18 +180,17 @@
                     </Directory>
                     <!-- End of <Directory Id='binD' Name="bin"> -->
                     <Directory Id="extD" Name="ext">
+                        <Component Id="ClusterC" Guid="1FE84C9C-B682-457a-83AD-CF28B4C51D00">
+                            <File Source="..\Release\cluster.exe" />
+                        </Component>
 
-	<!-- Externals scripts and executables 
-		<Component Id='ClusterC' Guid='1FE84C9C-B682-457a-83AD-CF28B4C51D00'>
-			<File Id='cluster.exe' Name="../Release/cluster.exe"  />
-		</Component>
-		<Component Id='FsmonC' Guid='F6088C2A-0E71-4a67-A30D-12C39D9F3432'>
-			<File Id='fsmon.vbs' Name="fsmon.vbs"  />
-		</Component>
-		<Component Id='WlbsC' Guid='C90A6F0B-7E5E-43b9-BAA0-33B91A04E04A'>
-			<File Id='wlbs.vbs' Name="wlbs.vbs"  />
-		</Component>
-          -->
+                        <Component Id="FsmonC" Guid="F6088C2A-0E71-4a67-A30D-12C39D9F3432">
+                            <File Source="..\externals\vbs\fsmon\fsmon.vbs" />
+                        </Component>
+
+                        <Component Id="WlbsC" Guid="C90A6F0B-7E5E-43b9-BAA0-33B91A04E04A">
+                            <File Source="..\externals\vbs\wlbs\wlbs.vbs" />
+                        </Component>
                     </Directory>
                     <Directory Id="tmpD" Name="tmp" />
                     <Directory Id="logsD" Name="logs" />
@@ -212,18 +212,14 @@
                         <Component Id="BBWinConfigC" Guid="EDC3AAA4-9000-4938-9BAC-5B7BCFFC34E2" Permanent="yes" NeverOverwrite="yes">
                             <File Source="./etc/BBWin.cfg" />
                         </Component>
-                <!-- disabled
-		<Component Id="WlbsConfigC" 
-                         Guid='5EA1128F-3EBB-4faa-9E66-0DCD988968B2' 
-                         Permanent="yes" NeverOverwrite="yes">
-	 	  <File Id='wlbs.cfg' Source='./docs/License.txt' />
-		</Component>
-		<Component Id="FsmonConfigC" 
-                         Guid='39CFAA7D-15E7-4679-8DA5-71E55723FD9C' 
-                         Permanent="yes" NeverOverwrite="yes">
-		  <File Id='fsmon.cfg' Name="fsmon.cfg"  Source='./docs/License.txt'/>
-		</Component>
-                -->
+
+                        <Component Id="WlbsConfigC" Guid="5EA1128F-3EBB-4faa-9E66-0DCD988968B2" Permanent="yes" NeverOverwrite="yes">
+                            <File Source="..\externals\vbs\wlbs\wlbs.cfg" />
+                        </Component>
+                        <Component Id="FsmonConfigC" Guid="39CFAA7D-15E7-4679-8DA5-71E55723FD9C" Permanent="yes" NeverOverwrite="yes">
+                            <File Source="..\externals\vbs\fsmon\fsmon.cfg" />
+                        </Component>
+
                     </Directory>
                     <!-- SDK Part like Big Software :) -->
                     <Directory Id="SdkD" Name="sdk">
@@ -323,25 +319,20 @@
             </Feature>
             <Feature Id="Externals" Title="Externals" Description="BBWin Externals." TypicalDefault="install" Level="1" ConfigurableDirectory="INSTALLDIR">
 
-	               	<!-- Disabled
-			<Feature Id='Cluster' Title='Cluster' 
-                           Description='Monitor MSCS Windows clusters. It will warn if the current node changed.'
-				TypicalDefault='advertise' Level='1'>
-				<ComponentRef Id='ClusterC' />
-			</Feature>
 
-			<Feature Id='Fsmon' Title='Fsmon' Description='Monitor folders and Windows files.'
-					TypicalDefault='advertise' Level='1'>
-				<ComponentRef Id='FsmonC' />
-				<ComponentRef Id='FsmonConfigC' />
-			</Feature>
-			<Feature Id='Wlbs' Title='Wlbs' 
-	                                Description='Monitor WLBS (NLB) Windows clusters. 
-	                                    It will warn if the node status is not correct.'
-						TypicalDefault='advertise' Level='1'>
-				<ComponentRef Id='WlbsC' />
-				<ComponentRef Id='WlbsConfigC' />
-			</Feature>
+                <Feature Id="Cluster" Title="Cluster" Description="Monitor MSCS Windows clusters. It will warn if the current node changed." TypicalDefault="advertise" Level="1">
+                    <ComponentRef Id="ClusterC" />
+                </Feature>
+
+                <Feature Id="Fsmon" Title="Fsmon" Description="Monitor folders and Windows files." TypicalDefault="advertise" Level="1">
+                    <ComponentRef Id="FsmonC" />
+                    <ComponentRef Id="FsmonConfigC" />
+                </Feature>
+                <Feature Id="Wlbs" Title="Wlbs" Description="Monitor WLBS (NLB) Windows clusters. &#xD;&#xA;	                                    It will warn if the node status is not correct." TypicalDefault="advertise" Level="1">
+                    <ComponentRef Id="WlbsC" />
+                    <ComponentRef Id="WlbsConfigC" />
+                </Feature>
+	               	<!-- Disabled
 	                -->
             </Feature>
             <Feature Id="Tools" Title="Tools" Description="Extra BBWin tools" TypicalDefault="install" Level="1">
