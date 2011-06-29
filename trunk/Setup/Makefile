@@ -10,6 +10,9 @@
 #     MM/DD/YEAR    Your Name Here.                                          #
 #                                                                            #
 #                                                                            #
+# NOTE: Ensure you have the WiX and HTML Help Workshop directories added to  #
+# your PATH                                                                  #
+#                                                                            #
 # USAGE                                                                      #
 #  1. nmake -f Makefile                                                      #
 #    candle.exe  mongodb.wxs                                                 #
@@ -87,11 +90,9 @@ WIXLINKER = light
 #WLFLAG = /nologo  -ext WixUIExtension 
 WCFLAG = -ext WixUtilExtension 
 WLFLAG = -ext WixUIExtension  -ext WixUtilExtension 
-# for 32-bit Windows development machine
-#HHC = "C:\\Program Files\\HTML Help Workshop\\hhc.exe"
-# for 64-bit Windows development machine
-HHC = "C:\\Program Files (x86)\\HTML Help Workshop\\hhc.exe"
+HHC = hhc
 HHCFLAG = 
+LANG = en
 
 ###########################
 # makefile inference rules 
@@ -126,8 +127,10 @@ $(PROJ).msi: $(PROJ).wixobj
 
 # This BBWin.chm need to be made from hhc.exe for BBWin.wxs
 # BBWin.chm generated from bbwin.hhp in ..\docs\en
+# Use '-' to ignore return code from hhc.exe as it always returns 1.
 $(PROJ).chm:
-	$(HHC) ..\doc\en\$(PROJ).hhp
+	-$(HHC) ..\doc\$(LANG)\$(PROJ).hhp
+	@copy /y ..\doc\$(LANG)\$(PROJ).chm .\docs\$(PROJ)_$(LANG).chm
 
 # Rules for cleaning out those old files
 clean:
