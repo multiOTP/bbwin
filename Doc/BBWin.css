@@ -17,7 +17,6 @@ H1 {
         color:#006600;
         font-weight:bold;
         border-bottom : thin solid #006600;
-		content: ' *' url(green.gif);
 }
 
 H2 {
