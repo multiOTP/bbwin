@@ -19,8 +19,8 @@
 #     Externals\~ \
 
 DIRS = \
-    Core\~   	\
-    Setup\~   	\
+    Core\~  \
+    Setup\~ \
 
 !include <sdkpropbld.mak>
 
