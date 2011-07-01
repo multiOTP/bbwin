@@ -72,7 +72,8 @@
 
 
 PROJ = BBWin 
-all: check $(PROJ).msi
+all: sdk_build check $(PROJ).msi
+
 
 # Define project specific macros
 PROJ_OBJS  = UpgradeConfiguration.obj
@@ -133,12 +134,23 @@ $(PROJ).chm:
 	@copy /y ..\doc\$(LANG)\$(PROJ).chm .\docs\$(PROJ)_$(LANG).chm
 
 # Rules for cleaning out those old files
-clean:
+clean: sdk_clean
 	erase /q /s $(PROJ).dll $(PROJ).exp \
-        $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj *~ *.bak *.wixpdb         $(PROJ).msi 
+        $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj *~ *.bak *.wixpdb  $(PROJ).msi 
  
 #        $(PROJ).msi $(PROJ).lib \
 ##        ..\doc\en\$(PROJ).chm
+
+sdk_build:
+	cd sdk
+	nmake 
+	cd ..
+
+sdk_clean:
+	cd sdk
+	nmake clean
+	cd ..
+
 
 install:
 	msiexec /i $(PROJ).msi /qb ADDDEFAULT=ALL
