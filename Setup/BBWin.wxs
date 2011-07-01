@@ -223,11 +223,13 @@
                     </Directory>
                     <!-- SDK Part like Big Software :) -->
                     <Directory Id="SdkD" Name="sdk">
-                        <Component Id="SampleC" Guid="AF366A7D-BFC1-490D-98EE-10FC8EE92DFC">
+                        <Component Id="Sample_Central_LoaclC" Guid="AF366A7D-BFC1-490D-98EE-10FC8EE92DFC">
                             <File Source=".\sdk\Makefile" />
-                            <File Source=".\sdk\sample.Rc" />
+                            <File Source=".\sdk\sample_central.Rc" />
+                            <File Source=".\sdk\sample_local.Rc" />
                             <File Source=".\sdk\sample.h" />
-                            <File Source=".\sdk\sample.cpp" />
+                            <File Source=".\sdk\sample_central.cpp" />
+                            <File Source=".\sdk\sample_local.cpp" />
                             <File Source="..\core\version.h" />
                         </Component>
                         <Component Id="IncludeSdkC" Guid="ABB6619E-4297-4724-AC06-C35F44963FD4">
@@ -235,9 +237,10 @@
                             <File Source=".\sdk\IBBWinAgent.h" />
                             <File Source=".\sdk\IBBWinException.h" />
                         </Component>
-                        <Directory Id="SdkCompiledD" Name="Compiled">
-                            <Component Id="SampleCompiledC" Guid="65116387-4564-400b-810F-61C5A62CAB08">
-                                <File Source=".\sdk\compiled\sample.dll" />
+                        <Directory Id="SdkReleaseD" Name="Release">
+                            <Component Id="SampleReleaseC" Guid="65116387-4564-400b-810F-61C5A62CAB08">
+                                <File Source=".\sdk\release\sample_central.dll" />
+                                <File Source=".\sdk\release\sample_local.dll" />
                             </Component>
                         </Directory>
                     </Directory>
@@ -341,8 +344,8 @@
                 </Feature>
             </Feature>
             <Feature Id="SDK" Title="Agents SDK" Description="BBWin Agents development toolkit." TypicalDefault="advertise" Level="1">
-                <ComponentRef Id="SampleC" />
-                <ComponentRef Id="SampleCompiledC" />
+                <ComponentRef Id="Sample_Central_LoaclC" />
+                <ComponentRef Id="SampleReleaseC" />
                 <ComponentRef Id="IncludeSdkC" />
             </Feature>
         </Feature>
