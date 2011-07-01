@@ -1,6 +1,20 @@
 ChangeLog file for BBWin
 ==============================================================
 
+
+BBWin 0.13  version -  July ??  2011
+-------------------
+Etienne Grignon
+* Migrate bbwin src tree into  V.S. 2010 Express.
+
+T.J. Yang
+* bbwin.wxs upgraded to WiX 3.0 syntax to make use of WiX 3.X tool.
+* sample.dll now divided into central and local two examples.
+* Enhance setup/Makefile to automate the build process more.
+
+Malcolm Hunter
+
+
 BBWin 0.12 Beta version -  June 6th 2008
 -------------------
 
