@@ -17,7 +17,7 @@
 
 !include <Win32.Mak>
 
-all: sample.dll
+all: sample_local.dll sample_central.dll
 
 cflags = $(cflags) /EHsc /I ../..
 
@@ -25,16 +25,31 @@ cflags = $(cflags) /EHsc /I ../..
     $(cc) $(cdebug) $(cflags) $(cvarsmt) $**		
 ## sample dependencies
 
-sample_objs = 	sample.obj
+sample_local_objs = 	sample_local.obj
 
-sample.res: sample.rc
-	$(rc) $(rcflags) $(rcvars) /fo sample.res sample.rc
+sample_local.res: sample_local.rc
+	$(rc) $(rcflags) $(rcvars) /fo sample_local.res sample_local.rc
 
-sample.dll: $(sample_objs) sample.res
-    $(link) /DLL $(dllldebug) $(sample_objs) sample.res -out:sample.dll
+sample_local.dll: $(sample_local_objs) sample_local.res
+    $(link) /DLL $(dllldebug) $(sample_local_objs) sample_local.res -out:sample_local.dll
 	if not exist Release mkdir Release
-	copy /Y sample.dll Release
+	copy /Y sample_local.dll Release
+	copy /Y sample_local.dll ..\bin
+
+sample_central_objs = 	sample_central.obj
+
+sample_central.res: sample_central.rc
+	$(rc) $(rcflags) $(rcvars) /fo sample_central.res sample_central.rc
+
+sample_central.dll: $(sample_central_objs) sample_central.res
+    $(link) /DLL $(dllldebug) $(sample_central_objs) sample_central.res -out:sample_central.dll
+	if not exist Release mkdir Release
+	copy /Y sample_central.dll Release
+	copy /Y sample_central.dll ..\bin
+
+sample_objs = $(sample_central_objs) $(sample_local_objs)
+
 clean:
-	erase /Q /S $(sample_objs)
+	erase /Q /S $(sample_objs) *.dll *~ *.lib *.exp *.pdb *.res
 
 
