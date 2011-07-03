@@ -65,7 +65,7 @@ class   IBBWinAgentManager {
 		virtual void	GetHandles(HANDLE * hEvents) = 0;
 		virtual DWORD	GetHandlesCount() = 0;
 		
-		// Hobbit Centralized Mode
+		// Xymon Centralized Mode
 		// if it returns true, then the agent will have to use ClientData instead of Status
 		// 
 		virtual bool	IsCentralModeEnabled() = 0;
@@ -99,7 +99,7 @@ class   IBBWinAgentManager {
 		virtual void 	ReportEventInfo(LPCTSTR str) = 0;
 		virtual void 	ReportEventWarn(LPCTSTR str) = 0;
 		
-		// hobbit protocol
+		// Xymon protocol
 		virtual void 	Status(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime = "") = 0;
 		virtual void	Notify(LPCTSTR testName, LPCTSTR text) = 0;
 		virtual void	Data(LPCTSTR dataName, LPCTSTR text) = 0;

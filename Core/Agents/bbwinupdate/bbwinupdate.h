@@ -30,7 +30,7 @@ class AgentBBWinUpdate : public IBBWinAgent
 		std::list<std::string>	m_configFiles;
 		std::string				m_bbwinCfgPath; // bbwin.cfg original place
 		std::string				m_bbwinCfgTmpPath; // bbwin.cfg copy place for working process
-		std::string				m_bbwinupdateTmpFilePath; // file path used to save the config file from the hobbit server 
+		std::string				m_bbwinupdateTmpFilePath; // file path used to save the config file from the Xymon server 
 
 	private :
 		void					RunAgentUpdate();
