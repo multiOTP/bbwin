@@ -15,77 +15,77 @@ your monitoring).
 </p>
 <H3>Configuration</H3>
 <UL>
- <LI class="OptionDirective"><b>setting</b> directive syntax :
+ <LI><b>setting</b> directive syntax :
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-<LI class="OptionDirective">generic settings
+</td></tr></table>
+<LI>generic settings
 <br /><br />
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
-		</td>
-		<td class="OptionTitle">
-		value
+		<th>name</th>
+		<th>value</th>
+	</tr>
+	<tr>
+		<td>logstimer</td>
+		<td>
+			Time for the interval between the sending of the reports found in the tmp BBWin directory.
+			Default unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+			"h" for hours, "d" for days.
+			<b>Default is 30 seconds</b>
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		logstimer
+		<td>timer</td>
+		<td>
+			Default timer for the externals execution.
+			Default unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+			"h" for hours, "d" for days.
+			<b>Default is the value from BBWin configuration namespace.</b>
 		</td>
-		<td class="OptionValue" vAlign="top">
-		Time for the interval between the sending of the reports found in the tmp BBWin directory.
-		Default unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
-		"h" for hours, "d" for days.
-		<b>Default is 30 seconds</b></td>
-	</tr>
-	<tr>
-		<td class="OptionValue" vAlign="top" >
-		timer
-		</td>
-		<td class="OptionValue" vAlign="top">
-		Default timer for the externals execution.
-		Default unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
-		"h" for hours, "d" for days.
-		<b>Default is the value from BBWin configuration namespace.</b></td>
 	</tr>
 </table>
- <LI class="OptionDirective"><b>load</b> directive syntax :
+<br />
+ <LI><b>load</b> directive syntax :<br />
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;load name="" timer="" value=""/&gt;
 </pre>
+</td></tr></table>
 <p>
 If the name value is not one of the generic settings, then, cpu will understand that it is the cpu default rule.
 </p>
 <br />
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
-		</td>
-		<td class="OptionValue" vAlign="top">
-		Name of the external. This setting is optionnal.
-		<br>
+		<th>Attribute</th>
+		<th>Value</th>
+	</tr>
+	<tr>
+		<td>name</td>
+		<td>
+			Name of the external. This setting is optionnal.
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		timer
+		<td>timer</td>
+		<td>
+			Default timer for the externals execution.
+			Default unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+			"h" for hours, "d" for days.
+			<b>Default is the value from BBWin configuration namespace or from the timer general setting.</b>
 		</td>
-		<td class="OptionValue" vAlign="top">
-		Default timer for the externals execution.
-		Default unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
-		"h" for hours, "d" for days.
-		<b>Default is the value from BBWin configuration namespace or from the timer general setting.</b></td>
 	</tr>
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		value
+		<td>value</td>
+		<td>
+			Command line to execute.
+			<b>This attribute is required.</b>
 		</td>
-		<td class="OptionValue" vAlign="top">
-		Command line to execute.
-		<b>This attribute is required.</b></td>
 	</tr>
 </table>
 </UL>
@@ -101,16 +101,18 @@ then just run the scripts from BBWin.
 registry key.
 </UL>
 <H3>Examples</H3>
+<table><tr><td>
 <pre class="Config">
-	&lt;externals&gt;
+&lt;externals&gt;
 	&lt;setting name="timer" value="3m" /&gt;
 	&lt;setting name="logstimer" value="60s" /&gt;
 	&lt;load value="cscript mybbscript.vbs" /&gt;
 	&lt;load value="memory.exe" /&gt;
 	&lt;load value="cscript wlbs.vbs" timer="15m" /&gt;
 	&lt;load value="cluster.exe" timer="90s" /&gt;
-	&lt;/externals&gt;
+&lt;/externals&gt;
 </pre>
+</td></tr></table>
 <UL>
 <LI>Tmp directory will be checked every 60 seconds
 <LI>"cscript mybbscript.vbs" will be executed every 3 minutes

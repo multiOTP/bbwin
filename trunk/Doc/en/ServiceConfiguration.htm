@@ -29,148 +29,113 @@ several hobbit servers.
 If no bbdisplay are specified, you will get a warning event in the Application Event Log.
 </UL>
 <p>
-<img src="../yellow.gif" alt="Warning"> If hostname registry key is not configured, BBWin won't start.
+<img src="../yellow.gif" alt="Warning" /> If hostname registry key is not configured, BBWin won't start.
 </p>
 <H3>Configuration</H3>
 <UL>
- <LI class="OptionDirective"><b>setting</b> directive syntax :
+ <LI><b>setting</b> directive syntax :
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-<LI class="OptionDirective">generic settings
+</td></tr></table>
+<LI>generic settings
 <br /><br />
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
-		</td>
-		<td class="OptionTitle">
-		value
+		<th>name</th>
+		<th>value</th>
+	</tr>
+	<tr>
+		<td>autoreload</td>
+		<td>
+			Possible values are "true" or "false". If true, it will check each 5 seconds to check if BBWin.cfg file has changed. If it has changed, it will 
+			reload the all configuration (registry and BBWin.cfg file).
+			<b>Default is false</b>
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		autoreload
-		</td>
-		<td class="OptionValue" vAlign="top">
-		Possible values are "true" or "false". If true, it will check each 5 seconds to check if BBWin.cfg file has changed. If it has changed, it will 
-		reload the all configuration (registry and BBWin.cfg file).
-		<b>Default is false</b>
-		<br>
-		</td>
-	</tr>
-	<tr>
-		<td class="OptionValue" vAlign="top" >
-		bbdisplay
-		</td>
-		<td class="OptionValue" vAlign="top">
-		you may specify the bbdisplay server with this syntax : bbdisplay&lt;:port&gt;
-		The bbdisplay server can be the address ip or the dns entry.
-		<b>If no bbdisplay server is specified, you will get a warning event in the application event log</b>.
-		<br>
-		<b>You may specify multiple bbdisplay values if you want the reports be sent to multiple bbdisplays</b>
-		Default port is 1984.
-		<br>
+		<td>bbdisplay</td>
+		<td>
+			you may specify the bbdisplay server with this syntax : bbdisplay&lt;:port&gt;
+			The bbdisplay server can be the address ip or the dns entry.
+			<b>If no bbdisplay server is specified, you will get a warning event in the application event log</b>.
+			<br>
+			<b>You may specify multiple bbdisplay values if you want the reports be sent to multiple bbdisplays</b>
+			Default port is 1984.
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		bbpager
-		</td>
-		<td class="OptionValue" vAlign="top">
-		you may specify the bbpager server with this syntax : bbpager&lt;:port&gt;.
+		<td>bbpager</td>
+		<td>
+			you may specify the bbpager server with this syntax : bbpager&lt;:port&gt;.
 		
-		The bbpager server can be the address ip or the dns entry.
-		<b>The bbpager feature is not needed if your server is running hobbit software.</b>.
-		<br>
-		<b>You may specify multiple bbpager values if you want the pager report be sent to multiple bbpagers. </b>
-		
-		<br>
+			The bbpager server can be the address ip or the dns entry.
+			<b>The bbpager feature is not needed if your server is running hobbit software.</b>.
+			<br>
+			<b>You may specify multiple bbpager values if you want the pager report be sent to multiple bbpagers. </b>
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		loglevel
-		</td>
-		<td class="OptionValue" vAlign="top">
-		 0 no log, 1 errors, 2 warnings, 3 information, 4 debug loglevel 4 is the most verbose mode.
-		<b>Default is 0</b>
-		<br>
+		<td>loglevel</td>
+		<td>
+			0 no log, 1 errors, 2 warnings, 3 information, 4 debug loglevel 4 is the most verbose mode.
+			<b>Default is 0</b>
 		</td>
 	</tr>
 	<tr>
-	<td class="OptionValue" vAlign="top" >
-		logpath
-		</td>
-		<td class="OptionValue" vAlign="top">
-		 Log path to the file where will be writting all messages strings depending the loglevel
-		<b>Default is C:\\BBWin.log if not specified</b>
-		<br>
+		<td>logpath</td>
+		<td>
+			 Log path to the file where will be writting all messages strings depending the loglevel
+			<b>Default is C:\\BBWin.log if not specified</b>
 		</td>
 	</tr>
 	<tr>
-	<td class="OptionValue" vAlign="top" >
-		logreportfailure
-		</td>
-		<td class="OptionValue" vAlign="top">
-		Possible values are "true" or "false". If true, it will report warning events in the Application event log when
-		a report fails to be delivered to a bbdisplay or a bbpager.
-		<b>Default is false</b>
-		<br>
+		<td>logreportfailure</td>
+		<td>
+			Possible values are "true" or "false". If true, it will report warning events in the Application event log when
+			a report fails to be delivered to a bbdisplay or a bbpager.
+			<b>Default is false</b>
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		pagerlevels
-		</td>
-		<td class="OptionValue" vAlign="top">
-		You can specify status colors that will generate a notification request to the bbpager.
-		<b>Default is "red purple"</b>
-		<br>
+		<td>pagerlevels</td>
+		<td>
+			You can specify status colors that will generate a notification request to the bbpager.
+			<b>Default is "red purple"</b>
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		proxy
-		</td>
-		<td class="OptionValue" vAlign="top">
-		you may specify an http proxy server with this syntax : [user:password@]proxyhost&lt;:port&gt;
-		The proxy server can be the address ip or the dns entry. user:password is optional if you want to 
-		use the Basic Authentification of your proxy server.
-		<br>
-		Default port is 8080.
-		<br>
+		<td>proxy</td>
+		<td>
+			you may specify an http proxy server with this syntax : [user:password@]proxyhost&lt;:port&gt;
+			The proxy server can be the address ip or the dns entry. user:password is optional if you want to 
+			use the Basic Authentification of your proxy server.
+			<br>
+			Default port is 8080.
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		timer
-		</td>
-		<td class="OptionValue" vAlign="top">
-		Waiting period between agent execution in seconds. Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
-		"h" for hours, "d" for days.
-		<b>Default is 5 minutes</b>.
-		<br>
+		<td>timer</td>
+		<td>
+			Waiting period between agent execution in seconds. Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+			"h" for hours, "d" for days.
+			<b>Default is 5 minutes</b>.
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		usepager
-		</td>
-		<td class="OptionValue" vAlign="top">
-		Possible values are "true" or "false". If true, it will send report to the bbpager.
-		<b>Default is false</b>
-		<br>
+		<td>usepager</td>
+		<td>
+			Possible values are "true" or "false". If true, it will send report to the bbpager.
+			<b>Default is false</b>
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		useproxy
-		</td>
-		<td class="OptionValue" vAlign="top">
-		Possible values are "true" or "false". If true, it will use the proxy setting and connect through the proxy server specified.
-		<b>Default is false</b>
-		<br>
+		<td>useproxy</td>
+		<td>
+			Possible values are "true" or "false". If true, it will use the proxy setting and connect through the proxy server specified.
+			<b>Default is false</b>
 		</td>
 	</tr>
 </table>
@@ -200,62 +165,64 @@ However, you can specify timer like this : <br />
 &nbsp;2d => 2 days<br />
 &nbsp;4w => 4 weeks
 </p>
- <LI class="OptionDirective"><b>load rules</b> directive syntax :
+ <LI><b>load rules</b> directive syntax :
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;load name="" value="" timer="" /&gt;
 </pre>
+</td></tr></table>
 <p>
 Load rules are used to inform BBWin to load agents
 </p>
 <br />
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		alarmcolor
-		</td>
-		<td class="OptionValue" vAlign="top">
-		You can set the alarm color you want to use if their is an alert.
-		It should be set to red or yellow.
-		<b>Default is yellow</b>.
+		<th>Attribute</th>
+		<th>Description</th>
+	</tr>
+	<tr>
+		<td>alarmcolor</td>
+		<td>
+			You can set the alarm color you want to use if their is an alert.
+			It should be set to red or yellow.
+			<b>Default is yellow</b>.
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		comment
+		<td>comment</td>
+		<td>
+			A simple string which appear in the report to add a small information about the processus monitored if 
+			its name is not easy to understand.
+			This parameter is optionnal
 		</td>
-		<td class="OptionValue" vAlign="top">
-		A simple string which appear in the report to add a small information about the processus monitored if 
-		its name is not easy to understand.
-		This parameter is optionnal</td>
 	</tr>
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
-		</td>
-		<td class="OptionValue" vAlign="top">
-		name attribute must be the name of configuration namespace for the agent.
-		Example : 
-		<pre class="Config">
+		<td>name</td>
+		<td>
+			name attribute must be the name of configuration namespace for the agent.
+			Example :
+			<br />
+			<table cellpadding="0" cellspacing="0"><tr><td style="border: 0">
+				<pre class="Config">
 ...
 &lt;load name="mycpu" "cpu.dll" /&gt;
 ...
 &lt;mycpu&gt;
 	...
 &lt;/mycpu&gt;
-		</pre>
-		<br>
-		This parameter is <b>required</b></td>
+</pre>
+			</td></tr></table>
+			This parameter is <b>required</b>
+		</td>
 	</tr>
 		<tr>
-		<td class="OptionTitle" vAlign="top" >
-		timer
-		</td>
-		<td class="OptionValue" vAlign="top">
-		Waiting period between agent execution in seconds. Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
-		"h" for hours, "d" for days.
-		<b>Default setting is herited from generic setting timer</b>.
-		<b>This parameter is optional</b>
-		<br>
+		<td>timer</td>
+		<td>
+			Waiting period between agent execution in seconds. Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+			"h" for hours, "d" for days.
+			<b>Default setting is herited from generic setting timer</b>.
+			<b>This parameter is optional</b>
 		</td>
 	</tr>
 
@@ -271,6 +238,8 @@ the service or force the auto reload mechanism.
 <H3>Examples</H3>
 <UL>
 <LI>This is a full example of BBWin.cfg file :
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;?xml version="1.0" encoding="utf-8" ?&gt;
 &lt;configuration&gt;
@@ -368,6 +337,7 @@ the service or force the auto reload mechanism.
 &lt;/uptime&gt;
 &lt;/configuration&gt;
 </pre>
+</td></tr></table>
 </UL>
 </BODY>
 </HTML>

@@ -16,41 +16,43 @@ The bbdisplay used with the agent is the first listed in the bbwin section of th
 </p>
 <H3>Configuration</H3>
 <UL>
- <LI class="OptionDirective"><b>setting</b> directive syntax :
+ <LI><b>setting</b> directive syntax :<br /><br />
+<table><tr><td>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+</td></tr></table>
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
-		</td>
-		<td class="OptionTitle">
-		value
-		</td>
+		<th>name</th>
+		<th>value</th>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		filename
+		<td>filename</td>
+		<td>
+			This is the filename that will be downloaded from the hobbit server. 
+			You have to upload the files on the hobbit server ( Location : $HOBBITHOME/server/etc).
+			<b>You can specify several filename settings so you can play with 
+			multiple configuration files on the hobbit server.</b>You can use environment variables in the value. Example : "bbwin\%computername%.cfg"
 		</td>
-		<td class="OptionValue" vAlign="top">
-		This is the filename that will be downloaded from the hobbit server. 
-		You have to upload the files on the hobbit server ( Location : $HOBBITHOME/server/etc).
-		<b>You can specify several filename settings so you can play with 
-		multiple configuration files on the hobbit server.</b>You can use environment variables in the value. Example : "bbwin\%computername%.cfg"</td>
 	</tr>
 </table>
 </UL>
 <H3>Examples</H3>
 <UL>
-<LI>This an example of configuration of the agent :
+<LI>This an example of configuration of the agent :<br />
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;bbwinupdate&gt;
 	&lt;setting name="filename" value="bbwin/bbwindefault.cfg" /&gt;
 	&lt;setting name="filename" value="bbwin/bbwinSql.cfg" /&gt;
 &lt;/bbwinupdate&gt;
 </pre>
-<LI>This an example of configuration of stored on the hobbit server ($HOBBITHOME/server/etc/bbwin/bbwindefault.cfg for example):
+</td></tr></table>
+<LI>This an example of configuration of stored on the hobbit server ($HOBBITHOME/server/etc/bbwin/bbwindefault.cfg for example):<br />
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;?xml version="1.0" encoding="us-ascii" ?&gt;
 &lt;configuration&gt;
@@ -82,6 +84,7 @@ The bbdisplay used with the agent is the first listed in the bbwin section of th
 &lt;/uptime&gt;
 &lt;/configuration&gt;
 </pre>
+</td></tr></table>
 </UL>
 <H3>Notes</H3>
 <UL>

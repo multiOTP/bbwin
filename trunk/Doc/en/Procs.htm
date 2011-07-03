@@ -14,79 +14,78 @@ Procs agent is used to monitor processus.
 </p>
 <H3>Configuration</H3>
 <UL>
- <LI class="OptionDirective"><b>setting</b> directive syntax :
+ <LI><b>setting</b> directive syntax :
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-<LI class="OptionDirective">generic settings
+</td></tr></table>
+<LI>generic settings
 <br /><br />
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
-		</td>
-		<td class="OptionTitle">
-		value
-		</td>
+		<th>name</th>
+		<th>value</th>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		testname
+		<td>testname</td>
+		<td>
+			You can set the testname that will be sent to the monitoring server (column name in
+			the bbdisplay)
+			<b>Default is "procs"</b>
 		</td>
-		<td class="OptionValue" vAlign="top">
-		You can set the testname that will be sent to the monitoring server (column name in
-		the bbdisplay)
-		<b>Default is "procs"</b></td>
 	</tr>
 </table>
- <LI class="OptionDirective"><b>rules</b> directive syntax :
-<p>
+ <LI><b>rules</b> directive syntax :
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;setting name="" rule="" alarmcolor="" comment=""/&gt;
 </pre>
+</td></tr></table>
 <p>
 If the name value is not one of the generic settings, then, procs will understand that it is a procs custom rule.
 To create a custom procs rule, you may use the process name in the name attribute.
 </p>
-<p>
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
+<br />
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		alarmcolor
-		</td>
-		<td class="OptionValue" vAlign="top">
-		You can set the alarm color you want to use if their is an alert.
-		It should be set to red or yellow.
-		<b>Default is yellow</b>.
+		<th>Attribute</th>
+		<th>Value</th>
+	</tr>
+	<tr>
+		<td>alarmcolor</td>
+		<td>
+			You can set the alarm color you want to use if their is an alert.
+			It should be set to red or yellow.
+			<b>Default is yellow</b>.
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		comment
+		<td>comment</td>
+		<td>
+			A simple string which appear in the report to add a small information about the processus monitored if 
+			its name is not easy to understand.
+			This parameter is optionnal
 		</td>
-		<td class="OptionValue" vAlign="top">
-		A simple string which appear in the report to add a small information about the processus monitored if 
-		its name is not easy to understand.
-		This parameter is optionnal</td>
 	</tr>
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
+		<td>name</td>
+		<td>
+			name attribute should be the name of the process you want to monitor.
+			This parameter is <b>required</b>
 		</td>
-		<td class="OptionValue" vAlign="top">
-		name attribute should be the name of the process you want to monitor.
-		This parameter is <b>required</b></td>
 	</tr>
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		rule
+		<td>rule</td>
+		<td>
+			Rule is composed of a numeric sign followed by a numeric value.
+			Possibles signs are '-=', '+=', '-', '+' or	'='.
+			'-' means &lt; and '+' means &gt;.
+			See the example below.
+			This parameter is <b>required</b>
 		</td>
-		<td class="OptionValue" vAlign="top">
-		Rule is composed of a numeric sign followed by a numeric value.
-		Possibles signs are '-=', '+=', '-', '+' or	'='.
-		'-' means &lt; and '+' means &gt;.
-		See the example below.
-		This parameter is <b>required</b></td>
 	</tr>
 </table>
 </UL>
@@ -95,12 +94,15 @@ To create a custom procs rule, you may use the process name in the name attribut
  <LI>procs is configured to check that no drwtsn process are running ; it will warn red if one is present in memory.
  Also, it check that one instance of pageant.exe is always running ; it will warn yellow if its count is different
  than 1
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;procs&gt;
 	&lt;setting name="drwtsn" rule="-1" alarmcolor="red" /&gt;
 	&lt;setting name="pageant.exe" rule="=1" comment="Putty agent deamon" /&gt;
 &lt;/procs&gt;
 </pre>
+</td></tr></table>
 </UL>
 <H3>Notes</H3>
 <UL>
