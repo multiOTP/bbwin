@@ -10,13 +10,13 @@ Richard Finegold (For the update of the MigrateBBntToBBWin.txt tool)
 
 ---------
 
-Of course, BBWin would not exists if the hobbit project
+Of course, BBWin would not exists if the Xymon project
 created and maintained by Henrik Stoerner did not exists.
 
-Please visit the hobbit project website :
-http://www.hswn.dk/hobbit/
+Please visit the Xymon project website :
+http://www.xymon.com/
 
-Some source code is directly from the hobbit source code.
+Some source code is directly from the Xymon source code.
 (digest part)
 
 
