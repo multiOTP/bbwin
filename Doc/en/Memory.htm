@@ -14,88 +14,86 @@ Memory agent is used to monitor RAM.
 </p>
 <H3>Configuration</H3>
 <UL>
- <LI class="OptionDirective"><b>setting</b> directive syntax :
+ <LI><b>setting</b> directive syntax :
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-<LI class="OptionDirective">generic settings
+</td></tr></table>
+<LI>generic settings
 <br /><br />
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
-		</td>
-		<td class="OptionTitle">
-		value
+		<th>name</th>
+		<th>value</th>
+	</tr>
+	<tr>
+		<td>alwaysgreen</td>
+		<td>
+			Possible values are "true" or "false". If true, it will always send green status.
+			<b>Default is false</b>.
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		alwaysgreen
+		<td>testname</td>
+		<td>
+			You can set the testname that will be sent to the monitoring server (column name in
+			the bbdisplay)
+			<b>Default is "memory"</b>
 		</td>
-		<td class="OptionValue" vAlign="top">
-		Possible values are "true" or "false". If true, it will always send green status.
-		<b>Default is false</b>.
-		</td>
-	</tr>
-	<tr>
-		<td class="OptionValue" vAlign="top" >
-		testname
-		</td>
-		<td class="OptionValue" vAlign="top">
-		You can set the testname that will be sent to the monitoring server (column name in
-		the bbdisplay)
-		<b>Default is "memory"</b></td>
 	</tr>
 </table>
- <LI class="OptionDirective"><b>rules</b> directive syntax :
+<br />
+ <LI><b>rules</b> directive syntax :
+<table><tr><td>
 <pre class="Config">
 &lt;setting name="" warnlevel="" paniclevel=""/&gt;
 </pre>
+</td></tr></table>
 <p>
 If the name value is not one of the generic settings, then, memory will understand that it is a memory custom rule.
 To create a custom memory rule, you may use one of the available memory type in the name attribute.
 </p>
 <br />
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table2">
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1" id="table2">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
-		</td>
-		<td class="OptionValue" vAlign="top">
-		name attribute should be the name of the memory type you want to monitor.
-		Possible memory types are 'real', 'physical', 'page' and 'virtual'.
-		<br>
-		<p><b>Default settings</b> are : 
-		Default physical warning 100%<br>
-		Default physical panic 101%<br>
-		Default page warning 80%<br>
-		Default page panic 90%<br>
-		Default virtual warning 90%<br>
-		Default virtual panic 99%<br>
-		Default real memory warning 101%<br>
-		Default real memory panic 105%<br>
-		</p></td>
+		<th>Attribute</th>
+		<th>Value</th>
 	</tr>
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		warnlevel
-		</td>
-		<td class="OptionValue" vAlign="top">
-		It must be a numeric value. It will warn yellow if the value is reached.
+		<td>name</td>
+		<td>
+			name attribute should be the name of the memory type you want to monitor.
+			Possible memory types are 'real', 'physical', 'page' and 'virtual'.
+			<br /><br />
+			<b>Default settings</b> are :<br />
+			Default physical warning 100%<br>
+			Default physical panic 101%<br>
+			Default page warning 80%<br>
+			Default page panic 90%<br>
+			Default virtual warning 90%<br>
+			Default virtual panic 99%<br>
+			Default real memory warning 101%<br>
+			Default real memory panic 105%<br>
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		paniclevel
+		<td>warnlevel</td>
+		<td>
+			It must be a numeric value. It will warn yellow if the value is reached.
 		</td>
-		<td class="OptionValue" vAlign="top">
-		It must be a numeric value. It will warn red if the value is reached.
+	</tr>
+	<tr>
+		<td>paniclevel</td>
+		<td>
+			It must be a numeric value. It will warn red if the value is reached.
 		</td>
 	</tr>
 </table>
 </UL>
 <H3>Examples</H3>
+<table><tr><td>
 <pre class="Config">
 &lt;memory&gt;
 	&lt;setting name="alwaysgreen" value="false" /&gt;
@@ -105,6 +103,7 @@ To create a custom memory rule, you may use one of the available memory type in 
 	&lt;setting name="real" warnlevel="80" paniclevel="95" /&gt;
 &lt;/memory&gt;
 </pre>
+</td></tr></table>
 <H3>Notes</H3>
 <UL>
  <LI>You may only configure memory rules to override the default settings.

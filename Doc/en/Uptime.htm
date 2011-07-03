@@ -14,64 +14,60 @@ Uptime agent is used to monitor the uptime of a server.
 </p>
 <H3>Configuration</H3>
 <UL>
- <LI class="OptionDirective"><b>setting</b> directive syntax :
+ <LI><b>setting</b> directive syntax :
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;setting name="" value="" /&gt;
 </pre>
-<table class="OptionTable" cellSpacing="0" cellPadding="0" border="1" id="table1">
+</td></tr></table>
+<table class="TableGrid" cellSpacing="0" cellPadding="0" border="1">
 	<tr>
-		<td class="OptionTitle" vAlign="top" >
-		name
-		</td>
-		<td class="OptionTitle">
-		value
+		<th>name</th>
+		<th>value</th>
+	</tr>
+	<tr>
+		<td>alarmcolor</td>
+		<td>
+			You can set the alarm color you want to use if their is an alert.
+			It should be set to red or yellow.
+			<b>Default is yellow</b>.
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		alarmcolor
-		</td>
-		<td class="OptionValue" vAlign="top">
-		You can set the alarm color you want to use if their is an alert.
-		It should be set to red or yellow.
-		<b>Default is yellow</b>.
+		<td>delay</td>
+		<td>
+			You can set the delay used to compare with the last startup of the computer.
+			Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+			"h" for hours, "d" for days.
+			<b>Default is 30 minutes</b>
 		</td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		delay
+		<td>maxdelay</td>
+		<td>
+			You can set the maximum delay used to compare with the last startup of the computer. You can get 
+			alerts on servers which has uptime greater than 2 years for examples.
+			Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+			"h" for hours, "d" for days.
+			<b>Default is 365 days</b>
 		</td>
-		<td class="OptionValue" vAlign="top">
-		You can set the delay used to compare with the last startup of the computer.
-		Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
-		"h" for hours, "d" for days.
-		<b>Default is 30 minutes</b></td>
 	</tr>
 	<tr>
-		<td class="OptionValue" vAlign="top" >
-		maxdelay
+		<td>testname</td>
+		<td>
+			You can set the testname that will be sent to the monitoring server (column name in
+			the bbdisplay)
+			<b>Default is "uptime"</b>
 		</td>
-		<td class="OptionValue" vAlign="top">
-		You can set the maximum delay used to compare with the last startup of the computer. You can get 
-		alerts on servers which has uptime greater than 2 years for examples.
-		Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
-		"h" for hours, "d" for days.
-		<b>Default is 365 days</b></td>
-	</tr>
-	<tr>
-		<td class="OptionValue" vAlign="top" >
-		testname
-		</td>
-		<td class="OptionValue" vAlign="top">
-		You can set the testname that will be sent to the monitoring server (column name in
-		the bbdisplay)
-		<b>Default is "uptime"</b></td>
 	</tr>
 </table>
 </UL>
 <H3>Examples</H3>
 <UL>
  <LI>Uptime will warn during one hour with a red color :
+<br />
+<table><tr><td>
 <pre class="Config">
 &lt;uptime&gt;
 	&lt;setting name="delay" value="1h" alarmcolor="red" /&gt;
@@ -79,6 +75,7 @@ Uptime agent is used to monitor the uptime of a server.
 	&lt;setting name="alarmcolor" value="red" /&gt;
 &lt;/uptime&gt;
 </pre>
+</td></tr></table>
 </UL>
 <H3>Notes</H3>
 <UL>
