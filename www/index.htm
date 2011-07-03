@@ -1,12 +1,11 @@
-<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
 <head>
-<meta content="text/html; charset=ascii" http-equiv=Content-Type></meta>
+<meta content="text/html; charset=ascii" http-equiv=Content-Type />
 <title>BBWin WebPage</title>
 </head>
-
-<p>
+<body>
 <IMG src="img/bbwin.png" alt="BBWin Logo" title="BBWin Logo" />
-</p>
 
 <h2> What is BBWin ?</h2>
 <p>
@@ -27,22 +26,24 @@ You should use at least BBWin 0.12 or upper.<br>
 The BBWin handle for centralized mode is included in Hobbit/Xymon since April 2008.<br>
 The BBWin central mode documentation is only included in the 4.3 branche.<br>
 The documentation is only availabe as a <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/trunk/hobbitd/hobbit-clients.cfg.5'>man page</a> (ie: man hobbit-clients.cfg).
+</p>
 
 <h3>With Hobbit/Xymon stable release (4.2.2)</h3>
 <ul>
-<li>Get the Hobbit/Xymon stable release on <a href='http://sourceforge.net/project/showfiles.php?group_id=128058&package_id=140220'> SF download webpage</a>
-(The BBWin handle for centralized mode is included in Hobbit/Xymon <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/branches/4.2.2/hobbitd/client/bbwin.c'>sources</a>)
+	<li>Get the Hobbit/Xymon stable release on <a href='http://sourceforge.net/project/showfiles.php?group_id=128058&package_id=140220'> SF download webpage</a>
+		(The BBWin handle for centralized mode is included in Hobbit/Xymon <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/branches/4.2.2/hobbitd/client/bbwin.c'>sources</a>)
 </ul>
 
 <h3>With Hobbit/Xymon snapshot release (4.3)</h3>
 <ul>
-<li>Get the lastest Hobbit/Xymon snapshot release on <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/trunk.tar.gz?view=tar'> SVN SF download webpage</a>
-(The BBWin handle for centralized mode is included in Hobbit/Xymon <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/trunk/hobbitd/client/bbwin.c'>sources</a>)
+	<li>Get the lastest Hobbit/Xymon snapshot release on <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/trunk.tar.gz?view=tar'> SVN SF download webpage</a>
+	(The BBWin handle for centralized mode is included in Hobbit/Xymon <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/trunk/hobbitd/client/bbwin.c'>sources</a>)
 </ul>
-</p>
 
 <h3>Configure BBWin for the centralized mode</h3>
+<p>
 To enable the centralized mode in BBWin 0.12, turn it on with these lines in your bbwin.cfg file :
+</p>
 <pre>
 &lt;!-- bbwin mode local or central --&gt;
 &lt;setting name="mode" value="central" /&gt;
@@ -65,12 +66,16 @@ HOST=%win.* #Your windows hosts
         SVC MSSQLSERVER startup=automatic status=started
 </pre>
 
+<p>
 For more example, see the <a href='http://www.xymon.com/hobbit/help/manpages/man5/hobbit-clients.cfg.5.html'>hobbit-clients.cfg man page</a>.
+</p>
 
 <h2> FAQ </h2>
+<p>
 With some servers, tests like svcs, ports, uptime and who will appear in purple and the others tests are green, problem ?<br>
 The central mode send a file (Client data) with all the information into it.<br>
 The Hobbitd server trunk the file according to <a href='http://www.xymon.com/hobbit/help/manpages/man5/hobbitserver.cfg.5.html'>hobbitserver.cfg</a> value.
+</p>
 <p>
 So you might change it to this:<br>
 MAXMSG_DATA="5242880"<br>
@@ -84,10 +89,9 @@ MAXMSG_STATUS="5242880"<br>
 <a href='https://lists.sourceforge.net/lists/listinfo/bbwin-help'>
 
 bbwin-help-at-lists.sourceforge.net</a>.
+</p>
 
 
-
-<p>
 <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
 <input type="hidden" name="cmd" value="_s-xclick">
 <input type="image" src="https://www.paypal.com/en_US/i/btn/x-click-but02.gif" border="0" name="submit" alt="PayPal Donations for BBWin support">
@@ -95,8 +99,9 @@ bbwin-help-at-lists.sourceforge.net</a>.
 <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
 ">
 </form>
-</p>
+
 <p>
 <A href="http://sourceforge.net"> <IMG src="http://sourceforge.net/sflogo.php?group_id=136450&amp;type=5" width="210" height="62" border="0" alt="SourceForge.net Logo" /></A>
 </p>
+</body>
 </html>
