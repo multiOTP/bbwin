@@ -156,7 +156,7 @@ void		AgentBBWinUpdate::RunUpdate(std::string & configFile) {
 					toUpdateRoot->InsertEndChild(*nameSpaceNode);
 				}
 			} else {
-				string err = (string)" bbwin namespace update is not permitted. Please check the " + (string)configFile + (string)" on your hobbit server.";
+				string err = (string)" bbwin namespace update is not permitted. Please check the " + (string)configFile + (string)" on your Xymon server.";
 				m_mgr.ReportEventError(err.c_str());
 			}
 		}

@@ -98,7 +98,7 @@ void __cdecl main(int argc, LPTSTR *argv)
    // so we must call StartServiceCtrlDispatcher
    dispatch:
    
-   printf("\nBBWin is a free Big Brother and Hobbit client for Windows.\n");
+   printf("\nBBWin is a free Big Brother and Xymon client for Windows.\n");
    printf("This software is under GPL licence. Please read the licence file.\n\n");
    printf( "%s -install          to install the service\n", SZAPPNAME );
    printf( "%s -remove           to remove the service\n", SZAPPNAME );

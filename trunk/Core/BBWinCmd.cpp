@@ -263,9 +263,9 @@ void	help()
 {
 	cout << "\n";
 	cout << "bbwincmd help : \n\n";
-	cout << "bbwincmd is a command line tool to experiment the hobbit (bigbrother) protocol.\n";
+	cout << "bbwincmd is a command line tool to experiment the Xymon (bigbrother) protocol.\n";
 	cout << "It can also be used as a diagnostic tool on computers having problems to communicate\n";
-	cout << "with the hobbit server.\n";
+	cout << "with the Xymon server.\n";
 	cout << "\n";
 	cout << "usage :\n\n";
 	cout << "Sending a status :\n\n";
@@ -289,10 +289,10 @@ void	help()
 	cout << "Sending a config and get the file content:\n\n";
 	cout << "bbwincmd.exe <bbdisplay>[:<port>] config <filename> [<path>]";
 	cout << "\n\n";
-	cout << "Sending a hobbit message manually written\n\n";
+	cout << "Sending a Xymon message manually written\n\n";
 	cout << "bbwincmd.exe <bbdisplay>[:<port>] message <message>";
 	cout << "\n\n";
-	cout << "Sending a hobbit message manually written and stored in a file\n\n";
+	cout << "Sending a Xymon message manually written and stored in a file\n\n";
 	cout << "bbwincmd.exe <bbdisplay>[:<port>] uploadmessage <filename>";
 	cout << "\n\n";
 	cout << "Sending a drop\n\n";
@@ -308,8 +308,8 @@ void	help()
 	cout << "bbwincmd.exe <bbdisplay>[:<port>] download <hostname> <filename> [<path>]";
 	cout << "\n\n";	
 	cout << "Notes : \n\n";
-	cout << "If no port is specified after bbdisplay, it will use hobbit tcp port 1984\n\n";
-	cout << "You can set your default hobbit server by setting the environment variable BBDISPLAY.\n";
+	cout << "If no port is specified after bbdisplay, it will use Xymon tcp port 1984\n\n";
+	cout << "You can set your default Xymon server by setting the environment variable BBDISPLAY.\n";
 	cout << "To use your environment variable, replace the <bbdisplay>[:<port>] argument by the character $\n";
 	cout << "\n\n";
 	cout << "You are using bbwincmd v" << BBWINFILEVERSION_STR << " " << BBWINDATE_STR << ".\n";
@@ -367,7 +367,7 @@ void		bbwincmd(int argc, char *argv[]) {
 	}
 	if (unkownMessage == false) {
 		cout << "\n";
-		cout << "Error : unkown hobbit message type : \"" << message << "\"" << "\n\n";
+		cout << "Error : unknown Xymon message type : \"" << message << "\"" << "\n\n";
 	}
 }
 

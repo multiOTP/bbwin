@@ -32,7 +32,7 @@ static const BBWinAgentInfo_t 		extAgentInfo =
 {
 	BBWIN_AGENT_VERSION,				// bbwinVersion;
 	"externals",    					// agentName;
-	"externals agent : execute independant big brother hobbit scripts",        // agentDescription;
+	"externals agent : execute independant big brother Xymon scripts",        // agentDescription;
 	0									// flags
 };                
 
