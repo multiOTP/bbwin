@@ -10,8 +10,8 @@
  <H1>BBWinCmd</H1>
  <H3>Description</H3>
 <p>
-BBWinCmd is a diagnostic/testing command line tool for the Big Brother / Hobbit protocol.
-It allow you to send messages to the hobbit server as the bb command under Unix.
+BBWinCmd is a diagnostic/testing command line tool for the Big Brother / Xymon protocol.
+It allow you to send messages to the Xymon server as the bb command under Unix.
 BBWinCmd is installed by default in the BBWin binary directory.
 </p>
 <H3>Usage</H3>
@@ -64,7 +64,7 @@ Sending a config and get the file content:
 bbwincmd.exe &lt;bbdisplay&gt;[:&lt;port&gt;] config &lt;filename&gt;
 </p>
 <p>
-Sending a hobbit message manually written
+Sending a Xymon message manually written
 </p>
 <p class="Command">
 bbwincmd.exe &lt;bbdisplay&gt;[:&lt;port&gt;] message &lt;message&gt;
@@ -90,8 +90,8 @@ bbwincmd.exe &lt;bbdisplay&gt;[:&lt;port&gt;] rename &lt;hostname&gt; &lt;oldtes
 </td></tr></table>
 <H3>Notes</H3>
 <UL>
- <LI>If no port is specified after bbdisplay, it will use hobbit tcp port 1984
- <LI>You can set your default hobbit server by setting the environment variable BBDISPLAY.
+ <LI>If no port is specified after bbdisplay, it will use Xymon tcp port 1984
+ <LI>You can set your default Xymon server by setting the environment variable BBDISPLAY.
 To use your environment variable, replace the &lt;bbdisplay&gt;[:&lt;port&gt;] argument by the character $
 </UL>
 </BODY>
