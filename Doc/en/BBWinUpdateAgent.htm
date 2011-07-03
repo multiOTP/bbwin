@@ -10,8 +10,8 @@
  <H1>BBWinUpdate</H1>
  <H3>Description</H3>
 <p>
-BBWinUpdate agent is an agent used to update the local BBWin configuration from the central hobbit server.
-It use the hobbit "config" protocol word. This agent can be used with hobbit 4.1 or higher.
+BBWinUpdate agent is an agent used to update the local BBWin configuration from the central Xymon server.
+It use the Xymon "config" protocol word. This agent can be used with Xymon 4.1 or higher.
 The bbdisplay used with the agent is the first listed in the bbwin section of the BBWin.cfg configuration file.
 </p>
 <H3>Configuration</H3>
@@ -30,10 +30,10 @@ The bbdisplay used with the agent is the first listed in the bbwin section of th
 	<tr>
 		<td>filename</td>
 		<td>
-			This is the filename that will be downloaded from the hobbit server. 
-			You have to upload the files on the hobbit server ( Location : $HOBBITHOME/server/etc).
+			This is the filename that will be downloaded from the Xymon server. 
+			You have to upload the files on the Xymon server ( Location : $XYMONHOME/server/etc).
 			<b>You can specify several filename settings so you can play with 
-			multiple configuration files on the hobbit server.</b>You can use environment variables in the value. Example : "bbwin\%computername%.cfg"
+			multiple configuration files on the Xymon server.</b>You can use environment variables in the value. Example : "bbwin\%computername%.cfg"
 		</td>
 	</tr>
 </table>
@@ -50,7 +50,7 @@ The bbdisplay used with the agent is the first listed in the bbwin section of th
 &lt;/bbwinupdate&gt;
 </pre>
 </td></tr></table>
-<LI>This an example of configuration of stored on the hobbit server ($HOBBITHOME/server/etc/bbwin/bbwindefault.cfg for example):<br />
+<LI>This an example of configuration of stored on the Xymon server ($XYMONHOME/server/etc/bbwin/bbwindefault.cfg for example):<br />
 <br />
 <table><tr><td>
 <pre class="Config">
@@ -89,7 +89,7 @@ The bbdisplay used with the agent is the first listed in the bbwin section of th
 <H3>Notes</H3>
 <UL>
  <LI> you can not upgrade the bbwin namespace by security
- <LI> a good idea is to create a subdirectory bbwin in your hobbit etc folder
+ <LI> a good idea is to create a subdirectory bbwin in your Xymon etc folder
  <LI> the agent is using the bbwin tmp folder to store the update file
 </UL>
 </BODY>
