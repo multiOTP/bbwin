@@ -74,7 +74,7 @@ class BBWin : public Singleton< BBWin > {
 		bool					m_autoReload;
 		DWORD					m_autoReloadInterval;
 		
-		// Hobbit client mode
+		// Xymon client mode
 		bool					m_centralMode;
 		
 		//
@@ -82,7 +82,7 @@ class BBWin : public Singleton< BBWin > {
 		//
 		std::map< std::string, BBWinHandler * >			m_agents; // handle the agents instance
 		std::map< std::string, BBWinLocalHandler *>		m_localHandlers; // handle to the
-		BBWinCentralHandler								*m_centralClient; // central handler for hobbit client
+		BBWinCentralHandler								*m_centralClient; // central handler for Xymon client
 
 		// list of the local handler threads
 

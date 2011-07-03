@@ -310,7 +310,7 @@ void			BBWin::SetAutoReload(bool value) {
 
 //  FUNCTION: BBWin::callback_SetBBWinMode
 //
-//  PURPOSE: set the mode of working for BBWin : local configuration or centralized (hobbit mode)
+//  PURPOSE: set the mode of working for BBWin : local configuration or centralized (Xymon mode)
 //
 //  PARAMETERS:
 //    call back parameters

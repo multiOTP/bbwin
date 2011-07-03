@@ -158,7 +158,7 @@ void	 BBWinNet::ConnectProxy()
 //
 //  FUNCTION: BBWinNet::Open
 //
-//  PURPOSE: open a connection to the hobbit server
+//  PURPOSE: open a connection to the Xymon server
 //
 //  PARAMETERS:
 //    none
@@ -318,7 +318,7 @@ BBWinNet::~BBWinNet() {
 //
 //  FUNCTION: BBWinNet::SetHostName
 //
-//  PURPOSE: set the hostname used in hobbit messages
+//  PURPOSE: set the hostname used in Xymon messages
 //
 //  PARAMETERS:
 //    hostname	
@@ -394,7 +394,7 @@ void BBWinNet::Close() {
 //  PURPOSE: set  the BBDisplay (used to connect)
 //
 //  PARAMETERS:
-//    bbDisp 		hobbit server (IP or dns name)
+//    bbDisp 		Xymon server (IP or dns name)
 //
 //  RETURN VALUE:
 //    none
@@ -478,7 +478,7 @@ void	BBWinNet::SetProxy(const string & proxy) {
 //
 //  FUNCTION: BBWinNet::SetPort
 //
-//  PURPOSE: set the tcp port used to connect to hobbit server
+//  PURPOSE: set the tcp port used to connect to Xymon server
 //
 //  PARAMETERS:
 //   port 		tcp port
@@ -495,7 +495,7 @@ void	BBWinNet::SetPort(const string & port) {
 //
 //  FUNCTION: BBWinNet::GetPort
 //
-//  PURPOSE: return the tcp port used to connect to hobbit server
+//  PURPOSE: return the tcp port used to connect to Xymon server
 //
 //  PARAMETERS:
 //   none
@@ -512,10 +512,10 @@ const string &	BBWinNet::GetPort() {
 //
 //  FUNCTION: BBWinNet::Status
 //
-//  PURPOSE: send a status hobbit message
+//  PURPOSE: send a status Xymon message
 //
 //  PARAMETERS:
-//   testName 		hobbit testname ( appear as a column name in hobbit server)
+//   testName 		Xymon testname ( appear as a column name in Xymon server)
 //   color			color used (no check is done on the color for the moment)
 //   text			text of the status
 //
@@ -548,11 +548,11 @@ void 				BBWinNet::Status(const string & testName, const string & color, const s
 //
 //  FUNCTION: BBWinNet::Pager
 //
-//  PURPOSE: send a pager hobbit message
+//  PURPOSE: send a pager Xymon message
 //  For BigBrother back compatibility
 //
 //  PARAMETERS:
-//   testName 		hobbit testname ( appear as a column name in hobbit server)
+//   testName 		Xymon testname ( appear as a column name in Xymon server)
 //   color			color used (no check is done on the color for the moment)
 //   text			text of the status
 //
@@ -585,10 +585,10 @@ void 				BBWinNet::Pager(const string & testName, const string & color, const st
 //
 //  FUNCTION: BBWinNet::Notify
 //
-//  PURPOSE: send a notify hobbit message
+//  PURPOSE: send a notify Xymon message
 //
 //  PARAMETERS:
-//   testName 		hobbit testname ( appear as a column name in hobbit server)
+//   testName 		Xymon testname ( appear as a column name in Xymon server)
 //   text			text of the notify
 //
 //  RETURN VALUE:
@@ -618,7 +618,7 @@ void		BBWinNet::Notify(const string & testName, const string & text) {
 //
 //  FUNCTION: BBWinNet::Data
 //
-//  PURPOSE: send a data hobbit message
+//  PURPOSE: send a data Xymon message
 //
 //  PARAMETERS:
 //   dataName 		dataname
@@ -651,10 +651,10 @@ void		BBWinNet::Data(const string & dataName, const string & text) {
 //
 //  FUNCTION: BBWinNet::Disable
 //
-//  PURPOSE: send a disable hobbit message
+//  PURPOSE: send a disable Xymon message
 //
 //  PARAMETERS:
-//   testName 		hobbit testname ( appear as a column name in hobbit server)
+//   testName 		Xymon testname ( appear as a column name in Xymon server)
 //  duration			duration value as 30m, or 2d
 //   text			text of the status
 //
@@ -685,10 +685,10 @@ void 		BBWinNet::Disable(const string & testName, const string & duration, const
 //
 //  FUNCTION: BBWinNet::Enable
 //
-//  PURPOSE: send a enable hobbit message
+//  PURPOSE: send a enable Xymon message
 //
 //  PARAMETERS:
-//   testName 		hobbit testname ( appear as a column name in hobbit server)
+//   testName 		Xymon testname ( appear as a column name in Xymon server)
 //
 //  RETURN VALUE:
 //   none 
@@ -717,7 +717,7 @@ void		BBWinNet::Enable(const string & testName) {
 //
 //  FUNCTION: BBWinNet::Drop
 //
-//  PURPOSE: send a drop hobbit message (delete the host with all tests history)
+//  PURPOSE: send a drop Xymon message (delete the host with all tests history)
 //
 //  PARAMETERS:
 //   none
@@ -750,10 +750,10 @@ void		BBWinNet::Drop()
 //
 //  FUNCTION: BBWinNet::Drop
 //
-//  PURPOSE: send a drop hobbit message ( delete the testname from the host)
+//  PURPOSE: send a drop Xymon message ( delete the testname from the host)
 //
 //  PARAMETERS:
-//   testName 		hobbit testname ( appear as a column name in hobbit server)
+//   testName 		Xymon testname ( appear as a column name in Xymon server)
 //
 //  RETURN VALUE:
 //   none 
@@ -782,7 +782,7 @@ void		BBWinNet::Drop(const string & testName) {
 //
 //  FUNCTION: BBWinNet::Rename
 //
-//  PURPOSE: send a rename hobbit message ( rename the hostname)
+//  PURPOSE: send a rename Xymon message ( rename the hostname)
 //
 //  PARAMETERS:
 //   newHostName 		new  hostname
@@ -814,7 +814,7 @@ void		BBWinNet::Rename(const string & newHostName) {
 //
 //  FUNCTION: BBWinNet::Rename
 //
-//  PURPOSE: send a rename hobbit message ( rename a testname)
+//  PURPOSE: send a rename Xymon message ( rename a testname)
 //
 //  PARAMETERS:
 //   oldTestName 	
@@ -847,7 +847,7 @@ void		BBWinNet::Rename(const string & oldTestName, const string & newTestName) {
 //
 //  FUNCTION: BBWinNet::Test
 //
-//  PURPOSE: test a connection to the hobbit server 
+//  PURPOSE: test a connection to the Xymon server 
 //
 //  PARAMETERS:
 //  none
@@ -872,7 +872,7 @@ void		BBWinNet::Test() {
 //  PURPOSE: send a message
 //
 //  PARAMETERS:
-//  message 		hobbit message manually formed
+//  message 		Xymon message manually formed
 //
 //  RETURN VALUE:
 //   dest			return the string returned by the server if there is one 

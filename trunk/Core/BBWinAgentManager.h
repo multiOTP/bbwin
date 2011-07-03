@@ -97,7 +97,7 @@ class   BBWinAgentManager : public IBBWinAgentManager {
 		LPCTSTR					GetConfigurationRangeValue(PBBWINCONFIGRANGE range, LPCTSTR name);
 		void					FreeConfigurationRange(PBBWINCONFIGRANGE range);
 
-		// hobbit protocol
+		// Xymon protocol
 		void 		Status(LPCTSTR testName, LPCTSTR color, LPCTSTR text, LPCTSTR lifeTime = "");
 		void		Notify(LPCTSTR testName, LPCTSTR text);
 		void		Data(LPCTSTR dataName, LPCTSTR text);

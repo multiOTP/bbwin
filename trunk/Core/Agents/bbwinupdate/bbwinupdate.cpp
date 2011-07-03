@@ -124,7 +124,7 @@ bool					AgentBBWinUpdate::ValidateUpdate() {
 	return valid;
 }
 
-// get the configuration file using hobbit protocol config
+// get the configuration file using Xymon protocol config
 void		AgentBBWinUpdate::RunUpdate(std::string & configFile) {
 	TiXmlDocument		* update, * toUpdate;
 

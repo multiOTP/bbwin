@@ -26,13 +26,13 @@
 #include "IBBWinException.h"
 
 //
-// BBWinNet is used to provide easy hobbit protocol access
+// BBWinNet is used to provide easy Xymon protocol access
 //
 //
 class BBWinNet 
 {
 	private :
-	// hobbit protocol variables
+	// Xymon protocol variables
 	std::string		m_port;
 	std::string		m_bbDisplay;
 	std::string 	m_hostName;
