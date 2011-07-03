@@ -671,7 +671,7 @@ void			BBWin::StartAgents() {
 	}
 	// second start 
 	if (m_centralMode) {
-		m_log->log(LOGLEVEL_DEBUG, "Starting hobbit client agent.");
+		m_log->log(LOGLEVEL_DEBUG, "Starting Xymon client agent.");
 		m_centralClient->start();
 	}
 }
@@ -713,7 +713,7 @@ void			BBWin::StopAgents() {
 	m_log->log(LOGLEVEL_DEBUG, "Agents Threads Table Clear Done.");
 	// second : we stop the thread for the centralized agent part
 	if (m_centralMode) {
-		m_log->log(LOGLEVEL_DEBUG, "Stopping hobbit client agent.");
+		m_log->log(LOGLEVEL_DEBUG, "Stopping Xymon client agent.");
 		m_centralClient->stop();
 		delete m_centralClient;
 	}

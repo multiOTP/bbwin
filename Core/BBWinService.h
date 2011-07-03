@@ -33,14 +33,14 @@ extern "C" {
 // internal name of the service
 #define SZSERVICENAME        "BBWin"
 // displayed name of the service
-#define SZSERVICEDISPLAYNAME "Big Brother Hobbit Client"
+#define SZSERVICEDISPLAYNAME "Big Brother Xymon Client"
 // list of service dependencies - "dep1\0dep2\0\0"
 #define SZDEPENDENCIES       ""
 // description
-#define SZDESCRIPTION			"Big Brother - Hobbit Windows Client"
+#define SZDESCRIPTION			"Big Brother - Xymon Windows Client"
 //
 // Event Log category
-#define SZEVENTLOGNAME       "BigBrotherHobbitClient"
+#define SZEVENTLOGNAME       "BigBrotherXymonClient"
 #define SZEVENTLOG			"Application"
 //////////////////////////////////////////////////////////////////////////////
 

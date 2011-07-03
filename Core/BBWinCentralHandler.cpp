@@ -151,7 +151,7 @@ void BBWinCentralHandler::run() {
 			mess = (string)"failed to create the report file " + reportPath;
 			GetLastErrorString(err);
 			LPCTSTR		args[] = {mess.c_str(), err.c_str(), NULL};
-			m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_HOBBIT_FAILED_CLIENTDATA, 2, args);
+			m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_XYMON_FAILED_CLIENTDATA, 2, args);
 		}
 
 		for (itr = m_agents.begin(); itr != m_agents.end(); ++itr) {
@@ -178,7 +178,7 @@ void BBWinCentralHandler::run() {
 					GetLastErrorString(err);
 					mess = ex.getMessage();
 					LPCTSTR		args[] = {mess.c_str(), err.c_str(), NULL};
-					m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_HOBBIT_FAILED_CLIENTDATA, 2, args);
+					m_log->reportErrorEvent(BBWIN_SERVICE, EVENT_XYMON_FAILED_CLIENTDATA, 2, args);
 				}
 			}
 			DeleteFile(reportSavePath.c_str());

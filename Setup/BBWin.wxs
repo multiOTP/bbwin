@@ -56,7 +56,7 @@
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:sql="http://schemas.microsoft.com/wix/SqlExtension">
     <Product Name="BBWin 0.12" Id="9E24125E-8C40-45E4-84F9-A1B601404AAF" UpgradeCode="E6444500-EAAA-43e5-A7CA-B24B0E4749BE" Language="1033" Codepage="1252" Version="0.12" Manufacturer="GNU">
-        <Package Id="*" Keywords="Installer" Description="BBWin 0.12 Installer" Comments="BBWin : Big Brother Hobbit Windows Client" Manufacturer="GNU" InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
+        <Package Id="*" Keywords="Installer" Description="BBWin 0.12 Installer" Comments="BBWin : Big Brother Xymon Windows Client" Manufacturer="GNU" InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
         <Upgrade Id="E6444500-EAAA-43e5-A7CA-B24B0E4749BE">
        <!-- to be decided.
   	   <UpgradeVersion OnlyDetect='no' Property='UPGRADE'
@@ -73,7 +73,7 @@
                         <Component Id="BBWinServiceC" Guid="309BF033-B4EE-48fd-BECA-D4C1E9DA002E">
                             <File Id="BBWinF" Source="../Release/BBWin.exe" />
                             <!-- Block for the installation of the service -->
-                            <ServiceInstall Id="bbwinService" Description="Big Brother Hobbit Windows Client" DisplayName="Big Brother Hobbit Client" Name="BBWin" Start="auto" Type="ownProcess" ErrorControl="ignore" Vital="yes" />
+                            <ServiceInstall Id="bbwinService" Description="Big Brother Xymon Windows Client" DisplayName="Big Brother Xymon Client" Name="BBWin" Start="auto" Type="ownProcess" ErrorControl="ignore" Vital="yes" />
                             <ServiceControl Id="bbwinControl" Name="BBWin" Remove="uninstall" Stop="both" Wait="yes" />
                  <!-- Need to be here to under component tag to trigger 
                       directories creation.
@@ -113,16 +113,16 @@
                             </RegistryKey>
                         </Component>
                         <Component Id="BBWinEventLogRegistryC" Guid="70F60756-8EAC-4502-8A96-50C94876031A">
-                            <RegistryKey Id="CategoryCountReg" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\Eventlog\Application\BigBrotherHobbitClient" Action="createAndRemoveOnUninstall">
+                            <RegistryKey Id="CategoryCountReg" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\Eventlog\Application\BigBrotherXymonClient" Action="createAndRemoveOnUninstall">
                                 <RegistryValue Name="CategoryCount" Type="integer" Value="2" />
                             </RegistryKey>
-                            <RegistryKey Id="CategoryMessageFileReg" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\Eventlog\Application\BigBrotherHobbitClient" Action="createAndRemoveOnUninstall">
+                            <RegistryKey Id="CategoryMessageFileReg" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\Eventlog\Application\BigBrotherXymonClient" Action="createAndRemoveOnUninstall">
                                 <RegistryValue Name="CategoryMessageFile" Type="string" Value="[binD]BBWin.exe" />
                             </RegistryKey>
-                            <RegistryKey Id="EventMessageFileReg" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\Eventlog\Application\BigBrotherHobbitClient" Action="createAndRemoveOnUninstall">
+                            <RegistryKey Id="EventMessageFileReg" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\Eventlog\Application\BigBrotherXymonClient" Action="createAndRemoveOnUninstall">
                                 <RegistryValue Name="EventMessageFile" Type="string" Value="[binD]BBWin.exe" />
                             </RegistryKey>
-                            <RegistryKey Id="TypesSupportedReg" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\Eventlog\Application\BigBrotherHobbitClient" Action="createAndRemoveOnUninstall">
+                            <RegistryKey Id="TypesSupportedReg" Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\Eventlog\Application\BigBrotherXymonClient" Action="createAndRemoveOnUninstall">
                                 <RegistryValue Name="TypesSupported" Type="integer" Value="2" />
                             </RegistryKey>
                         </Component>
@@ -276,7 +276,7 @@
                 <ComponentRef Id="BBWinCmdC" />
             </Feature>
             <Feature Id="Agents" Title="Agents" Description="BBWin Agents." TypicalDefault="install" Level="1" ConfigurableDirectory="INSTALLDIR">
-                <Feature Id="BBWinUpdateDll" Title="BBWinUpdate" Description="Update BBWin configuration from an hobbit server." TypicalDefault="install" Level="1">
+                <Feature Id="BBWinUpdateDll" Title="BBWinUpdate" Description="Update BBWin configuration from a Xymon server." TypicalDefault="install" Level="1">
                     <ComponentRef Id="BBWinUpdateDllC" />
                 </Feature>
                 <Feature Id="Cpu" Title="Cpu" Description="Monitor cpu." TypicalDefault="install" Level="1">
@@ -300,7 +300,7 @@
                 <Feature Id="Procs" Title="Procs" Description="Monitor running processes." TypicalDefault="install" Level="1">
                     <ComponentRef Id="ProcsC" />
                 </Feature>
-                <Feature Id="Stats" Title="Stats" Description="Send some statistics (netstat for example)&#xD;&#xA;                                            to hobbit server for trends purpose." TypicalDefault="install" Level="1">
+                <Feature Id="Stats" Title="Stats" Description="Send some statistics (netstat for example)&#xD;&#xA;                                            to Xymon server for trends purpose." TypicalDefault="install" Level="1">
                     <ComponentRef Id="StatsC" />
                 </Feature>
                 <Feature Id="Svcs" Title="Svcs" Description="Monitor Windows services." TypicalDefault="install" Level="1">
