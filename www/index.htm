@@ -3,58 +3,71 @@
 <head>
 <meta content="text/html; charset=ascii" http-equiv=Content-Type />
 <title>BBWin WebPage</title>
+<style type="text/css">
+	body 
+	{
+		background-color: #FFF;
+		font-family: Arial, Sans-Serif;
+		margin-left: 5em;
+	}
+	h2, h3 
+	{
+		font-family: Tahoma, Arial, Sans-Serif;
+		margin-top: 2em;
+	}
+	code, pre
+	{
+		color: Blue;
+	}
+	hr
+	{
+		color: Green;
+	}
+</style>
 </head>
 <body>
-<IMG src="img/bbwin.png" alt="BBWin Logo" title="BBWin Logo" />
+<img src="img/bbwin.png" alt="BBWin Logo" title="BBWin Logo" />
+<hr />
 
-<h2> What is BBWin ?</h2>
+<h2>What is BBWin?</h2>
 <p>
-BBWin is an open source client for Windows working with <a href='http://www.bb4.org'>BigBrother</a> or <a href='http://hobbitmon.sf.net/'>Hobbit</a>/<a href='http://www.xymon.com/'>Xymon</a> monitoring software.<br>
-<a href='http://www.hswn.dk/hobbiton/2008/11/msg00123.html'>Where is Hobbit?</a><br>
+	BBWin is an open source client for Microsoft Windows, which works with <a href='http://www.bb4.org'>BigBrother</a>
+	or <a href='http://www.xymon.com/'>Xymon</a> (previously <a href='http://www.hswn.dk/hobbiton/2008/11/msg00123.html'>Hobbit</a>) monitoring software.
 </p>
 
-<h2> Where can I get BBWin ?</h2>
+<h2>Where can I get BBWin?</h2>
+<p>BBWin 0.12 is available on the SourceForge <a href="http://sourceforge.net/projects/bbwin">project page</a>.</p>
+
+<h2>Using BBWin with Xymon Centralized mode</h2>
 <p>
-BBWin 0.12 is available on the <a href="http://sourceforge.net/projects/bbwin">sourceforge project page</a>.
+	To use the centralized Xymon mode of BBWin, you must have the following requirement:<br />
+	You should use BBWin version 0.12 or above.<br />
+	The BBWin handle for centralized mode is included in Xymon since April 2008.<br />
+	The BBWin central mode documentation is only included in the 4.3 branch.<br />
+	The documentation is only available as a <a href='http://xymon.svn.sourceforge.net/viewvc/xymon/trunk/docs/manpages/man5/alerts.cfg.5.html' target="_blank">man page</a> 
+	- i.e. <b>man analysis.cfg</b> (previously <b>hobbit-clients.cfg</b>).
 </p>
 
-
-<h2> Using BBWin with Hobbit/Xymon Centralized mode</h2>
+<h3>With Xymon stable release (4.3.3)</h3>
 <p>
-To use the centralized Hobbit/Xymon mode of BBWin, you must have the following requirement :<br>
-You should use at least BBWin 0.12 or upper.<br>
-The BBWin handle for centralized mode is included in Hobbit/Xymon since April 2008.<br>
-The BBWin central mode documentation is only included in the 4.3 branche.<br>
-The documentation is only availabe as a <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/trunk/hobbitd/hobbit-clients.cfg.5'>man page</a> (ie: man hobbit-clients.cfg).
+	Get the Xymon stable release from the SourceForge <a href='http://sourceforge.net/projects/xymon/files/' target="_blank">files</a> web page
+	(The BBWin handle for centralized mode is included in Xymon <a href='http://xymon.svn.sourceforge.net/viewvc/xymon/branches/4.3.3/xymond/client/bbwin.c'>sources</a>).
 </p>
 
-<h3>With Hobbit/Xymon stable release (4.2.2)</h3>
-<ul>
-	<li>Get the Hobbit/Xymon stable release on <a href='http://sourceforge.net/project/showfiles.php?group_id=128058&package_id=140220'> SF download webpage</a>
-		(The BBWin handle for centralized mode is included in Hobbit/Xymon <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/branches/4.2.2/hobbitd/client/bbwin.c'>sources</a>)
-</ul>
+<h3>Configure BBWin for centralized mode</h3>
+<p>To enable centralized mode in BBWin 0.12, enable it by adding the following lines to your bbwin.cfg file:</p>
 
-<h3>With Hobbit/Xymon snapshot release (4.3)</h3>
-<ul>
-	<li>Get the lastest Hobbit/Xymon snapshot release on <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/trunk.tar.gz?view=tar'> SVN SF download webpage</a>
-	(The BBWin handle for centralized mode is included in Hobbit/Xymon <a href='http://hobbitmon.svn.sourceforge.net/viewvc/hobbitmon/trunk/hobbitd/client/bbwin.c'>sources</a>)
-</ul>
-
-<h3>Configure BBWin for the centralized mode</h3>
-<p>
-To enable the centralized mode in BBWin 0.12, turn it on with these lines in your bbwin.cfg file :
-</p>
 <pre>
 &lt;!-- bbwin mode local or central --&gt;
 &lt;setting name="mode" value="central" /&gt;
 &lt;setting name="configclass" value="win32" /&gt;
 </pre>
 
-<h3>Example of hobbit-clients.cfg for Windows usage</h3>
+<h3>Example of analysis.cfg for Windows usage</h3>
 <pre>
-HOST=%win.* #Your windows hosts
+HOST=%win.* #Your Windows hosts
         LOAD 80 90 # Load threholds are in %
-        DISK D 50 55 # Can be harddrive or mount points
+        DISK D 50 55 # Can be hard drive or mount points
         DISK InetPub 30 35
         MEMPHYS 90 101
         MEMSWAP 90 95
@@ -66,42 +79,36 @@ HOST=%win.* #Your windows hosts
         SVC MSSQLSERVER startup=automatic status=started
 </pre>
 
+<p>For more examples, see the <a href='http://xymon.svn.sourceforge.net/viewvc/xymon/trunk/docs/manpages/man5/alerts.cfg.5.html' target="_blank">analysis.cfg</a> man page.</p>
+
+<h2>FAQ</h2>
 <p>
-For more example, see the <a href='http://www.xymon.com/hobbit/help/manpages/man5/hobbit-clients.cfg.5.html'>hobbit-clients.cfg man page</a>.
+	With some servers, tests like <em>svcs</em>, <em>ports</em>, <em>uptime</em> and <em>who</em> will turn purple while other tests are green. Problem?<br />
+	The central mode sends a file (client data) with all of the information in it.<br />
+	The xymond server truncates the file according to values referred to in <a href='http://xymon.svn.sourceforge.net/viewvc/xymon/trunk/docs/manpages/man5/xymonserver.cfg.5.html' target="_blank">xymonserver.cfg</a>.
+</p>
+<p>To resolve this you should add the following settings:<br />
+	<code>
+		MAXMSG_DATA="5242880"<br />
+		MAXMSG_CLIENT="5242880"<br />
+		MAXMSG_STATUS="5242880"<br />
+	</code>
+	<br />
+	Adjust the values according to the size of data being sent to the server.
 </p>
 
-<h2> FAQ </h2>
-<p>
-With some servers, tests like svcs, ports, uptime and who will appear in purple and the others tests are green, problem ?<br>
-The central mode send a file (Client data) with all the information into it.<br>
-The Hobbitd server trunk the file according to <a href='http://www.xymon.com/hobbit/help/manpages/man5/hobbitserver.cfg.5.html'>hobbitserver.cfg</a> value.
-</p>
-<p>
-So you might change it to this:<br>
-MAXMSG_DATA="5242880"<br>
-MAXMSG_CLIENT="5242880"<br>
-MAXMSG_STATUS="5242880"<br>
-</p>
+<h2>Where can I get some help setting it up?</h2>
 
-<h2> Where can I get some help setting it up? </h2>
-
-<p> Help is available on the BBWin mailing list,
-<a href='https://lists.sourceforge.net/lists/listinfo/bbwin-help'>
-
-bbwin-help-at-lists.sourceforge.net</a>.
-</p>
-
+<p>Help is available on the BBWin mailing list: <a href='https://lists.sourceforge.net/lists/listinfo/bbwin-help' target="_blank">bbwin-help-at-lists.sourceforge.net</a>.</p>
 
 <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="image" src="https://www.paypal.com/en_US/i/btn/x-click-but02.gif" border="0" name="submit" alt="PayPal Donations for BBWin support">
-<img alt="" border="0" src="https://www.paypal.com/fr_FR/i/scr/pixel.gif" width="1" height="1">
-<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
-">
+	<input type="hidden" name="cmd" value="_s-xclick">
+	<input type="image" src="https://www.paypal.com/en_US/i/btn/x-click-but02.gif" name="submit" alt="PayPal Donations for BBWin support">
+	<img alt="" border="0" src="https://www.paypal.com/fr_FR/i/scr/pixel.gif" width="1" height="1">
+	<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
 </form>
 
-<p>
-<A href="http://sourceforge.net"> <IMG src="http://sourceforge.net/sflogo.php?group_id=136450&amp;type=5" width="210" height="62" border="0" alt="SourceForge.net Logo" /></A>
-</p>
+<p><a href="http://sourceforge.net" target="_blank"><img src="http://sourceforge.net/sflogo.php?group_id=136450&type=16" width="150" height="40" border="0" alt="SourceForge.net Logo" /></a></p>
+
 </body>
 </html>
