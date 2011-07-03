@@ -510,7 +510,7 @@ void					AgentFileSystem::LoadSeekData() {
 		string		err;
 
 		utils::GetLastErrorString(err);
-		m_mgr.Log(LOGLEVEL_INFO, "failed to save logfetch status %s : %s", seekdataCfgPath.c_str(), err.c_str());
+		m_mgr.Log(LOGLEVEL_INFO, "failed to load logfetch status %s : %s", seekdataCfgPath.c_str(), err.c_str());
 		return ;
 	}
 	while (!ifstr.eof()) {
