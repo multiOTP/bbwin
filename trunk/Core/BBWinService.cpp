@@ -99,7 +99,7 @@ void __cdecl main(int argc, LPTSTR *argv)
    dispatch:
    
    printf("\nBBWin is a free Big Brother and Xymon client for Windows.\n");
-   printf("This software is under GPL licence. Please read the licence file.\n\n");
+   printf("This software is under GPL license. Please read the license file.\n\n");
    printf( "%s -install          to install the service\n", SZAPPNAME );
    printf( "%s -remove           to remove the service\n", SZAPPNAME );
    printf( "%s -debug <params>   to run as a console app for debugging\n", SZAPPNAME );
