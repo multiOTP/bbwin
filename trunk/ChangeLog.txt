@@ -13,6 +13,11 @@ T.J. Yang
 * Enhance setup/Makefile to automate the build process more.
 
 Malcolm Hunter
+* Fixed displayed calculation of disk sizes for disk agent
+* Fixed spurious "tlog not found" messages in client data
+* Changed all Hobbit references to Xymon
+* Updated links to the new Xymon project areas
+* New styling for manual
 
 
 BBWin 0.12 Beta version -  June 6th 2008
