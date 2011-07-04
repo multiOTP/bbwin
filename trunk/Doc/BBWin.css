@@ -1,204 +1,96 @@
-BODY {
-        font-size: 70%;
-        font-family : Verdana, Arial, Helvetica, sans-serif;
+body
+{
+	font-size: 70%;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 }
 
-P {
-        text-align: left;
-        margin-top : 5.00pt;
-        margin-bottom : 0.00pt;
+p
+{
+	text-align: left;
+	margin-top: 5.00pt;
+	margin-bottom: 0.00pt;
 }
 
-H1 {
-        margin-top:6.00pt;
-        margin-bottom:9.00pt;
-        text-align:left;
-        font-size:16pt;
-        color:#006600;
-        font-weight:bold;
-        border-bottom : thin solid #006600;
+h1, h2, h3, h4
+{
+	margin-top: 6.00pt;
+	text-align: left;
+	font-weight: bold;
 }
 
-H2 {
-	margin-top:6.00pt;
-	margin-bottom:9.00pt;
-	text-align:left;
-	font-size:120%;
-	font-weight:bold;
-	font-style : italic;
-	color : #006600;
+h1, h2
+{
+	margin-bottom: 9.00pt;
+	color: #006600;
 }
 
-H3 {
-        margin-top:6.00pt;
-        margin-bottom:0.00pt;
-        text-align: left;
-        font-size:125%;
-        font-weight:bold;
+h3, h4
+{
+	margin-bottom: 0;
 }
 
-H4 {
-        margin-left:18.10pt;
-        margin-top:6.00pt;
-        margin-bottom:0.00pt;
-        text-indent:-10.10pt;
-        text-align:left;
-        font-size:16pt;
-        font-weight: bold;
-        text-decoration:underline;
+h1
+{
+	font-size: 16pt;
+	border-bottom: thin solid #006600;
 }
 
-P.Body-Text {
-        margin-top:5.00pt;
-        margin-bottom:0.00pt;
-        text-align: left;
+h2
+{
+	font-size: 120%;
+	font-style: italic;
 }
 
-P.TOC-Base {
-        margin-top:0.00pt;
-        margin-bottom:0.00pt;
-        text-align: left;
+h3
+{
+	font-size: 125%;
 }
 
-P.Jump-from-Contents {
-        margin-left:20.00pt;
-        margin-top:1.00pt;
-        margin-bottom:0.00pt;
-        text-align: left;
-        text-decoration:underline;
+h4
+{
+	font-size: 16pt;
+	margin-left: 18.10pt;
+	text-indent: -10.10pt;
+	text-decoration: underline;
 }
 
-P.RelatedHead {
-        margin-top:9.00pt;
-        margin-bottom:1.00pt;
-        text-align: left;
-        font-size:125%;
-        color:#006600;
-        font-weight:bold;
+li
+{
+	margin-top: 5.00pt;
+	margin-bottom: 0;
+	text-align: left;
 }
 
-P.Jump {
-        margin-top:0.00pt;
-        margin-bottom:3.00pt;
-        text-align: left;
-        text-decoration:underline;
+table
+{
+	font-size: 100%;
 }
 
-P.Jump-from-List {
-        margin-top:0.00pt;
-        margin-bottom:3.00pt;
-        text-align: left;
-        text-decoration:underline;
-}
-
-P.TableText {
-        margin-left:3.60pt;
-        margin-right:3.60pt;
-        margin-top:2.00pt;
-        margin-bottom:2.00pt;
-        text-align:left;
-}
-
-P.TableHeading {
-        margin-left:3.60pt;
-        margin-right:3.60pt;
-        margin-top:3.00pt;
-        margin-bottom:0.00pt;
-        text-align: left;
-        font-weight:bold;
-}
-
-P.Indented-text {
-        margin-left:36.00pt;
-        margin-top:5.00pt;
-        margin-bottom:0.00pt;
-        text-align: left;
-}
-
-LI.Indented-text{
-        margin-left:36.00pt;
-        margin-top:5.00pt;
-        margin-bottom:0.00pt;
-        text-align: left;
-}
-
-P.Bullet-Number {
-        margin-left:36.00pt;
-        margin-top:5.00pt;
-        margin-bottom:0.00pt;
-        text-indent:-18.00pt;
-        text-align: left;
-}
-
-P.Context-Help {
-        margin-top:6.00pt;
-        margin-bottom:0.00pt;
-        text-align: left;
-}
-
-P.Bullet-Number-2 {
-        margin-left:54.00pt;
-        margin-top:5.00pt;
-        margin-bottom:0.00pt;
-        text-indent:-18.00pt;
-        text-align: left;
-}
-
-LI {
-        margin-top:5.00pt;
-         margin-bottom:0pt;
-        text-align: left;
-}
-
-LI.Continue{
-        margin-top:5.00pt;
-        text-align: left;
-        list-style : none;
-}
-
-Table {
-		font-size:100%;
-}
-TD.RightAlign {
-        text-align : right;
-}
-TR.order-form {
-	height:0.22in
-}
 
 /* Links styles */
-
-A:link  {
-	text-decoration : none; 
-	color: #006600;
-	font-weight: bold;
-}
-
-A:visited  {
-	text-decoration : none; 
-	color: #006600;
-	font-weight: bold;
-}
-
-
-A:active {
+a 
+{
 	text-decoration: none;
 	color: #006600;
 	font-weight: bold;
+}
+
+a:active,
+a:hover
+{
 	text-decoration: underline;
 }
 
-A:hover {
-	text-decoration: none; 
-	color: #006600;
-	font-weight: bold;
-	text-decoration: underline;
+a:link img,
+a:visited img
+{
+    border-style: none;
 }
 
 
 /* XML Configuration example */
-
-.Config {
+.Config
+{
 	font-size: 9.0pt; 
 	font-family: Courier New, Monospace; 
 	background: #CCFFCC;
@@ -206,7 +98,8 @@ A:hover {
 	border: 1px solid green;
 }
 
-.Command {
+.Command
+{
 	font-size: 9.0pt; 
 	font-family: Courier New, Monospace; 
 	background: #FFFFCC;
@@ -218,10 +111,6 @@ A:hover {
 {
 	 font-family: Courier New, Monospace;
 	 white-space: nowrap;
-}
-
-a:link img, a:visited img {
-    border-style: none;
 }
 
 table.TableGrid
@@ -243,7 +132,7 @@ table.TableGrid th
 table.TableGrid th,
 table.TableGrid td:first-child
 {
-	white-space:nowrap;
+	white-space: nowrap;
 }
 
 table.TableGrid th
