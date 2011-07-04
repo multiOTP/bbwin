@@ -313,8 +313,8 @@ void	help()
 	cout << "To use your environment variable, replace the <bbdisplay>[:<port>] argument by the character $\n";
 	cout << "\n\n";
 	cout << "You are using bbwincmd v" << BBWINFILEVERSION_STR << " " << BBWINDATE_STR << ".\n";
-	cout << "This tool is free and under GPL licence.\n";
-	cout << "Please read the associated licence file.\n" << endl;
+	cout << "This tool is free and under GPL license.\n";
+	cout << "Please read the associated license file.\n" << endl;
 }
 
 
