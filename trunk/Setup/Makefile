@@ -131,7 +131,6 @@ $(PROJ).msi: $(PROJ).wixobj
 # Use '-' to ignore return code from hhc.exe as it always returns 1.
 $(PROJ).chm:
 	-$(HHC) ..\doc\$(LANG)\$(PROJ).hhp
-	@copy /y ..\doc\$(LANG)\$(PROJ).chm .\docs\$(PROJ)_$(LANG).chm
 
 # Rules for cleaning out those old files
 clean: sdk_clean
