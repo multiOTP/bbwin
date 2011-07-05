@@ -196,21 +196,17 @@
                     <Directory Id="logsD" Name="logs" />
                     <Directory Id="docD" Name="doc">
                         <Component Id="CommonReadMeTextFilesC" Guid="B7889E96-1BB2-46f2-83FE-52EC721915CA">
-                            <File Source="./docs/ReadMe.txt" />
-                        <!--
-			<File Id='BBWin_local.cfg.example' Name="BBWin.cfg" Source='./etc/BBWin.cfg'  
-                                   DiskId='1' Source='./Core/BBWin.cfg' Vital='yes'/>
-			<File Id='BBWin_central.cfg.example' Name="BBWinCen.cfg"  
-                                  DiskId='1' Source='./Core/bbwin_central.cfg' Vital='yes'/>
-                         -->
+                            <File Source="../ReadMe.txt" />
+                            <File Name='BBWin_local.cfg.example' Source='../Core/bbwin.cfg' />
+                            <File Name='BBWin_central.cfg.example' Source='../Core/bbwin_central.cfg' />
                         </Component>
                         <Component Id="BBWinChmC" Guid="7D383A7B-8891-4077-A95A-D45C725E98D7">
-                            <File Id="BBWin.chm" Name="BBWinE.chm" Source="./docs/BBWin_en.chm" />
+                            <File Id="BBWin_en.chm" Name="BBWin_en.chm" Source="../Doc/en/BBWin.chm" />
                         </Component>
                     </Directory>
                     <Directory Id="etcD" Name="etc">
                         <Component Id="BBWinConfigC" Guid="EDC3AAA4-9000-4938-9BAC-5B7BCFFC34E2" Permanent="yes" NeverOverwrite="yes">
-                            <File Source="./etc/BBWin.cfg" />
+                            <File Source="../Core/BBWin.cfg" />
                         </Component>
 
                         <Component Id="WlbsConfigC" Guid="5EA1128F-3EBB-4faa-9E66-0DCD988968B2" Permanent="yes" NeverOverwrite="yes">
@@ -223,7 +219,7 @@
                     </Directory>
                     <!-- SDK Part like Big Software :) -->
                     <Directory Id="SdkD" Name="sdk">
-                        <Component Id="Sample_Central_LoaclC" Guid="AF366A7D-BFC1-490D-98EE-10FC8EE92DFC">
+                        <Component Id="Sample_Central_LocalC" Guid="AF366A7D-BFC1-490D-98EE-10FC8EE92DFC">
                             <File Source=".\sdk\Makefile" />
                             <File Source=".\sdk\sample_central.Rc" />
                             <File Source=".\sdk\sample_local.Rc" />
@@ -237,8 +233,8 @@
                             <File Source=".\sdk\IBBWinAgent.h" />
                             <File Source=".\sdk\IBBWinException.h" />
                         </Component>
-                        <Directory Id="SdkReleaseD" Name="Release">
-                            <Component Id="SampleReleaseC" Guid="65116387-4564-400b-810F-61C5A62CAB08">
+                        <Directory Id="SdkCompiledD" Name="Compiled">
+                            <Component Id="SampleCompiledC" Guid="65116387-4564-400b-810F-61C5A62CAB08">
                                 <File Source=".\sdk\release\sample_central.dll" />
                                 <File Source=".\sdk\release\sample_local.dll" />
                             </Component>
@@ -246,13 +242,13 @@
                     </Directory>
                     <Directory Id="toolsD" Name="tools">
                         <Component Id="MigrateBBntC" Guid="085CF654-C714-425e-BFEC-FF4463EDA3AB">
-                            <File Name="Migrate.vbs" Source=".\Tools\MigrateBBntToBBWin.vbs" />
+                            <File Source="../Tools/Migrate/MigrateBBntToBBWin.vbs" />
                         </Component>
                     </Directory>
                     <Component Id="CommonTextFilesC" Guid="361CEF4A-BC5C-40df-82DD-5C17434C927C">
-                        <File Source=".\docs\Licence.txt" />
-                        <File Source=".\docs\Credits.txt" />
-                        <File Name="Change.txt" Source=".\docs\ChangeLog.txt" />
+                        <File Name="Licence.txt" Source="../license.txt" />
+                        <File Source="../Credits.txt" />
+                        <File Source="../ChangeLog.txt" />
                     </Component>
                 </Directory>
             </Directory>
@@ -344,8 +340,8 @@
                 </Feature>
             </Feature>
             <Feature Id="SDK" Title="Agents SDK" Description="BBWin Agents development toolkit." TypicalDefault="advertise" Level="1">
-                <ComponentRef Id="Sample_Central_LoaclC" />
-                <ComponentRef Id="SampleReleaseC" />
+                <ComponentRef Id="Sample_Central_LocalC" />
+                <ComponentRef Id="SampleCompiledC" />
                 <ComponentRef Id="IncludeSdkC" />
             </Feature>
         </Feature>
