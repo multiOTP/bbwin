@@ -75,7 +75,7 @@
                             <!-- Block for the installation of the service -->
                             <ServiceInstall Id="bbwinService" Description="Big Brother Xymon Windows Client" DisplayName="Big Brother Xymon Client" Name="BBWin" Start="auto" Type="ownProcess" ErrorControl="ignore" Vital="yes" />
                             <ServiceControl Id="bbwinControl" Name="BBWin" Remove="uninstall" Stop="both" Wait="yes" />
-                            <!-- Need to be here to under component tag to trigger 
+                            <!-- Need to be here under component tag to trigger 
                                  directories creation.
                                 -->
                             <CreateFolder Directory="tmpD" />
@@ -126,7 +126,7 @@
                                 <RegistryValue Name="TypesSupported" Type="integer" Value="2" />
                             </RegistryKey>
                         </Component>
-                        <!-- Agents Sections -->
+                        <!-- Agent Sections -->
                         <Component Id="BBWinUpdateDllC" Guid="0BC7C94B-63AB-47c6-8F16-D3180984BACD">
                             <File Source="../Release/bbwinupdate.dll" />
                         </Component>
@@ -348,7 +348,7 @@
                 <ComponentRef Id="IncludeSdkC" />
             </Feature>
         </Feature>
-        <!-- WHAT: To use mondo standar User Interface -->
+        <!-- WHAT: To use mondo standard User Interface -->
         <UIRef Id="WixUI_Mondo" />
         <UIRef Id="WixUI_ErrorProgressText" />	
         <!--
@@ -356,7 +356,7 @@
         <CustomAction Id="RefusePID" Error="Bad PID" />
             -->
 
-        <!-- WHAT: Allow us to customizie Banner and Dialog iconsl -->
+        <!-- WHAT: Allow us to customize Banner and Dialog icons -->
         <Binary Id="Up" SourceFile="./Binary/Up.ico" />
         <Binary Id="New" SourceFile="./Binary/New.ico" />
         <Binary Id="custicon" SourceFile="./Binary/Custom.ico" />
