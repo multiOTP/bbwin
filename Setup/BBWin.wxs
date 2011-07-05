@@ -58,12 +58,12 @@
     <Product Name="BBWin 0.12" Id="9E24125E-8C40-45E4-84F9-A1B601404AAF" UpgradeCode="E6444500-EAAA-43e5-A7CA-B24B0E4749BE" Language="1033" Codepage="1252" Version="0.12" Manufacturer="GNU">
         <Package Id="*" Keywords="Installer" Description="BBWin 0.12 Installer" Comments="BBWin : Big Brother Xymon Windows Client" Manufacturer="GNU" InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
         <Upgrade Id="E6444500-EAAA-43e5-A7CA-B24B0E4749BE">
-       <!-- to be decided.
-  	   <UpgradeVersion OnlyDetect='no' Property='UPGRADE'
-		IncludeMinimum='yes' Minimum='0.1' 
-                IgnoreRemoveFailure='yes' 
-                 MigrateFeatures="yes"/>
-        -->
+<!-- to be decided.
+        <UpgradeVersion OnlyDetect='no' Property='UPGRADE'
+           IncludeMinimum='yes' Minimum='0.1' 
+           IgnoreRemoveFailure='yes' 
+           MigrateFeatures="yes"/>
+    -->
         </Upgrade>
         <Media Id="1" Cabinet="BBWin.cab" EmbedCab="yes" />
         <Directory Id="TARGETDIR" Name="SourceDir">
@@ -75,22 +75,22 @@
                             <!-- Block for the installation of the service -->
                             <ServiceInstall Id="bbwinService" Description="Big Brother Xymon Windows Client" DisplayName="Big Brother Xymon Client" Name="BBWin" Start="auto" Type="ownProcess" ErrorControl="ignore" Vital="yes" />
                             <ServiceControl Id="bbwinControl" Name="BBWin" Remove="uninstall" Stop="both" Wait="yes" />
-                 <!-- Need to be here to under component tag to trigger 
-                      directories creation.
-                   -->
+                            <!-- Need to be here to under component tag to trigger 
+                                 directories creation.
+                                -->
                             <CreateFolder Directory="tmpD" />
                             <CreateFolder Directory="extD" />
                             <CreateFolder Directory="logsD" />
                             <!-- WHAT: Environment variables :PATH -->
                             <Environment Id="UpdatePath" Name="PATH" Action="set" Permanent="no" System="yes" Part="last" Value="[INSTALLDIR]bin" />
                         </Component>
-                        <!-- TBC
+<!-- TBC
                         <Component Id='BBWinCFGSettings' Guid='9506B0CC-E1F7-4692-BC29-11B7DCB63728'>
-                          <File Id='XmlSettings' Name='bbwin.cfg' DiskId='1' Source='./etc/bbwin.cfg' Vital='yes' />
-                          <util:XmlFile Id='XmlSettings1' File='[INSTALLDIR]etc\BBWin.cfg'
-                            Action='setValue' Value="%COMPUTERNAME%"  ElementPath='//configuration/bbwin/setting\[@name="hostname"\]' Sequence='1' />
+                            <File Id='XmlSettings' Name='bbwin.cfg' DiskId='1' Source='./etc/bbwin.cfg' Vital='yes' />
+                            <util:XmlFile Id='XmlSettings1' File='[INSTALLDIR]etc\BBWin.cfg'
+                                Action='setValue' Value="%COMPUTERNAME%"  ElementPath='//configuration/bbwin/setting\[@name="hostname"\]' Sequence='1' />
                         </Component>
-                         -->
+    -->
                         <!-- BBWinCmd.exe -->
                         <Component Id="BBWinCmdC" Guid="EAD17309-E32B-4e40-BFD9-E57AB379B3A7">
                             <File Id="bbwincmdF" Source="../Release/BBWinCmd.exe" />
@@ -126,7 +126,7 @@
                                 <RegistryValue Name="TypesSupported" Type="integer" Value="2" />
                             </RegistryKey>
                         </Component>
-                        <!--		Agents Sections					-->
+                        <!-- Agents Sections -->
                         <Component Id="BBWinUpdateDllC" Guid="0BC7C94B-63AB-47c6-8F16-D3180984BACD">
                             <File Source="../Release/bbwinupdate.dll" />
                         </Component>
@@ -154,29 +154,34 @@
                         <Component Id="MsgsC" Guid="F2632EF3-18F9-405c-B76D-543EFA180A30">
                             <File Source="../Release/msgs.dll" />
                         </Component>
+
                         <Component Id="ProcsC" Guid="051FD1F6-DC24-4c3e-8DD6-82DD7DBE92A2">
                             <File Source="../Release/procs.dll" />
                         </Component>
+
                         <Component Id="StatsC" Guid="A459F420-1E1D-45c3-8579-9E5FA1FFEA47">
                             <File Source="../Release/stats.dll" />
                         </Component>
+
                         <Component Id="SvcsC" Guid="4C5F9D0E-1886-4aef-8C4A-D2A876481881">
                             <File Source="../Release/svcs.dll" />
                         </Component>
+
                         <Component Id="UptimeC" Guid="FDB34367-3A35-4F22-97A1-557C4B756E7C">
                             <File Source="../Release/uptime.dll" />
                         </Component>
+
                         <Component Id="WhoC" Guid="527166B4-B06A-40e2-B79F-4AC0F50B7DCB">
                             <File Source="../Release/who.dll" />
                         </Component>
+
                         <Component Id="Msvcr100C" Guid="acd136b0-7e3a-11e0-a411-0800200c9a66">
                             <File Source="./dll/msvcr100.dll" />
                         </Component>
+
                         <Component Id="Msvcp100C" Guid="fa2eed90-7e39-11e0-a411-0800200c9a66">
                             <File Source="./dll/msvcp100.dll" />
                         </Component>
-
-
                     </Directory>
                     <!-- End of <Directory Id='binD' Name="bin"> -->
                     <Directory Id="extD" Name="ext">
@@ -215,7 +220,6 @@
                         <Component Id="FsmonConfigC" Guid="39CFAA7D-15E7-4679-8DA5-71E55723FD9C" Permanent="yes" NeverOverwrite="yes">
                             <File Source="../externals/vbs/fsmon/fsmon.cfg" />
                         </Component>
-
                     </Directory>
                     <!-- SDK Part like Big Software :) -->
                     <Directory Id="SdkD" Name="sdk">
@@ -266,7 +270,7 @@
                 <ComponentRef Id="BBWinChmC" />
                 <!--
                 <ComponentRef Id="BBWinCFGSettings" />
-                 -->
+                    -->
             </Feature>
             <Feature Id="BBWinCmd" Title="BBWinCmd" Description="The BBWin command line utility." TypicalDefault="install" Level="1" ConfigurableDirectory="INSTALLDIR">
                 <ComponentRef Id="BBWinCmdC" />
@@ -318,7 +322,6 @@
             </Feature>
             <Feature Id="Externals" Title="Externals" Description="BBWin Externals." TypicalDefault="install" Level="1" ConfigurableDirectory="INSTALLDIR">
 
-
                 <Feature Id="Cluster" Title="Cluster" Description="Monitor MSCS Windows clusters. It will warn if the current node changed." TypicalDefault="advertise" Level="1">
                     <ComponentRef Id="ClusterC" />
                 </Feature>
@@ -331,8 +334,8 @@
                     <ComponentRef Id="WlbsC" />
                     <ComponentRef Id="WlbsConfigC" />
                 </Feature>
-	               	<!-- Disabled
-	                -->
+                <!-- Disabled
+                    -->
             </Feature>
             <Feature Id="Tools" Title="Tools" Description="Extra BBWin tools" TypicalDefault="install" Level="1">
                 <Feature Id="Migration" Title="Migration" Description="Migration tools. Automatic migration from other BB Windows Clients (BBnt)." TypicalDefault="install" Level="1">
@@ -348,8 +351,10 @@
         <!-- WHAT: To use mondo standar User Interface -->
         <UIRef Id="WixUI_Mondo" />
         <UIRef Id="WixUI_ErrorProgressText" />	
-    <!-- <CustomAction Id="CheckingPID" BinaryKey="CheckPID" DllEntry="CheckPID" />
-    <CustomAction Id="RefusePID" Error="Bad PID" /> -->
+        <!--
+        <CustomAction Id="CheckingPID" BinaryKey="CheckPID" DllEntry="CheckPID" />
+        <CustomAction Id="RefusePID" Error="Bad PID" />
+            -->
 
         <!-- WHAT: Allow us to customizie Banner and Dialog iconsl -->
         <Binary Id="Up" SourceFile="./Binary/Up.ico" />
