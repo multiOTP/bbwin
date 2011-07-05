@@ -880,7 +880,20 @@ DWORD				Manager::AnalyzeLogFilesSize(std::stringstream & reportData, bool check
 		RegQueryValueEx(hk, "MaxSize", NULL, &type, (LPBYTE)&maxsize, &size);
 		size = sizeof(maxsize);
 		type = REG_DWORD;
-		actualsize = myGetFileSize(logpath.c_str());
+
+		// FIXME START
+		//actualsize = myGetFileSize(logpath.c_str());
+
+		// The above function is never called on some OSes (e.g. Windows 7) so put the contents of the function in here for now - YUCK!
+		HANDLE			fh;
+
+		if ((fh = CreateFile(logpath.c_str(), FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL)) == INVALID_HANDLE_VALUE) {
+		actualsize = 0;
+		}
+		actualsize = GetFileSize(fh, NULL);
+		CloseHandle(fh);
+		// FIXME END
+
 		RegQueryValueEx(hk, "Retention", NULL, &type, (LPBYTE)&retention, &size);
 		RegCloseKey(hk); 
 		// get event log last event timestamp and number of events
