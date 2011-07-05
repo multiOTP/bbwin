@@ -170,10 +170,10 @@
                             <File Source="../Release/who.dll" />
                         </Component>
                         <Component Id="Msvcr100C" Guid="acd136b0-7e3a-11e0-a411-0800200c9a66">
-                            <File Source="DLL\msvcr100.dll" />
+                            <File Source="./dll/msvcr100.dll" />
                         </Component>
                         <Component Id="Msvcp100C" Guid="fa2eed90-7e39-11e0-a411-0800200c9a66">
-                            <File Source="DLL\msvcp100.dll" />
+                            <File Source="./dll/msvcp100.dll" />
                         </Component>
 
 
@@ -181,15 +181,15 @@
                     <!-- End of <Directory Id='binD' Name="bin"> -->
                     <Directory Id="extD" Name="ext">
                         <Component Id="ClusterC" Guid="1FE84C9C-B682-457a-83AD-CF28B4C51D00">
-                            <File Source="..\Release\cluster.exe" />
+                            <File Source="../Release/cluster.exe" />
                         </Component>
 
                         <Component Id="FsmonC" Guid="F6088C2A-0E71-4a67-A30D-12C39D9F3432">
-                            <File Source="..\externals\vbs\fsmon\fsmon.vbs" />
+                            <File Source="../externals/vbs/fsmon/fsmon.vbs" />
                         </Component>
 
                         <Component Id="WlbsC" Guid="C90A6F0B-7E5E-43b9-BAA0-33B91A04E04A">
-                            <File Source="..\externals\vbs\wlbs\wlbs.vbs" />
+                            <File Source="../externals/vbs/wlbs/wlbs.vbs" />
                         </Component>
                     </Directory>
                     <Directory Id="tmpD" Name="tmp" />
@@ -197,8 +197,8 @@
                     <Directory Id="docD" Name="doc">
                         <Component Id="CommonReadMeTextFilesC" Guid="B7889E96-1BB2-46f2-83FE-52EC721915CA">
                             <File Source="../ReadMe.txt" />
-                            <File Name='BBWin_local.cfg.example' Source='../Core/bbwin.cfg' />
-                            <File Name='BBWin_central.cfg.example' Source='../Core/bbwin_central.cfg' />
+                            <File Name="BBWin_local.cfg.example" Source="../Core/bbwin.cfg" />
+                            <File Name="BBWin_central.cfg.example" Source="../Core/bbwin_central.cfg" />
                         </Component>
                         <Component Id="BBWinChmC" Guid="7D383A7B-8891-4077-A95A-D45C725E98D7">
                             <File Id="BBWin_en.chm" Name="BBWin_en.chm" Source="../Doc/en/BBWin.chm" />
@@ -210,33 +210,33 @@
                         </Component>
 
                         <Component Id="WlbsConfigC" Guid="5EA1128F-3EBB-4faa-9E66-0DCD988968B2" Permanent="yes" NeverOverwrite="yes">
-                            <File Source="..\externals\vbs\wlbs\wlbs.cfg" />
+                            <File Source="../externals/vbs/wlbs/wlbs.cfg" />
                         </Component>
                         <Component Id="FsmonConfigC" Guid="39CFAA7D-15E7-4679-8DA5-71E55723FD9C" Permanent="yes" NeverOverwrite="yes">
-                            <File Source="..\externals\vbs\fsmon\fsmon.cfg" />
+                            <File Source="../externals/vbs/fsmon/fsmon.cfg" />
                         </Component>
 
                     </Directory>
                     <!-- SDK Part like Big Software :) -->
                     <Directory Id="SdkD" Name="sdk">
                         <Component Id="Sample_Central_LocalC" Guid="AF366A7D-BFC1-490D-98EE-10FC8EE92DFC">
-                            <File Source=".\sdk\Makefile" />
-                            <File Source=".\sdk\sample_central.Rc" />
-                            <File Source=".\sdk\sample_local.Rc" />
-                            <File Source=".\sdk\sample.h" />
-                            <File Source=".\sdk\sample_central.cpp" />
-                            <File Source=".\sdk\sample_local.cpp" />
-                            <File Source="..\core\version.h" />
+                            <File Source="./sdk/Makefile" />
+                            <File Source="./sdk/sample_central.Rc" />
+                            <File Source="./sdk/sample_local.Rc" />
+                            <File Source="./sdk/sample.h" />
+                            <File Source="./sdk/sample_central.cpp" />
+                            <File Source="./sdk/sample_local.cpp" />
+                            <File Source="../Core/version.h" />
                         </Component>
                         <Component Id="IncludeSdkC" Guid="ABB6619E-4297-4724-AC06-C35F44963FD4">
-                            <File Source=".\sdk\IBBWinAgentManager.h" />
-                            <File Source=".\sdk\IBBWinAgent.h" />
-                            <File Source=".\sdk\IBBWinException.h" />
+                            <File Source="./sdk/IBBWinAgentManager.h" />
+                            <File Source="./sdk/IBBWinAgent.h" />
+                            <File Source="./sdk/IBBWinException.h" />
                         </Component>
                         <Directory Id="SdkCompiledD" Name="Compiled">
                             <Component Id="SampleCompiledC" Guid="65116387-4564-400b-810F-61C5A62CAB08">
-                                <File Source=".\sdk\release\sample_central.dll" />
-                                <File Source=".\sdk\release\sample_local.dll" />
+                                <File Source="./sdk/Release/sample_central.dll" />
+                                <File Source="./sdk/Release/sample_local.dll" />
                             </Component>
                         </Directory>
                     </Directory>
@@ -352,16 +352,16 @@
     <CustomAction Id="RefusePID" Error="Bad PID" /> -->
 
         <!-- WHAT: Allow us to customizie Banner and Dialog iconsl -->
-        <Binary Id="Up" SourceFile="Binary\Up.ico" />
-        <Binary Id="New" SourceFile="Binary\New.ico" />
-        <Binary Id="custicon" SourceFile="Binary\Custom.ico" />
-        <Binary Id="repairic" SourceFile="Binary\Repair.ico" />
-        <Binary Id="exclamic" SourceFile="Binary\Exclam.ico" />
-        <Binary Id="removico" SourceFile="Binary\Remove.ico" />
-        <Binary Id="completi" SourceFile="Binary\Complete.ico" />
-        <Binary Id="insticon" SourceFile="Binary\Typical.ico" />
-        <Binary Id="info" SourceFile="Binary\Info.ico" />
-        <Binary Id="bannrbmp" SourceFile="Binary\Banner.bmp" />
-        <Binary Id="dlgbmp" SourceFile="Binary\Dialog.bmp" />
+        <Binary Id="Up" SourceFile="./Binary/Up.ico" />
+        <Binary Id="New" SourceFile="./Binary/New.ico" />
+        <Binary Id="custicon" SourceFile="./Binary/Custom.ico" />
+        <Binary Id="repairic" SourceFile="./Binary/Repair.ico" />
+        <Binary Id="exclamic" SourceFile="./Binary/Exclam.ico" />
+        <Binary Id="removico" SourceFile="./Binary/Remove.ico" />
+        <Binary Id="completi" SourceFile="./Binary/Complete.ico" />
+        <Binary Id="insticon" SourceFile="./Binary/Typical.ico" />
+        <Binary Id="info" SourceFile="./Binary/Info.ico" />
+        <Binary Id="bannrbmp" SourceFile="./Binary/Banner.bmp" />
+        <Binary Id="dlgbmp" SourceFile="./Binary/Dialog.bmp" />
     </Product>
 </Wix>
