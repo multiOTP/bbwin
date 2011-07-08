@@ -72,7 +72,7 @@
 
 
 PROJ = BBWin 
-all: sdk_build check $(PROJ).msi
+all: sdk_build check $(PROJ).chm $(PROJ).msi
 
 
 # Define project specific macros
@@ -135,10 +135,10 @@ $(PROJ).chm:
 # Rules for cleaning out those old files
 clean: sdk_clean
 	erase /q /s $(PROJ).dll $(PROJ).exp \
-        $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj *~ *.bak *.wixpdb  $(PROJ).msi 
- 
+        $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj *~ *.bak *.wixpdb  $(PROJ).msi \
+         ..\doc\en\$(PROJ).chm
+
 #        $(PROJ).msi $(PROJ).lib \
-##        ..\doc\en\$(PROJ).chm
 
 sdk_build:
 	cd sdk
