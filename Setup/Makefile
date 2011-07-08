@@ -3,7 +3,7 @@
 #============================================================================#
 #                                                                            #
 # NAME                                                                       #
-# Makefile   To automate bbwin server/client msi creation                  #
+# Makefile   To automate bbwin compilation and bbwin.msi creation            #
 #                                                                            #
 # REVISION HISTORY                                                           #
 #     11/26/2010    T.J. Yang tjyang2001@gmail.com  Version 0.9 Original.    #
@@ -14,18 +14,17 @@
 # your PATH                                                                  #
 #                                                                            #
 # USAGE                                                                      #
-#  1. nmake -f Makefile                                                      #
-#    candle.exe  bbwin.wxs                                                 #
-#    light.exe   bbwin.wixobj                                              #
-#  2.Use  nmake to call up WiX 3.6                                           #
-#    nmake  Makefile                                                         #
+#  1. nmake clean                                                            #
+#     This will delete ..\Release\*.*, bbwin.chm and temp files in Setup.    #
+#  2. nmake                                                                  #
+#     This will run following targets                                        #
+#      vs_build sdk_build check $(PROJ).chm $(PROJ).msi                      #
 #                                                                            #
 # DESCRIPTION                                                                #
-# 1. This is WiX 3.x package source used to create MSI package for bbwin.  #
-# 2. GUIDs are generated using VS2010 Create GUID tool.                      #
+# This Makefile is for MS make(nmake) to automate the bbwin src compiliation #
+# and BBWin.msi generation process.                                          #
 #                                                                            #
 # TODOs                                                                      #
-#  1. Integration with WiX Votive for VS 2010 non-express version.           #
 #                                                                            #
 # LICENSE                                                                    #
 # GNU                                                                        #
@@ -45,22 +44,6 @@
 #                                                                            #
 #                                                                            #
 #============================================================================#
-#this file is part of BBWin
-
-#
-#This program is free software; you can redistribute it and/or
-#modify it under the terms of the GNU General Public License
-#as published by the Free Software Foundation; either
-#version 2 of the License, or (at your option) any later version.
-#
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
-#
-#You should have received a copy of the GNU General Public License
-#along with this program; if not, write to the Free Software
-#Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 !include <Win32.Mak>
 
@@ -134,9 +117,7 @@ clean: sdk_clean
         $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj *~ *.bak *.wixpdb  $(PROJ).msi \
          ..\doc\en\$(PROJ).chm
 
-#        $(PROJ).msi $(PROJ).lib \
-
-# use msbuild command to build bbwin.sln from command line.
+# use vcexpress to build bbwin.sln from command line.
 vs_build:
 	vcexpress ../bbwin.sln /build Release
 
