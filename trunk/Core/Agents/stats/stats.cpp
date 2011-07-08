@@ -119,18 +119,23 @@ void	AgentStats::NetstatLocal(const string & path, stringstream & reportData) {
 		string 		prefix;
 
 		while (getline(netstatFile, line)) {
-			if ((ret = line.find("IP Statistics")) >= 0 && ret < line.size()) {
+			if ((ret = line.find("IP Statistics")) >= 0 && ret < line.size()
+				|| (ret = line.find("IPv4 Statistics")) >= 0 && ret < line.size()) {
 				prefix = "ip";
 				reportData << endl;
-			} else if ((ret = line.find("ICMP Statistics")) >= 0 && ret < line.size()) {
-				prefix = "icmp";
-				reportData << endl;
-			} else if ((ret = line.find("TCP Statistics")) >= 0 && ret < line.size()) {
-				prefix = "tcp";
-				reportData << endl;
-			} else if ((ret = line.find("UDP Statistics")) >= 0 && ret < line.size()) {
-				prefix = "udp";
-				reportData << endl;
+// This part removed
+// ICMP Statistics are displayed as 2 columns - Received and Sent, not Statistic = Value like the other statistics
+//			} else if ((ret = line.find("ICMP Statistics")) >= 0 && ret < line.size()) {
+//				prefix = "icmp";
+//				reportData << endl;
+			} else if ((ret = line.find("TCP Statistics")) >= 0 && ret < line.size() 
+				&& ((ret = line.find("TCP Statistics for IPv6")) < 0 || ret >= line.size())) {
+					prefix = "tcp";
+					reportData << endl;
+			} else if ((ret = line.find("UDP Statistics")) >= 0 && ret < line.size()
+				&& ((ret = line.find("UDP Statistics for IPv6")) < 0 || ret >= line.size())) {
+					prefix = "udp";
+					reportData << endl;
 			} else if ((ret = line.find("=")) >= 0 && ret < line.size()) {
 				reportData << prefix;
 				for (size_t i = 0; i < line.size(); ++i) {
