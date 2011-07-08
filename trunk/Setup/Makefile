@@ -3,7 +3,7 @@
 #============================================================================#
 #                                                                            #
 # NAME                                                                       #
-# Makefile   To automate mongodb server/client msi creation                  #
+# Makefile   To automate bbwin server/client msi creation                  #
 #                                                                            #
 # REVISION HISTORY                                                           #
 #     11/26/2010    T.J. Yang tjyang2001@gmail.com  Version 0.9 Original.    #
@@ -15,19 +15,14 @@
 #                                                                            #
 # USAGE                                                                      #
 #  1. nmake -f Makefile                                                      #
-#    candle.exe  mongodb.wxs                                                 #
-#    light.exe   mongodb.wixobj                                              #
+#    candle.exe  bbwin.wxs                                                 #
+#    light.exe   bbwin.wixobj                                              #
 #  2.Use  nmake to call up WiX 3.6                                           #
 #    nmake  Makefile                                                         #
 #                                                                            #
 # DESCRIPTION                                                                #
-# 1. This is WiX 3.x package source used to create MSI package for mongodb.  #
+# 1. This is WiX 3.x package source used to create MSI package for bbwin.  #
 # 2. GUIDs are generated using VS2010 Create GUID tool.                      #
-# 2. It will create following directory structures                           #
-#     MongoDB/bin                                                            #
-#     MongoDB/docs                                                           #
-#     MongoDB/data/db                                                        #
-#     MongoDB/logs                                                           #
 #                                                                            #
 # TODOs                                                                      #
 #  1. Integration with WiX Votive for VS 2010 non-express version.           #
