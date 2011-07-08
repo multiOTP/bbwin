@@ -67,7 +67,7 @@
 
 
 PROJ = BBWin 
-all: sdk_build check $(PROJ).chm $(PROJ).msi
+all: vs_build sdk_build check $(PROJ).chm $(PROJ).msi
 
 
 # Define project specific macros
@@ -130,10 +130,15 @@ $(PROJ).chm:
 # Rules for cleaning out those old files
 clean: sdk_clean
 	erase /q /s $(PROJ).dll $(PROJ).exp \
+        ..\Release\*.* \
         $(PROJ_OBJS) $(PROJ).res $(PROJ).wixobj *~ *.bak *.wixpdb  $(PROJ).msi \
          ..\doc\en\$(PROJ).chm
 
 #        $(PROJ).msi $(PROJ).lib \
+
+# use msbuild command to build bbwin.sln from command line.
+vs_build:
+	vcexpress ../bbwin.sln /build Release
 
 sdk_build:
 	cd sdk
