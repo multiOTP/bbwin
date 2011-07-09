@@ -890,6 +890,7 @@ void						BBWin::WaitFor() {
 //
 void		BBWin::_Start() {
 	bool	confLoaded = true;
+	LPCTSTR usingMode;
 
 	try {
 		LoadRegistryConfiguration();
@@ -909,7 +910,13 @@ void		BBWin::_Start() {
 			// we do not exit the program anymore
 		}
 	}
-	m_log->log(LOGLEVEL_INFO, "bbwin is started.");
+
+	if (m_centralMode)
+		usingMode = "bbwin is started - using central configuration";
+	else
+		usingMode = "bbwin is started - using local configuration";
+
+	m_log->log(LOGLEVEL_INFO, usingMode);
 	LPCTSTR		argStart[] = {SZSERVICENAME, m_setting["hostname"].c_str(), NULL};
 	m_log->reportInfoEvent(BBWIN_SERVICE, EVENT_SERVICE_STARTED, 2, argStart);
 }
