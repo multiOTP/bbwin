@@ -31,6 +31,8 @@
 #include <string>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
+#include <boost/filesystem.hpp>
+
 #include "who.h"
 
 using boost::format;
@@ -49,20 +51,27 @@ static const BBWinAgentInfo_t 		whoAgentInfo =
 };                
 
 void 		AgentWho::Run() {
-	stringstream 	reportData;	
+	stringstream 	reportData; 
 	
 	if (m_mgr.IsCentralModeEnabled() == false) {
 		ptime now = second_clock::local_time();
 		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "]" << endl;
 	}
-	TCHAR		buf[TEMP_PATH_LEN + 1];
-	string			execCmd, path;
+	TCHAR			buf[TEMP_PATH_LEN + 1];
+	string			execCmd, path, qwinstaEXE;
+
+	m_mgr.GetEnvironmentVariable("windir", buf, WINDIR_LEN);
+	path = buf;
+	qwinstaEXE = path + "\\winsxs\\amd64_microsoft-windows-t..commandlinetoolsmqq_31bf3856ad364e35_6.1.7600.16385_none_851e6308c5b62529\\qwinsta.exe";	// Windows 7 64-bit version
+
+	if (!boost::filesystem::exists(qwinstaEXE))
+		qwinstaEXE = "qwinsta.exe";		// pre-Windows 7 version in PATH
 
 	m_mgr.GetEnvironmentVariable("TEMP", buf, TEMP_PATH_LEN);
 	path = buf;
 	path += "\\qwinsta.tmp";
 
-	execCmd = "qwinsta > " + path;
+	execCmd = qwinstaEXE + " > " + path + " 2> NUL";	// Windows 7 version throws a "LoadString" error - redirect stderr to NUL to mask it
 	system(execCmd.c_str());
 	ifstream fileOut(path.c_str());
 	if (fileOut) {

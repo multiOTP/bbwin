@@ -23,6 +23,7 @@
 #include <string>
 #include "IBBWinAgent.h"
 
+#define		WINDIR_LEN			1024
 #define		TEMP_PATH_LEN		1024
 
 class AgentWho : public IBBWinAgent
