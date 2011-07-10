@@ -38,7 +38,7 @@ sample.dll: $(sample_objs) sample.res
 	@if exist .\IBBWinAgentManager.h nmake copy_distro
 
 clean:
-	@erase /Q /S $(sample_objs) sample.lib sample.exp vc100.pdb sample.dll
+	@erase /Q /S $(sample_objs) sample.lib sample.exp sample.res vc100.pdb sample.dll
 
 copy_build:
 	@echo Copying compiled DLL to Release...
