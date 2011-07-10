@@ -223,24 +223,21 @@
                     </Directory>
                     <!-- SDK Part like Big Software :) -->
                     <Directory Id="SdkD" Name="sdk">
-                        <Component Id="Sample_Central_LocalC" Guid="AF366A7D-BFC1-490D-98EE-10FC8EE92DFC">
-                            <File Source="./sdk/Makefile" />
-                            <File Source="./sdk/sample_central.Rc" />
-                            <File Source="./sdk/sample_local.Rc" />
-                            <File Source="./sdk/sample.h" />
-                            <File Source="./sdk/sample_central.cpp" />
-                            <File Source="./sdk/sample_local.cpp" />
-                            <File Source="../Core/version.h" />
+                        <Component Id="SampleC" Guid='AF366A7D-BFC1-490D-98EE-10FC8EE92DFC'>
+                            <File Source="../Core/Agents/Sample/Makefile" />
+                            <File Source="../Core/Agents/Sample/sample.Rc" />
+                            <File Source="../Core/Agents/Sample/sample.h" />
+                            <File Source="../Core/Agents/Sample/version.h" />
+                            <File Source="../Core/Agents/Sample/sample.cpp" />
                         </Component>
                         <Component Id="IncludeSdkC" Guid="ABB6619E-4297-4724-AC06-C35F44963FD4">
-                            <File Source="./sdk/IBBWinAgentManager.h" />
-                            <File Source="./sdk/IBBWinAgent.h" />
-                            <File Source="./sdk/IBBWinException.h" />
+                            <File Source="../Core/IBBWinAgentManager.h" />
+                            <File Source="../Core/IBBWinAgent.h" />
+                            <File Source="../Core/IBBWinException.h" />
                         </Component>
                         <Directory Id="SdkCompiledD" Name="Compiled">
                             <Component Id="SampleCompiledC" Guid="65116387-4564-400b-810F-61C5A62CAB08">
-                                <File Source="./sdk/Release/sample_central.dll" />
-                                <File Source="./sdk/Release/sample_local.dll" />
+                                <File Source="../Release/sample.dll" />
                             </Component>
                         </Directory>
                     </Directory>
@@ -343,7 +340,7 @@
                 </Feature>
             </Feature>
             <Feature Id="SDK" Title="Agents SDK" Description="BBWin Agents development toolkit." TypicalDefault="advertise" Level="1">
-                <ComponentRef Id="Sample_Central_LocalC" />
+                <ComponentRef Id="SampleC" />
                 <ComponentRef Id="SampleCompiledC" />
                 <ComponentRef Id="IncludeSdkC" />
             </Feature>
