@@ -204,6 +204,7 @@
                             <File Source="../ReadMe.txt" />
                             <File Name="BBWin_local.cfg.example" Source="../Core/bbwin.cfg" />
                             <File Name="BBWin_central.cfg.example" Source="../Core/bbwin_central.cfg" />
+                            <File Name="BBWin.cfg.annotated" Source="../Core/bbwin_full.cfg" />
                         </Component>
                         <Component Id="BBWinChmC" Guid="7D383A7B-8891-4077-A95A-D45C725E98D7">
                             <File Id="BBWin_en.chm" Name="BBWin_en.chm" Source="../Doc/en/BBWin.chm" />
