@@ -33,10 +33,19 @@ sample.res: sample.rc
 	
 sample.dll: $(sample_objs) sample.res
     $(link) /DLL $(dllldebug) $(sample_objs) sample.res -out:sample.dll
-	if not exist ..\..\..\Release mkdir ..\..\..\Release
-	copy /Y sample.dll ..\..\..\Release
-	
+# Check if this is part of the build or part of the SDK and place the sample.dll accordingly
+	@if not exist .\IBBWinAgentManager.h nmake copy_build
+	@if exist .\IBBWinAgentManager.h nmake copy_distro
+
 clean:
-		erase /Q /S $(sample_objs)
+	@erase /Q /S $(sample_objs) sample.lib sample.exp vc100.pdb sample.dll
 
+copy_build:
+	@echo Copying compiled DLL to Release...
+	@if not exist ..\..\..\Release\ mkdir ..\..\..\Release
+	@copy /Y sample.dll ..\..\..\Release
 
+copy_distro:
+	@echo Copying compiled DLL to .\Compiled...
+	@if not exist .\Compiled\ mkdir .\Compiled
+	@copy /Y sample.dll .\Compiled
