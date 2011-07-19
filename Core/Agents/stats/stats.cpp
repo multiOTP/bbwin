@@ -48,58 +48,46 @@ void				AgentStats::IfStat(stringstream & reportData) {
 	PMIB_IFTABLE		piftable;
 	PMIB_IPADDRTABLE	piptable;
 	PMIB_IPADDRROW		piprow;
-	PMIB_IFROW			pifrow;
 	DWORD				dwSize = 0;
 
-	GetIpAddrTable(NULL, &dwSize, FALSE);
-	if (piptable = (PMIB_IPADDRTABLE)GlobalAlloc(GMEM_FIXED, dwSize)) {
-		if (GetIpAddrTable(piptable, &dwSize, FALSE) == NO_ERROR) {
-			for (DWORD ipinc = 0; ipinc < piptable->dwNumEntries; ipinc++) {
-				piprow = &(piptable->table[ipinc]);
+	GetIfTable(NULL, &dwSize, FALSE);
+	if (piftable = (PMIB_IFTABLE)GlobalAlloc(GMEM_FIXED, dwSize)) {
+		if (GetIfTable(piftable, &dwSize, FALSE) == NO_ERROR) {
+			for (DWORD inc = 0; inc < piftable->dwNumEntries; inc++) {
+				///* IP          Ibytes Obytes */
+				///* 192.168.0.1 1818   1802  */
+				//static const char *ifstat_bbwin_exprs[] = {
+				//"^([a-zA-Z0-9.:]+)\\s+([0-9]+)\\s+([0-9]+)"
+				//};
 
-				//  null IP addresses ignored
-				if ((piprow->dwAddr & 0xFF) == 0 
-				&& ((piprow->dwAddr >> 8) & 0xFF) == 0 
-				&& ((piprow->dwAddr >> 16) & 0xFF) == 0
-				&& ((piprow->dwAddr >> 24) & 0xFF) == 0) {
+				// interfaces with null mac ignored
+				if ((piftable->table[inc].bPhysAddr[0] + piftable->table[inc].bPhysAddr[1] + 
+					piftable->table[inc].bPhysAddr[2] + piftable->table[inc].bPhysAddr[3] + piftable->table[inc].bPhysAddr[4]
+				+ piftable->table[inc].bPhysAddr[5]) == 0)
 					continue ;
-				}
-
-				GetIfTable(NULL, &dwSize, FALSE);
-				if (piftable = (PMIB_IFTABLE)GlobalAlloc(GMEM_FIXED, dwSize)) {
-					if (GetIfTable(piftable, &dwSize, TRUE) == NO_ERROR) {
-						// match ip-address to interface-index
-						pifrow = NULL;
-						for (DWORD ifinc = 0; ifinc < piftable->dwNumEntries; ifinc++) {
-							if (piftable->table[ifinc].dwIndex == piprow->dwIndex)
-							{
-								pifrow = &(piftable->table[ifinc]);
-								break;
-							}
-						}
-
-						// ignore interfaces with null mac address
-						if ((pifrow->bPhysAddr[0] + pifrow->bPhysAddr[1] + 
-							pifrow->bPhysAddr[2] + pifrow->bPhysAddr[3] +
-							pifrow->bPhysAddr[4] + pifrow->bPhysAddr[5]) == 0) {
-								GlobalFree(piftable);
-								continue;
-						}
-
-						if (pifrow != NULL && piprow != NULL) {
-							reportData << (unsigned) (piprow->dwAddr & 0xFF) << ".";
-							reportData << (unsigned) ((piprow->dwAddr >> 8) & 0xFF) << ".";
-							reportData << (unsigned) ((piprow->dwAddr >> 16) & 0xFF) << ".";
-							reportData << (unsigned) ((piprow->dwAddr >> 24) & 0xFF);
-							reportData << " " << (unsigned long long) pifrow->dwInOctets;
-							reportData << " " << (unsigned long long) pifrow->dwOutOctets << endl;
-						}
+				GetIpAddrTable(NULL, &dwSize, FALSE);
+				// interfaces with null IP ignored
+				if (piptable = (PMIB_IPADDRTABLE)GlobalAlloc(GMEM_FIXED, dwSize)) {
+					GetIpAddrTable(piptable, &dwSize, FALSE);
+					piprow = &piptable->table[inc];
+					if ((piprow->dwAddr & 0xFF) == 0 
+					&& ((piprow->dwAddr >> 8) & 0xFF) == 0 
+					&& ((piprow->dwAddr >> 16) & 0xFF) == 0
+					&& ((piprow->dwAddr >> 24) & 0xFF) == 0) {
+						GlobalFree(piptable);
+						continue ;
 					}
-					GlobalFree(piftable);
+					reportData << format("%u.%u.%u.%u") %	(piprow->dwAddr & 0xFF) %
+															((piprow->dwAddr >> 8) & 0xFF) %
+															((piprow->dwAddr >> 16) & 0xFF) %
+															((piprow->dwAddr >> 24) & 0xFF);
+					GlobalFree(piptable);
 				}
+				reportData << format(" %lu %lu") % piftable->table[inc].dwInOctets 
+												 % piftable->table[inc].dwOutOctets << endl;
 			}
 		}
-		GlobalFree(piptable);
+		GlobalFree(piftable);
 	}
 }
 
