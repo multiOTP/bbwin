@@ -309,7 +309,7 @@ void		AgentDisk::GenerateSummary(const disk_t & disk, stringstream & summary) {
 	size = disk.i64TotalBytes;
 	Size = FormatDiskData(size, unit);
 	summary << format("%7.2f %s") % Size % unit;
-	summary << " | ";
+	summary << "   ";
 	size = disk.i64FreeBytes;
 	Size = FormatDiskData(size, unit);
 	summary << format("%7.2f %s") % Size % unit;
@@ -326,7 +326,7 @@ void		AgentDisk::SendStatusReport() {
 		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] " << endl;
 		reportData << "\n" << endl;
 	}
-	reportData << format("Filesystem     1K-blocks     Used       Avail    Capacity    Mounted        Total Size | Free Space") << endl;
+	reportData << format("Filesystem     1K-blocks     Used       Avail    Capacity    Mounted        Total Size   Free Space") << endl;
 	for (itr = m_disks.begin(); itr != m_disks.end(); ++itr) {
 		stringstream					summary;
 
