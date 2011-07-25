@@ -71,7 +71,7 @@ void				AgentStats::IfStat(stringstream & reportData) {
 					GetIpAddrTable(piptable, &dwSize, FALSE);
 					piprow = &piptable->table[inc];
 					// ignore non-ipv4 and invalid address types
-					if (piprow->wType > 39)
+					if (piprow->wType > 39 || piprow->wType == 0)
 						continue;
 					if ((piprow->dwAddr & 0xFF) == 0 
 					&& ((piprow->dwAddr >> 8) & 0xFF) == 0 
