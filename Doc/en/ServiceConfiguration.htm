@@ -7,33 +7,33 @@
  <meta name="copyright" content="Copyright &copy; 2006 by Etienne Grignon. Licensed under GPL.">
 </HEAD>
 <BODY>
- <H1>BBWin configuration</H1>
+ <H1>BBWin Configuration</H1>
 <H3>Configuration</H3>
-<p>BBWin configuration is stored in 2 places :</p>
+<p>BBWin configuration is stored in 2 places:</p>
 <UL>
-<LI> the registry (for the important runtime settings : paths and hostname)
-<LI> the BBWin.cfg file (for all other settings so it can be saved easily)
+<LI> the registry (for the important runtime settings: paths and hostname)
+<LI> the BBWin.cfg file (for all other settings so they can be easily modified)
 </UL>
-<H3>First configuration</H3>
+<H3>Initial Configuration</H3>
 <p>
 Before starting BBWin for the first time, you should configure 2 settings:
 </p>
 <UL>
 <LI>
-the hostname setting : insert the hostname HKEY_LOCAL_MACHINE\SOFTWARE\BBWin\hostname. It must conrespond to the name configured in the bb-hosts file
-on the monitoring server side.
-<LI>the bbdisplay setting : the format is bbdisplay:port.
-If port is omitted, port 1984 is used.
-bbdisplay can be an IP or a DNS entry.You can specify several bbdisplay settings if you are reporting on
+the hostname setting: insert the hostname in the registry value <b>hostname</b> under registry key <b>HKEY_LOCAL_MACHINE\SOFTWARE\BBWin</b>. It must correspond to the name configured in the hosts.cfg (or bb-hosts) file
+on the monitoring server side. The default value is <b style="white-space: nowrap">%COMPUTERNAME%</b>.
+<LI>the bbdisplay setting: the format is <b>bbdisplay:port</b>.
+If port is omitted, the default value <b>1984</b> is used.
+bbdisplay can be an IP address or a DNS entry. You can specify several bbdisplay settings if you are sending reports to
 several Xymon servers.
-If no bbdisplay are specified, you will get a warning event in the Application Event Log.
+If no bbdisplay is specified, you will get a warning event in the Windows Application Event Log.
 </UL>
 <p>
-<img src="../yellow.gif" alt="Warning" /> If hostname registry key is not configured, BBWin won't start.
+<img src="../yellow.gif" alt="Warning" /> If the hostname registry value is not empty, BBWin will not start.
 </p>
 <H3>Configuration</H3>
 <UL>
- <LI><b>setting</b> directive syntax :
+ <LI><b>setting</b> directive syntax:
 <br />
 <table><tr><td>
 <pre class="Config">
@@ -50,51 +50,52 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 	<tr>
 		<td>autoreload</td>
 		<td>
-			Possible values are "true" or "false". If true, it will check each 5 seconds to check if BBWin.cfg file has changed. If it has changed, it will 
-			reload the all configuration (registry and BBWin.cfg file).
+			Possible values are "true" or "false". If set to true, it will check every 5 seconds whether the BBWin.cfg file has changed. If it has changed, the 
+			configuration will be reloaded (from both registry and BBWin.cfg file).
 			<b>Default is false</b>
 		</td>
 	</tr>
 	<tr>
 		<td>bbdisplay</td>
 		<td>
-			you may specify the bbdisplay server with this syntax : bbdisplay&lt;:port&gt;
-			The bbdisplay server can be the address ip or the dns entry.
-			<b>If no bbdisplay server is specified, you will get a warning event in the application event log</b>.
+			You may specify the bbdisplay server with this syntax: <b>bbdisplay[:port]</b>
+			The bbdisplay server can be an IP address or a DNS entry.
+			<b>If no bbdisplay server is specified, you will get a warning event in the Windows Application Event Log</b>.
 			<br>
-			<b>You may specify multiple bbdisplay values if you want the reports be sent to multiple bbdisplays</b>
-			Default port is 1984.
+			You may specify multiple bbdisplay values if you want the reports to be sent to multiple bbdisplays.
+			Default port is <b>1984</b>.
 		</td>
 	</tr>
 	<tr>
 		<td>bbpager</td>
 		<td>
-			you may specify the bbpager server with this syntax : bbpager&lt;:port&gt;.
+			You may specify the bbpager server with this syntax: <b>bbpager[:port]</b>.
 		
-			The bbpager server can be the address ip or the dns entry.
-			<b>The bbpager feature is not needed if your server is running Xymon software.</b>.
+			The bbpager server can be an IP address or a DNS entry.
+			<b>The bbpager feature is not applicable if your server is running Xymon.</b>
 			<br>
-			<b>You may specify multiple bbpager values if you want the pager report be sent to multiple bbpagers. </b>
+			You may specify multiple bbpager values if you want the pager report be sent to multiple bbpagers.
 		</td>
 	</tr>
 	<tr>
 		<td>loglevel</td>
 		<td>
-			0 no log, 1 errors, 2 warnings, 3 information, 4 debug loglevel 4 is the most verbose mode.
+			Sets the amount of message logging in the BBWin.log.<br />
+			0 - no log<br />1 - errors<br />2 - errors and warnings<br />3 - errors, warnings and information<br />4 - errors, warnings, information and debugging<br />loglevel 4 is the most verbose.
 			<b>Default is 0</b>
 		</td>
 	</tr>
 	<tr>
 		<td>logpath</td>
 		<td>
-			 Log path to the file where will be writting all messages strings depending the loglevel
-			<b>Default is C:\\BBWin.log if not specified</b>
+			Pathname of the BBWin text log file where messages are logged depending on the loglevel.
+			Default is <b>C:\BBWin.log</b> if not specified.
 		</td>
 	</tr>
 	<tr>
 		<td>logreportfailure</td>
 		<td>
-			Possible values are "true" or "false". If true, it will report warning events in the Application event log when
+			Possible values are "true" or "false". If true, it will report warning events in the Windows Application Event Log when
 			a report fails to be delivered to a bbdisplay or a bbpager.
 			<b>Default is false</b>
 		</td>
@@ -102,16 +103,16 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 	<tr>
 		<td>pagerlevels</td>
 		<td>
-			You can specify status colors that will generate a notification request to the bbpager.
+			You can specify which status colors will generate a notification request to the bbpager.
 			<b>Default is "red purple"</b>
 		</td>
 	</tr>
 	<tr>
 		<td>proxy</td>
 		<td>
-			you may specify an http proxy server with this syntax : [user:password@]proxyhost&lt;:port&gt;
-			The proxy server can be the address ip or the dns entry. user:password is optional if you want to 
-			use the Basic Authentification of your proxy server.
+			You may specify an HTTP proxy server with this syntax: <b>[user:password@]proxyhost[:port]</b>
+			The proxy server can be an IP address or a DNS entry. user:password is optional if you want to 
+			use the Basic Authentication of your proxy server.
 			<br>
 			Default port is 8080.
 		</td>
@@ -119,53 +120,53 @@ If no bbdisplay are specified, you will get a warning event in the Application E
 	<tr>
 		<td>timer</td>
 		<td>
-			Waiting period between agent execution in seconds. Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+			Waiting period between agent execution in seconds. Unit is seconds. You can specify a unit after the numeric value: "m" for minutes,
 			"h" for hours, "d" for days.
-			<b>Default is 5 minutes</b>.
+			<b>Default is 300 seconds (5 minutes)</b>.
 		</td>
 	</tr>
 	<tr>
 		<td>usepager</td>
 		<td>
-			Possible values are "true" or "false". If true, it will send report to the bbpager.
+			Possible values are "true" or "false". If true, it will send the report to the bbpager.
 			<b>Default is false</b>
 		</td>
 	</tr>
 	<tr>
 		<td>useproxy</td>
 		<td>
-			Possible values are "true" or "false". If true, it will use the proxy setting and connect through the proxy server specified.
+			Possible values are "true" or "false". If true, it will use the proxy setting and connect via the proxy server specified.
 			<b>Default is false</b>
 		</td>
 	</tr>
 </table>
 <H3>Loading Agents</H3>
 <p>
-BBWin service is in charge to load and run code from the agents.
-The agents are libraries in charge of the monitoring stuffs.
-If BBWin load no agent, BBWin will do nothing forever :)
+The BBWin service manages the loading and running of the configured agents.
+The agents are libraries that perform the actual monitoring of the system.
+If BBWin doesn't load any agents, it does nothing.
 </p>
 <p>
-In the bbwin XML node, &lt;load /&gt; commands are used
+In the <b>bbwin</b> section of the BBWin.cfg file, &lt;load /&gt; commands are used
 to tell BBWin to load agents.
-Full paths can be set for load command. Example :
-&lt;load name="myagent" value="C:\MyAgent.dll"/&gt;
+Full paths can be set for each load command. For example:<br />
+&lt;load name="myagent" value="C:\MyAgent.dll" /&gt;
 </p>
 <p>
-Global timer setting is used to set the time interval between agents execution.
-timer setting will be inherited to all agents if not overwritten in the load command.
-If not set, timer is 5 minutes.
+The global timer setting is used to set the time interval between the execution of agents.
+The timer setting will be inherited by all agents if not overwritten in the load command.
+If not set, timer defaults to 5 minutes.
 </p>
 <p>
-timer format : if no unit is specified, timer is understood as seconds.
-However, you can specify timer like this : <br />
+timer format: if no units are specified, the default seconds is used.
+However, you can specify timer like this:<br />
 &nbsp;90s => 90 seconds<br />
 &nbsp;5m => 5 minutes<br />
 &nbsp;1h => 1 hour<br />
 &nbsp;2d => 2 days<br />
 &nbsp;4w => 4 weeks
 </p>
- <LI><b>load rules</b> directive syntax :
+ <LI><b>load rules</b> directive syntax:
 <br />
 <table><tr><td>
 <pre class="Config">
@@ -173,7 +174,7 @@ However, you can specify timer like this : <br />
 </pre>
 </td></tr></table>
 <p>
-Load rules are used to inform BBWin to load agents
+Load rules are used to tell BBWin which agents to load.
 </p>
 <br />
 <table class="TableGrid" cellSpacing="0" cellPadding="0" border="1">
@@ -184,24 +185,24 @@ Load rules are used to inform BBWin to load agents
 	<tr>
 		<td>alarmcolor</td>
 		<td>
-			You can set the alarm color you want to use if their is an alert.
-			It should be set to red or yellow.
+			You can specify which alarm color to use if there is an alert.
+			It should be set to either red or yellow.
 			<b>Default is yellow</b>.
 		</td>
 	</tr>
 	<tr>
 		<td>comment</td>
 		<td>
-			A simple string which appear in the report to add a small information about the processus monitored if 
-			its name is not easy to understand.
-			This parameter is optionnal
+			A simple string which appears in the report to add a small amount information about the process being monitored, if 
+			its purpose is not obvious by its name.
+			This parameter is optional
 		</td>
 	</tr>
 	<tr>
 		<td>name</td>
 		<td>
-			name attribute must be the name of configuration namespace for the agent.
-			Example :
+			The name attribute must be the name of the configuration namespace for the agent.
+			Example:
 			<br />
 			<table cellpadding="0" cellspacing="0"><tr><td style="border: 0">
 				<pre class="Config">
@@ -219,9 +220,9 @@ Load rules are used to inform BBWin to load agents
 		<tr>
 		<td>timer</td>
 		<td>
-			Waiting period between agent execution in seconds. Unit is seconds. You can specify a unit after the numeric value : "m" for minutes,
+			Waiting period between executions of the agent (default unit is seconds). You can specify a unit after the numeric value: "m" for minutes,
 			"h" for hours, "d" for days.
-			<b>Default setting is herited from generic setting timer</b>.
+			<b>Default setting is inherited from the generic timer setting.</b>.
 			<b>This parameter is optional</b>
 		</td>
 	</tr>
@@ -231,110 +232,110 @@ Load rules are used to inform BBWin to load agents
 <H3>Notes</H3>
 <UL>
 <LI>The hostname (registry and configuration file), binpath, etcpath, logpath and tmppath settings may 
-contain environment variables (%VARNAME%). <b>The variable are resolved only once at startup time</b>. 
-If the variable is changing when BBWin is running, you need to restart
-the service or force the auto reload mechanism.
+contain environment variables (%VARNAME%). <b>The variables are resolved only once - at startup.</b>. 
+If the variable changes while BBWin is running, you need to restart
+the service or force the auto-reload mechanism.
 </UL>
 <H3>Examples</H3>
 <UL>
-<LI>This is a full example of BBWin.cfg file :
+<LI>This is a full example of a BBWin.cfg file:
 <br />
 <table><tr><td>
 <pre class="Config">
 &lt;?xml version="1.0" encoding="utf-8" ?&gt;
 &lt;configuration&gt;
-&lt;bbwin&gt;
-	&lt;setting name="bbdisplay" value="yourfirstbbdisplay" /&gt;
-	&lt;!-- &lt;setting name="bbdisplay" value="yoursecondbbdisplay:port" /&gt;--&gt;
-	&lt;!-- BB Pager Part --&gt;
-	&lt;!--&lt;setting name="usepager" value="false" /&gt;
-	&lt;setting name="bbpager" value="yourfirstbbpager" /&gt;
-	&lt;setting name="bbpager" value="yourfirstbbpager" /&gt;
-	&lt;setting name="pagerlevels" value="red yellow" /&gt; --&gt;
-	
-	&lt;setting name="mode" value="local" /&gt;
-	&lt;setting name="configclass" value="win32" /&gt;
-	
-	&lt;setting name="autoreload" value="true" /&gt;
-	&lt;setting name="timer" value="5m" /&gt;
-	&lt;load name="cpu" value="cpu.dll"/&gt;
-	&lt;load name="disk" value="disk.dll"/&gt;
-	&lt;load name="externals" value="externals.dll"/&gt;
-	&lt;load name="memory" value="memory.dll"/&gt;
-	&lt;load name="msgs" value="msgs.dll"/&gt;
-	&lt;load name="procs" value="procs.dll"/&gt;
-	&lt;load name="stats" value="stats.dll"/&gt;
-	&lt;load name="svcs" value="svcs.dll"/&gt;
-	&lt;load name="uptime" value="uptime.dll" timer="10m" /&gt;
-	&lt;setting name="loglevel" value="3" /&gt;
-	&lt;setting name="logpath" value="C:\Program Files\BBWin\logs\BBWin.log"/&gt;
-	&lt;!--  If true, the agent will report reporting failures as warning events --&gt;
-	&lt;setting name="logreportfailure" value="false" /&gt;
-&lt;/bbwin&gt;
-&lt;cpu&gt;
-	&lt;!-- If true, the agent  will always report with green status --&gt;
-	&lt;setting name="alwaysgreen" value="false" /&gt;
-	&lt;setting name="default" warnlevel="90" paniclevel="95" delay="3" /&gt;
-&lt;/cpu&gt;
-&lt;disk&gt;
-	&lt;!-- If true, the agent  will always report with green status --&gt;
-	&lt;setting name="alwaysgreen" value="false" /&gt;
-	&lt;!-- Level can be given by % or size unit mb, gb, tb --&gt;
-	&lt;setting name="default" warnlevel="85%" paniclevel="95%" /&gt;
-	&lt;setting name="C" warnlevel="70%" paniclevel="400mb" /&gt;
-	&lt;setting name="E" ignore="true" /&gt;
-	&lt;!-- If true, the agent will check remote drives --&gt;
-	&lt;setting name="remote" value="false" /&gt;
-	&lt;!-- If true, the agent will that cd/dvdrom drives are empty --&gt;
-	&lt;setting name="cdrom" value="false" /&gt;
-&lt;/disk&gt;
-&lt;externals&gt;
-	&lt;setting name="timer" value="3m" /&gt;
-	&lt;setting name="logstimer" value="60s" /&gt;
-	&lt;load value="cscript mybbscript.vbs" /&gt;
-	&lt;load value="memory.exe" /&gt;
-	&lt;load value="cscript wlbs.vbs" timer="15m" /&gt;
-	&lt;load value="cluster.exe" timer="90s" /&gt;
-&lt;/externals&gt;
-&lt;memory&gt;
-	&lt;!-- If true, the agent  will always report with green status --&gt;
-	&lt;setting name="alwaysgreen" value="false" /&gt;
-	&lt;setting name="physical" warnlevel="78" paniclevel="98" /&gt;
-	&lt;setting name="page" warnlevel="70" paniclevel="90" /&gt;
-	&lt;setting name="virtual" warnlevel="78" paniclevel="90" /&gt;
-&lt;/memory&gt;
-&lt;msgs&gt;
-	&lt;setting name="alwaysgreen" value="false" /&gt;
-	&lt;setting name="summary" value="true" /&gt;
-	&lt;match logfile="System" type="error" delay="1h" alarmcolor="red" /&gt;
-	&lt;match logfile="System" type="warning" alarmcolor="yellow" /&gt;
-	&lt;match logfile="Application" type="error" delay="1h" alarmcolor="red" /&gt;
-	&lt;match logfile="Application" type="warning" alarmcolor="yellow" /&gt;
-	&lt;match logfile="Security" type="fail" /&gt;
-	
-	&lt;!-- Some ignore rules examples 
-	&lt;ignore logfile="Application" eventid="1030" /&gt;
-	&lt;ignore logfile="System" source="W32Time" /&gt;
-	--&gt;
-&lt;/msgs&gt;
-&lt;procs&gt;
-	&lt;setting name="drwtsn" rule="&lt;1" alarmcolor="red" /&gt;
-	&lt;setting name="pageant.exe" rule="=1" comment="Putty agent deamon" /&gt;
-&lt;/procs&gt;
-&lt;svcs&gt;
-	&lt;!-- If true, the agent  will always report with green status --&gt;
-	&lt;setting name="alwaysgreen" value="false" /&gt;
-	&lt;!-- If true, the agent will restart all "automatic  services" which would be stopped--&gt;
-	&lt;setting name="autoreset" value="false" /&gt;
-	&lt;setting name="alarmcolor" value="yellow" /&gt;
-	&lt;!-- The line below show you svcs rules. If the "Automatic Updates" service is stopped,  
-	it will be automatically restarted and a red status will be sent
-	until the service get it's correct status --&gt;
-	&lt;setting name="Automatic Updates" value="started" autoreset="true" alarmcolor="red" /&gt;
-&lt;/svcs&gt;
-&lt;uptime&gt;
-	&lt;setting name="delay" value="1h" /&gt;
-&lt;/uptime&gt;
+    &lt;bbwin&gt;
+        &lt;setting name="bbdisplay" value="yourfirstbbdisplay" /&gt;
+        &lt;!-- &lt;setting name="bbdisplay" value="yoursecondbbdisplay:port" /&gt;--&gt;
+        &lt;!-- BB Pager Part --&gt;
+        &lt;!--&lt;setting name="usepager" value="false" /&gt;
+        &lt;setting name="bbpager" value="yourfirstbbpager" /&gt;
+        &lt;setting name="bbpager" value="yourfirstbbpager" /&gt;
+        &lt;setting name="pagerlevels" value="red yellow" /&gt; --&gt;
+    
+        &lt;setting name="mode" value="local" /&gt;
+        &lt;setting name="configclass" value="win32" /&gt;
+    
+        &lt;setting name="autoreload" value="true" /&gt;
+        &lt;setting name="timer" value="5m" /&gt;
+        &lt;load name="cpu" value="cpu.dll"/&gt;
+        &lt;load name="disk" value="disk.dll"/&gt;
+        &lt;load name="externals" value="externals.dll"/&gt;
+        &lt;load name="memory" value="memory.dll"/&gt;
+        &lt;load name="msgs" value="msgs.dll"/&gt;
+        &lt;load name="procs" value="procs.dll"/&gt;
+        &lt;load name="stats" value="stats.dll"/&gt;
+        &lt;load name="svcs" value="svcs.dll"/&gt;
+        &lt;load name="uptime" value="uptime.dll" timer="10m" /&gt;
+        &lt;setting name="loglevel" value="3" /&gt;
+        &lt;setting name="logpath" value="..\logs\BBWin.log"/&gt;
+        &lt;!--  If true, the agent will report reporting failures as warning events --&gt;
+        &lt;setting name="logreportfailure" value="false" /&gt;
+    &lt;/bbwin&gt;
+    &lt;cpu&gt;
+        &lt;!-- If true, the agent  will always report with green status --&gt;
+        &lt;setting name="alwaysgreen" value="false" /&gt;
+        &lt;setting name="default" warnlevel="90" paniclevel="95" delay="3" /&gt;
+    &lt;/cpu&gt;
+    &lt;disk&gt;
+        &lt;!-- If true, the agent  will always report with green status --&gt;
+        &lt;setting name="alwaysgreen" value="false" /&gt;
+        &lt;!-- Level can be given by % or size unit mb, gb, tb --&gt;
+        &lt;setting name="default" warnlevel="85%" paniclevel="95%" /&gt;
+        &lt;setting name="C" warnlevel="70%" paniclevel="400mb" /&gt;
+        &lt;setting name="E" ignore="true" /&gt;
+        &lt;!-- If true, the agent will check remote drives --&gt;
+        &lt;setting name="remote" value="false" /&gt;
+        &lt;!-- If true, the agent will that cd/dvdrom drives are empty --&gt;
+        &lt;setting name="cdrom" value="false" /&gt;
+    &lt;/disk&gt;
+    &lt;externals&gt;
+        &lt;setting name="timer" value="3m" /&gt;
+        &lt;setting name="logstimer" value="60s" /&gt;
+        &lt;load value="cscript mybbscript.vbs" /&gt;
+        &lt;load value="memory.exe" /&gt;
+        &lt;load value="cscript wlbs.vbs" timer="15m" /&gt;
+        &lt;load value="cluster.exe" timer="90s" /&gt;
+    &lt;/externals&gt;
+    &lt;memory&gt;
+        &lt;!-- If true, the agent  will always report with green status --&gt;
+        &lt;setting name="alwaysgreen" value="false" /&gt;
+        &lt;setting name="physical" warnlevel="78" paniclevel="98" /&gt;
+        &lt;setting name="page" warnlevel="70" paniclevel="90" /&gt;
+        &lt;setting name="virtual" warnlevel="78" paniclevel="90" /&gt;
+    &lt;/memory&gt;
+    &lt;msgs&gt;
+        &lt;setting name="alwaysgreen" value="false" /&gt;
+        &lt;setting name="summary" value="true" /&gt;
+        &lt;match logfile="System" type="error" delay="1h" alarmcolor="red" /&gt;
+        &lt;match logfile="System" type="warning" alarmcolor="yellow" /&gt;
+        &lt;match logfile="Application" type="error" delay="1h" alarmcolor="red" /&gt;
+        &lt;match logfile="Application" type="warning" alarmcolor="yellow" /&gt;
+        &lt;match logfile="Security" type="fail" /&gt;
+    
+        &lt;!-- Some ignore rules examples 
+        &lt;ignore logfile="Application" eventid="1030" /&gt;
+        &lt;ignore logfile="System" source="W32Time" /&gt;
+        --&gt;
+    &lt;/msgs&gt;
+    &lt;procs&gt;
+        &lt;setting name="drwtsn" rule="&lt;1" alarmcolor="red" /&gt;
+        &lt;setting name="pageant.exe" rule="=1" comment="Putty agent deamon" /&gt;
+    &lt;/procs&gt;
+    &lt;svcs&gt;
+        &lt;!-- If true, the agent  will always report with green status --&gt;
+        &lt;setting name="alwaysgreen" value="false" /&gt;
+        &lt;!-- If true, the agent will restart all "automatic  services" which would be stopped--&gt;
+        &lt;setting name="autoreset" value="false" /&gt;
+        &lt;setting name="alarmcolor" value="yellow" /&gt;
+        &lt;!-- The line below show you svcs rules. If the "Automatic Updates" service is stopped,  
+        it will be automatically restarted and a red status will be sent
+        until the service get it's correct status --&gt;
+        &lt;setting name="Automatic Updates" value="started" autoreset="true" alarmcolor="red" /&gt;
+    &lt;/svcs&gt;
+    &lt;uptime&gt;
+        &lt;setting name="delay" value="1h" /&gt;
+    &lt;/uptime&gt;
 &lt;/configuration&gt;
 </pre>
 </td></tr></table>
