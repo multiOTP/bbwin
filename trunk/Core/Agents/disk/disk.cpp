@@ -30,6 +30,7 @@
 #include <map>
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/format.hpp"
+#include <boost/algorithm/string.hpp>
 #include "disk.h"
 #include "utils.h"
 
@@ -63,7 +64,7 @@ static const disk_unit_t		disk_unit_table[] =
 
 static const disk_type_t		disk_type_table[] = 
 {
-	{"UNKOWN", DRIVE_UNKNOWN},
+	{"UNKNOWN", DRIVE_UNKNOWN},
 	{"FIXED", DRIVE_FIXED},
 	{"REMOTE", DRIVE_REMOTE},
 	{"CDROM", DRIVE_CDROM},
@@ -98,6 +99,8 @@ void			AgentDisk::GetMountPointData(LPTSTR driveName) {
 	if (m_findFirstVolumeMountPoint == NULL || m_findNextVolumeMountPoint == NULL || m_findVolumeMountPointClose == NULL) 
 		return;
 	TCHAR 			mountPoint[BUFFER_SIZE + 1];
+	string			mountPoints[MAX_DRIVE];
+	int				counter = 0;
 	HANDLE			h;
 	disk_t			*disk;
 	DWORD			driveType;
@@ -106,7 +109,7 @@ void			AgentDisk::GetMountPointData(LPTSTR driveName) {
 	for (h = m_findFirstVolumeMountPoint(driveName, mountPoint, BUFFER_SIZE); 
 		h != INVALID_HANDLE_VALUE && ret != 0; 
 		ret = m_findNextVolumeMountPoint(h, mountPoint, BUFFER_SIZE)) {
-		string		fullMountPoint = string(driveName) + string("\\") + string(mountPoint);
+		string		fullMountPoint = string(driveName) + string(mountPoint);
 		driveType = GetDriveType(fullMountPoint.c_str());
 		if (driveType != DRIVE_REMOVABLE) { // no floppy 
 			try {
@@ -122,9 +125,24 @@ void			AgentDisk::GetMountPointData(LPTSTR driveName) {
 			std::string::size_type	end = fullMountPoint.find_last_of("\\", fullMountPoint.size() - 1);
 			std::string::size_type	begin = fullMountPoint.find_last_of("\\", end - 1);
 			string dir = fullMountPoint.substr(begin + 1, end - begin - 1);
+			disk->mountPoint = fullMountPoint;
+			if (dir.find(" "))
+			{
+				m_mgr.Log(LOGLEVEL_DEBUG, "mount point contains spaces - replacing with underscores");
+				boost::replace_all(dir, " ", "_");
+			}
 			m_mgr.Log(LOGLEVEL_DEBUG, "will use mount point shortname : %s", dir.c_str());
-			strncpy(disk->letter, dir.c_str(), 7);
-			disk->letter[8] = '\0';
+			for (int i = 0; i < counter; i++)
+			{
+				if (dir == mountPoints[i])
+				{
+					dir += "'";
+					i = -1;	// begin search again
+				}
+			}
+			mountPoints[counter++] = dir;
+
+			strncpy(disk->letter, dir.c_str(), MAX_MNTPOINT_LEN + MAX_MNTPOINT_DUP);
 			fResult = GetDiskFreeSpaceEx(fullMountPoint.c_str(), (PULARGE_INTEGER)&(disk->i64FreeBytesToCaller), 
 				(PULARGE_INTEGER)&(disk->i64TotalBytes), (PULARGE_INTEGER)&(disk->i64FreeBytes));
 			if (fResult != 0) {
@@ -173,7 +191,7 @@ bool			AgentDisk::GetDisksData() {
 			ZeroMemory(disk, sizeof(*disk));
 			disk->type = driveType;
 			strncpy(disk->letter, driveName, 1);
-			disk->letter[2] = '\0';
+			disk->mountPoint = "N/A";
 			fResult = GetDiskFreeSpaceEx(driveName, (PULARGE_INTEGER)&(disk->i64FreeBytesToCaller), 
 				(PULARGE_INTEGER)&(disk->i64TotalBytes), (PULARGE_INTEGER)&(disk->i64FreeBytes));
 			if (fResult != 0) {
@@ -326,7 +344,33 @@ void		AgentDisk::SendStatusReport() {
 		reportData << to_simple_string(now) << " [" << m_mgr.GetSetting("hostname") << "] " << endl;
 		reportData << "\n" << endl;
 	}
-	reportData << format("Filesystem     1K-blocks     Used       Avail    Capacity    Mounted        Total Size   Free Space") << endl;
+
+	// Work out width of first column based on length of drive letter / mount point and any specific rules
+	TCHAR *fsHeader = "Filesystem";
+	unsigned columnwidth = strlen(fsHeader);
+	for (itr = m_disks.begin(); itr != m_disks.end(); ++itr)
+	{
+		disk = (*itr);
+		if (strlen(disk->letter) > columnwidth)
+			columnwidth = strlen(disk->letter);
+	}
+	for (itrRule = m_rules.begin(); itrRule != m_rules.end(); ++itrRule)
+		if (itrRule->first.length() > columnwidth)
+			columnwidth = itrRule->first.length();
+
+	columnwidth += 2; // Allow space between columns
+
+	TCHAR buf[MAX_MNTPOINT_LEN + MAX_MNTPOINT_DUP + 6];
+	strcpy(buf, fsHeader);
+	for (unsigned i = strlen(fsHeader); i <= columnwidth; i++)
+		strcat(buf, " ");	// pad the first column header (Filesystem) with spaces
+	reportData << buf;
+	
+	reportData << "1K-blocks     Used       Avail    Capacity   Total Size   Free Space   Type    ";
+	if (m_mgr.IsCentralModeEnabled() == false)
+		reportData << "Status   ";
+	reportData << "Mount Point" << endl;
+	
 	for (itr = m_disks.begin(); itr != m_disks.end(); ++itr) {
 		stringstream					summary;
 
@@ -335,22 +379,31 @@ void		AgentDisk::SendStatusReport() {
 		if (disk->ignore || (disk->type == DRIVE_FIXED && disk->i64TotalBytes == 0))
 			continue ;
 		GenerateSummary(*disk, summary);
-		reportData << format("%-13s %10.0f %10.0f %10.0f   %3d%%       /%s/%-8s %s") %
-			disk->letter % (disk->i64TotalBytes / 1024) % ((disk->i64TotalBytes - disk->i64FreeBytes) / 1024) % 
-			(disk->i64FreeBytes / 1024) % disk->percent % GetDiskTypeStr(disk->type) % 
-			disk->letter % summary.str();
+		strcpy(buf, disk->letter);
+		for (unsigned i = strlen(disk->letter); i < columnwidth; i++)
+			strcat(buf, " ");
+		reportData << buf;
+		reportData << format("%10.0f %10.0f %10.0f   %3d%%       %s   %-6s") %
+			(disk->i64TotalBytes / 1024) % ((disk->i64TotalBytes - disk->i64FreeBytes) / 1024) % 
+			(disk->i64FreeBytes / 1024) % disk->percent % summary.str() % GetDiskTypeStr(disk->type);
 		if (m_mgr.IsCentralModeEnabled() == false)
-			reportData << " &" << bbcolors[disk->color];
-		reportData << endl;
+			reportData << "    &" << bbcolors[disk->color] << "    ";
+		reportData << "  " << disk->mountPoint << endl;
 	} 
 	// check unused custum rules to generate an alert. Not used in centralized mode
 	for (itrRule = m_rules.begin(); itrRule != m_rules.end(); ++itrRule) {
 		float	size = 0.000;
 		if (itrRule->second->used == false && itrRule->first != DEFAULT_RULE_NAME && itrRule->second->ignore == false) {
-			reportData << format("%s             %10.0f %10.0f %10.0f   %3d%%       /%s/%s      %s") %
-			itrRule->first % size % size % size % 0 % GetDiskTypeStr(DRIVE_UNKNOWN) % itrRule->first % "drive not found";
-			reportData << " &" << bbcolors[RED];
-			reportData << endl;
+			string strBuffer = itrRule->first;
+			boost::replace_all(strBuffer, " ", "_");
+			for (unsigned i = itrRule->first.length(); i < columnwidth; i++)
+				strBuffer += " ";
+			reportData << strBuffer;
+			reportData << format("%10.0f %10.0f %10.0f   %3d%%           -            -        %s ") %
+				size % size % size % 0 % GetDiskTypeStr(DRIVE_UNKNOWN);
+			if (m_mgr.IsCentralModeEnabled() == false)
+				reportData << "  &" << bbcolors[RED] << "      ";
+			reportData << "N/A ** not found **" << endl;
 			m_pageColor = RED;
 		}
 	}
