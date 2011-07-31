@@ -31,6 +31,9 @@
 #define MAXNAMELEN			512
 #define GB_DIV				(1024 * 1024)
 #define MAX_DRIVE			64
+#define MAX_MNTPOINT_LEN	25
+// allow for 5 duplicates (duplicates denoted by appending "'")
+#define MAX_MNTPOINT_DUP	5
 
 #define DEF_DISK_WARN	"90%"
 #define DEF_DISK_PANIC	"95%"
@@ -78,7 +81,8 @@ typedef struct		disk_type_s
 //
 typedef struct		disk_s
 {
-	TCHAR			letter[8];
+	TCHAR			letter[MAX_MNTPOINT_LEN + MAX_MNTPOINT_DUP + 1];
+	std::string		mountPoint;
 	TCHAR			fileSystemName[MAXNAMELEN + 1];
 	TCHAR			volumeName[MAXNAMELEN + 1];
 	DWORD			fileSystemFlags;
