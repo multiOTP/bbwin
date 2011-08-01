@@ -55,8 +55,8 @@
 #============================================================================#
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension" xmlns:sql="http://schemas.microsoft.com/wix/SqlExtension">
-    <Product Name="BBWin 0.12" Id="9E24125E-8C40-45E4-84F9-A1B601404AAF" UpgradeCode="E6444500-EAAA-43e5-A7CA-B24B0E4749BE" Language="1033" Codepage="1252" Version="0.12" Manufacturer="GNU">
-        <Package Id="*" Keywords="Installer" Description="BBWin 0.12 Installer" Comments="BBWin : Big Brother Xymon Windows Client" Manufacturer="GNU" InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
+    <Product Name="BBWin 0.13" Id="9E24125E-8C40-45E4-84F9-A1B601404AAF" UpgradeCode="E6444500-EAAA-43e5-A7CA-B24B0E4749BE" Language="1033" Codepage="1252" Version="0.13" Manufacturer="GNU">
+        <Package Id="*" Keywords="Installer" Description="BBWin 0.13 Installer" Comments="BBWin : Big Brother Xymon Windows Client" Manufacturer="GNU" InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
         <Upgrade Id="E6444500-EAAA-43e5-A7CA-B24B0E4749BE">
 <!-- to be decided.
         <UpgradeVersion OnlyDetect='no' Property='UPGRADE'
