@@ -141,7 +141,6 @@ void BBWinCentralHandler::run() {
 			report << "client " << m_data.setting["hostname"] << ".bbwin " << m_data.setting["configclass"] << "\n";
 			report.close();
 			created = true;
-			GetClock();
 			string		osversion;
 			uname(osversion);
 			bbwinClientData_callback("osversion", osversion);
@@ -167,6 +166,7 @@ void BBWinCentralHandler::run() {
 			
 			string		result;
 
+			GetClock();
 			for (itr = m_bbdisplay.begin(); itr != m_bbdisplay.end(); ++itr) {
 				BBWinNet	hobNet;
 				hobNet.SetBBDisplay((*itr));
