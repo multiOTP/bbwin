@@ -94,7 +94,7 @@ class AgentFileSystem : public IBBWinAgent
 		bool					GetFileAttributes(const std::string & path, std::stringstream & reportData, bool logfile);
 		bool					GetTimeString(const FILETIME & ftime, std::string & output);
 		bool					ExecuteDirRule(const std::string & dir);
-		bool					ListFiles(const std::string & path, std::stringstream & report, __int64 & size);
+		__int64					ListFiles(const std::string & path, std::stringstream & report);
 		void					GetLinesFromCommand(const std::string & command, std::list<std::string> & list);
 		bool					ExecuteLogFileRule(fs_logfile_t & logfile);
 		DWORD					ApplyRulesOnLine(fs_logfile_t & logfile, std::string line);
