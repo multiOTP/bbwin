@@ -345,9 +345,10 @@ bool		AgentFileSystem::GetFileAttributes(const string & path, stringstream & rep
 	return true;
 }
 
-bool	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & report, __int64 & size) {
+__int64	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & report) {
 	WIN32_FIND_DATA		find_data;
 	string				mypath = path + "\\*";
+	__int64				foldersize = 0;
 	
 	HANDLE handle = FindFirstFile(mypath.c_str(), &find_data);
 	if (handle != INVALID_HANDLE_VALUE) {
@@ -355,12 +356,12 @@ bool	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & re
 		FindNextFile(handle, &find_data);
 		while (FindNextFile(handle, &find_data)) {
 			string	newpath = path + "\\" + find_data.cFileName;
-			__int64 tmpsize = ((find_data.nFileSizeHigh * MAXDWORD) + find_data.nFileSizeLow);
-			report << format("%lu\t %s") % ((tmpsize < 1024 && tmpsize != 0) ? 1 : tmpsize / 1024) % newpath << endl;
-			size += tmpsize;
-			if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-				ListFiles(newpath , report, size);
-			}
+			__int64 tmpsize;
+			if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				tmpsize = ListFiles(newpath, report);	// get subfolder size using recursion
+			else
+				tmpsize = ((find_data.nFileSizeHigh * MAXDWORD) + find_data.nFileSizeLow);	// get file size
+			foldersize += tmpsize;
 		}
 		FindClose(handle);
 	} else {
@@ -370,18 +371,17 @@ bool	AgentFileSystem::ListFiles(const std::string & path, std::stringstream & re
 		report << "ERROR: " << err << endl;
 		return false;
 	}
-	return true;
+	report << format("%lu\t %s") % ((foldersize < 1024 && foldersize != 0) ? 1 : foldersize / 1024) % path << endl;
+	return foldersize;
 }
 
 bool		AgentFileSystem::ExecuteDirRule(const std::string & dir) {
 	stringstream 		reportData;	
-	__int64				size = 0;
 	bool				ret;
 
 	string title = "dir:" + dir;
-	ret = ListFiles(dir, reportData, size);
-	if (reportData.str().substr(0, 5) != "ERROR")
-		reportData << format("%lu\t %s") % ((size < 1024 && size != 0) ? 1 : size / 1024) % dir << endl;
+	ListFiles(dir, reportData);
+	ret = (reportData.str().substr(0, 5) != "ERROR");
 	reportData << endl;
 	m_mgr.ClientData(title.c_str(), reportData.str().c_str());
 	return ret;
