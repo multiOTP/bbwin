@@ -47,7 +47,7 @@
       <Command>SubWCRev.exe . ..\..\version_template.h version.h</Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>../..;c:\boost;../common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../..;../common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level2</WarningLevel>
@@ -65,7 +65,7 @@
       <Command>SubWCRev.exe . ..\..\version_template.h version.h</Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>c:\boost;../..;../common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../..;../common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level2</WarningLevel>
     </ClCompile>

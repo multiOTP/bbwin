@@ -64,7 +64,7 @@
       <Command>SubWCRev.exe . ..\..\version_template.h version.h</Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>c:\boost;../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
