@@ -19,8 +19,8 @@
 
 all: cpu.dll
 
-BOOST_INC_PATH = /I C:\boost
-BOOST_LIB_PATH = /LIBPATH:C:\boost\lib
+BOOST_INC_PATH = /I "$(BOOSTINSTALLDIR)"
+BOOST_LIB_PATH = /LIBPATH:"$(BOOSTINSTALLDIR)\lib"
 BOOST_LIB = $(BOOST_LIB_PATH) libboost_date_time-vc90-mt-s-1_35.lib
 cflags = $(cflags) /EHsc /I ../.. /I ../common $(BOOST_INC_PATH)
 
