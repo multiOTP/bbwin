@@ -47,7 +47,7 @@
       <Command>SubWCRev.exe . ..\..\version_template.h version.h</Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>c:\boost;../..;../../digest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../..;../../digest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -65,7 +65,7 @@
       <Command>SubWCRev.exe . ..\..\version_template.h version.h</Command>
     </PreBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>c:\boost;../..;../../digest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../..;../../digest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
