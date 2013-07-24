@@ -7,11 +7,55 @@
  <meta name="copyright" content="Copyright &copy; 2006 by Etienne Grignon. Licensed under GPL.">
 </HEAD>
 <BODY>
- <H1>Building BBWin</H1>
- <H2>Prepare your BBWin development machine</H2>
- <H3>BBWin development machine</H3>
-<p>
-TODO
-</p>
+<H1>Building BBWin</H1>
+<p><em>Note: This page is a work in progress</em></p>
+<H2>Preparing Your BBWin Development Machine</H2>
+<H3>BBWin Development Machine</H3>
+<p><b>Required software</b></p>
+<ul>
+	<li>Microsoft Visual C++ 2010 Express</li>
+	<li>Boost C++ libraries</li>
+	<li>Windows Subversion client</li>
+</ul>
+<p><b>Recommended software</b></p>
+<ul>
+	<li>Windows Installer XML (WiX) toolset (Version 3.0 or later)</li>
+	<li>Microsoft HTML Help Workshop</li>
+	<li>Microsoft Visual Web Developer 2010 Express</li>
+	<li>Text Editor with syntax highlighting</li>
+</ul>
+<p><b>Software Installation</b></p>
+<ol>
+	<li>
+		Install Visual C++ Express and apply the Visual Studio Service Pack 1. <em>Note: if you are installing other Visual Studio 2010 Express components
+		(such as Visual Web Developer), install those first before applying the service pack.</em><br /><br />
+		Download Visual Studio Express for free from the Microsoft <a href="http://www.microsoft.com/visualstudio/en-us/products/2010-editions/express">website</a> 
+		and Service Pack 1 from their <a href="http://www.microsoft.com/download/en/details.aspx?id=23691">Download Center</a>.
+	</li>
+	<li>
+		Install the Boost C++ libraries and add <b>BoostInstallDir</b> to the user or system environment variables with the value set to the Boost installation
+		folder (e.g. BoostInstallDir=C:\Boost).
+	</li>
+	<li>
+		Install a Windows Subversion client. TortoiseSVN is highly recommended for this - it integrates into Windows Explorer, adding entries to the context
+		menu for files and folders. TortoiseSVN can be downloaded from <a href="http://tortoisesvn.net/downloads.html">here</a>.
+	</li>
+	<li>
+		If you want to package the compiled executables into an MSI, install WiX and the Microsoft HTML Help Workshop. The latter creates the compiled help
+		file BBWin.chm, which is then included in the MSI.
+	</li>
+	<li>
+		For additions and modifications to the HTML help files, Visual Web Developer is an excellent tool - providing syntax highlighting, code folding,
+		auto-completion and validation. See step 1 for download instructions.<br />
+		An additional light-weight editor (such as <a href="http://notepad-plus-plus.org/">Notepad++</a> or
+		<a href="http://sourceforge.net/projects/emeraldeditor/">Crimson Editor</a>) is useful for editing BBWin.cfg and other files. These provide syntax
+		highlighting for the XML, making it much easier to read. Visual Web Developer can be used for this, but does take quite a bit longer to load so can
+		be tedious for small modifications.
+	</li>
+</ol>
+<!-- TODO -->
+<!-- Build process -->
+<!-- Known bugs - e.g. mt.exe error during build -->
+<!-- Debugging - -debug parameter -->
 </BODY>
 </HTML>
