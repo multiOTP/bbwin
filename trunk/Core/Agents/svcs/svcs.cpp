@@ -169,7 +169,7 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 					itr = m_rules.find(name);
 					if (itr != m_rules.end() && m_mgr.IsCentralModeEnabled() == false) { // treat the defined rule
 						SvcRule	& rule = itr->second;
-						if (rule.GetSvcState() != servStatus.dwCurrentState) {
+						if (lpServiceConfig->dwStartType != SERVICE_DISABLED && rule.GetSvcState() != servStatus.dwCurrentState) {
 							if (servStatus.dwCurrentState == SERVICE_STOPPED) { // service is stopped and should be running
 								reportData << "&" << bbcolors[rule.GetAlarmColor()] << " " << name << " is stopped";
 								if (rule.GetReset()) {
