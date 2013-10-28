@@ -185,14 +185,14 @@ void					AgentSvcs::CheckSimpleService(SC_HANDLE & scm, LPCTSTR name, stringstre
 									 reportData << " and will be stopped automatically" << endl;
 								}
 							} else {
-								LPCSTR	str = (itr->second.GetSvcState() == SERVICE_RUNNING) ? "running" : "stoppped";
+								LPCSTR	str = (itr->second.GetSvcState() == SERVICE_RUNNING) ? "running" : "stopped";
 								reportData << "&" << bbcolors[rule.GetAlarmColor()] << " " << name << " should be " 
 									<< str << " and is in an unmanaged state (" << findSvcStatus(servStatus.dwCurrentState) << ")";
 							}
 							if (m_pageColor < itr->second.GetAlarmColor())
 								m_pageColor = itr->second.GetAlarmColor();
 						} else { // service is ok
-							LPCSTR		str = (servStatus.dwCurrentState == SERVICE_RUNNING) ? "running" : "stoppped";
+							LPCSTR		str = (servStatus.dwCurrentState == SERVICE_RUNNING) ? "running" : "stopped";
 							reportData << "&" << bbcolors[GREEN] << " " << name << " is ";
 							reportData << str;
 						}
