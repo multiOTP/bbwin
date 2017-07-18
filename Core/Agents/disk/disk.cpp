@@ -391,7 +391,7 @@ void		AgentDisk::SendStatusReport() {
 		reportData << "  " << disk->mountPoint << endl;
 	} 
 	// check unused custum rules to generate an alert. Not used in centralized mode
-	for (itrRule = m_rules.begin(); itrRule != m_rules.end(); ++itrRule) {
+	/*for (itrRule = m_rules.begin(); itrRule != m_rules.end(); ++itrRule) {
 		float	size = 0.000;
 		if (itrRule->second->used == false && itrRule->first != DEFAULT_RULE_NAME && itrRule->second->ignore == false) {
 			string strBuffer = itrRule->first;
@@ -406,7 +406,7 @@ void		AgentDisk::SendStatusReport() {
 			reportData << "N/A ** not found **" << endl;
 			m_pageColor = RED;
 		}
-	}
+	}*/
 	if (m_mgr.IsCentralModeEnabled() == false)
 		m_mgr.Status(m_testName.c_str(), bbcolors[m_pageColor], reportData.str().c_str());
 	else
